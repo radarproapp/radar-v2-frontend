@@ -409,3 +409,60 @@ export interface Note {
   createdAt: string;
   editedAt: string;
 }
+
+// ── Library ──────────────────────────────────────────────────────────────
+
+export interface LibraryDocument {
+  id: string;
+  title: string;
+  year: number;
+  publisher: string;
+  documentType: string;
+  region: string;
+  category: string;
+  subtopic: string;
+  url: string;
+  isAfrica: boolean;
+  addedAt: string;
+}
+
+// ── Compare ──────────────────────────────────────────────────────────────
+
+export type ComparisonRowTag = "Same" | "Differs" | "Context";
+
+export interface ComparisonRow {
+  label: string;
+  valueA: string;
+  valueB: string;
+  labelA: string | null;
+  labelB: string | null;
+  tag: ComparisonRowTag;
+}
+
+export interface PolicyComparison {
+  id: string;
+  userId: string;
+  title: string;
+  items: string[];
+  summary: string;
+  whyItMatters: string;
+  aiEdge: string | null;
+  rows: ComparisonRow[];
+  disclaimer: string | null;
+  createdAt: string;
+}
+
+// ── Plans ────────────────────────────────────────────────────────────────
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  isCurrent: boolean;
+  isPro: boolean;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  currency: string;
+  features: string[];
+  badge: string | null;
+  note: string | null;
+}

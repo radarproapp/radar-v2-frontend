@@ -23,6 +23,12 @@ import { Notebook } from "./pages/Notebook";
 import { NoteEditor } from "./pages/NoteEditor";
 import { Opportunities } from "./pages/Opportunities";
 import { ResearchDiscovery } from "./pages/ResearchDiscovery";
+import { Library } from "./pages/Library";
+import { Compare } from "./pages/Compare";
+import { Plans } from "./pages/Plans";
+import { Settings } from "./pages/Settings";
+import { EditProfile } from "./pages/EditProfile";
+import { Notifications } from "./pages/Notifications";
 import { NotFound } from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -180,6 +186,62 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <ResearchDiscovery />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/library"
+                element={
+                  <RequireAuth>
+                    <Library />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/compare"
+                element={
+                  <RequireAuth>
+                    <Compare />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/compare/:comparisonId"
+                element={
+                  <RequireAuth>
+                    <Compare />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/plans"
+                element={
+                  <RequireAuth>
+                    <Plans />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <RequireAuth>
+                    <Settings />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/profile/edit"
+                element={
+                  <RequireAuth>
+                    <EditProfile />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <RequireAuth>
+                    <Notifications />
                   </RequireAuth>
                 }
               />

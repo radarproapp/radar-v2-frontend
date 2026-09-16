@@ -7,6 +7,7 @@ import type {
   ContentItem,
   ContentType,
   GrowthRoadmap,
+  LibraryDocument,
   MentorQuiz,
   MentorStudyPlan,
   MentorWorkReview,
@@ -14,9 +15,11 @@ import type {
   Note,
   Opportunity,
   OpportunityType,
+  PolicyComparison,
   ProjectTemplate,
   SourceProfile,
   StudioProject,
+  SubscriptionPlan,
   TopicProfile,
   UserProfile,
   WeeklyBrief,
@@ -388,4 +391,30 @@ export function unsaveOpportunity(id: string) {
 export function searchResearch(query: string, yearFrom: number) {
   const params = new URLSearchParams({ q: query, yearFrom: String(yearFrom) });
   return request<ContentItem[]>(`/api/research/search?${params.toString()}`);
+}
+
+// ── Library ──────────────────────────────────────────────────────────────
+
+export function getLibraryDocuments(category: string | null, year: number | null, search: string | null) {
+  const params = new URLSearchParams();
+  if (category) params.set("category", category);
+  if (year) params.set("year", String(year));
+  if (search) params.set("search", search);
+  return request<LibraryDocument[]>(`/api/library?${params.toString()}`);
+}
+
+export function getLibraryCategories() {
+  return request<string[]>("/api/library/categories");
+}
+
+// ── Compare ──────────────────────────────────────────────────────────────
+
+export function getComparison(id: string) {
+  return request<PolicyComparison>(`/api/comparisons/${id}`);
+}
+
+// ── Plans ────────────────────────────────────────────────────────────────
+
+export function getPlans() {
+  return request<SubscriptionPlan[]>("/api/plans");
 }
