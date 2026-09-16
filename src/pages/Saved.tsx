@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, getSavedItems, unsaveFeedItem } from "../lib/api";
+import { ApiError, getSavedItems, logEvent, unsaveFeedItem } from "../lib/api";
 import { humanize } from "../lib/date";
 import type { ContentItem } from "../lib/types";
 
@@ -15,6 +15,7 @@ export function Saved() {
 
   const unsave = async (item: ContentItem) => {
     queryClient.setQueryData<ContentItem[]>(["feed", "saved"], (old) => old?.filter((i) => i.id !== item.id));
+    logEvent("Unsave", { contentItemId: item.id });
     await unsaveFeedItem(item.id);
     queryClient.invalidateQueries({ queryKey: ["feed"] });
   };

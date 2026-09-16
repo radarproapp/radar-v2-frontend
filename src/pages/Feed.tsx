@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, getFeed, saveFeedItem, unsaveFeedItem } from "../lib/api";
+import { ApiError, getFeed, logEvent, saveFeedItem, unsaveFeedItem } from "../lib/api";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ContentItem, ContentType } from "../lib/types";
@@ -29,12 +29,13 @@ export function Feed() {
     queryFn: () => getFeed(activeFilter),
   });
 
-  const toggleSave = async (item: ContentItem) => {
+  const toggleSave = async (item: ContentItem, position: number) => {
     const queryKey = ["feed", activeFilter] as const;
     const nextSaved = !item.isSaved;
     queryClient.setQueryData<ContentItem[]>(queryKey, (old) =>
       old?.map((i) => (i.id === item.id ? { ...i, isSaved: nextSaved } : i)),
     );
+    logEvent(nextSaved ? "Save" : "Unsave", { contentItemId: item.id, position });
     try {
       if (nextSaved) await saveFeedItem(item.id);
       else await unsaveFeedItem(item.id);
@@ -49,6 +50,12 @@ export function Feed() {
 
   const items = feedQuery.data ?? [];
   const errorMessage = feedQuery.error instanceof ApiError ? feedQuery.error.message : "Could not load the feed.";
+
+  // Not full scroll-based impression tracking (no IntersectionObserver yet) — logs the whole
+  // rendered page as "shown" per fetch, which is enough to start measuring position effects.
+  useEffect(() => {
+    feedQuery.data?.forEach((item, position) => logEvent("Impression", { contentItemId: item.id, position }));
+  }, [feedQuery.data]);
 
   return (
     <div className="r-page">
@@ -81,7 +88,7 @@ export function Feed() {
           <button className="btn btn--primary btn--sm" onClick={() => feedQuery.refetch()}>Refresh feed</button>
         </EmptyState>
       ) : (
-        items.map((item) => (
+        items.map((item, position) => (
           <div className="feed-item" key={item.id}>
             <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8, flexWrap: "wrap" }}>
               <span
@@ -128,10 +135,16 @@ export function Feed() {
 
             <div className="feed-actions">
               <div className="feed-actions-left">
-                <button className="btn btn--primary btn--sm" onClick={() => navigate(`/feed/${item.id}`)}>
+                <button
+                  className="btn btn--primary btn--sm"
+                  onClick={() => {
+                    logEvent("Open", { contentItemId: item.id, position });
+                    navigate(`/feed/${item.id}`);
+                  }}
+                >
                   Read brief →
                 </button>
-                <button className="btn btn--sm" onClick={() => toggleSave(item)}>
+                <button className="btn btn--sm" onClick={() => toggleSave(item, position)}>
                   {item.isSaved ? "Saved ✓" : "Save"}
                 </button>
               </div>

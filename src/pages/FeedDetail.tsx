@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { ErrorState } from "../components/ErrorState";
 import { useAuth } from "../auth/AuthContext";
-import { addTopicToActiveRoadmap, ApiError, getFeedItem, saveFeedItem, unsaveFeedItem } from "../lib/api";
+import { addTopicToActiveRoadmap, ApiError, getFeedItem, getPersonalizedWhy, logEvent, rateWhy, saveFeedItem, unsaveFeedItem } from "../lib/api";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 
@@ -38,17 +38,39 @@ export function FeedDetail() {
   const itemQuery = useQuery({ queryKey: ["feed", "item", itemId], queryFn: () => getFeedItem(itemId) });
   const [activePersona, setActivePersona] = useState<string | undefined>(undefined);
   const [addedToRoadmap, setAddedToRoadmap] = useState(false);
+  const [whyRated, setWhyRated] = useState<boolean | null>(null);
 
   const item = itemQuery.data;
+  const whyQuery = useQuery({
+    queryKey: ["feed", "why", itemId],
+    queryFn: () => getPersonalizedWhy(itemId),
+    enabled: !!item,
+  });
 
   useEffect(() => {
     if (item) setActivePersona(defaultPersonaTab(profile?.persona, Object.keys(item.personaImpact)));
   }, [item, profile?.persona]);
 
+  useEffect(() => {
+    if (item) logEvent("Open", { contentItemId: item.id });
+  }, [item?.id]);
+
+  useEffect(() => {
+    setWhyRated(whyQuery.data?.isHelpful ?? null);
+  }, [whyQuery.data]);
+
+  const submitWhyRating = async (helpful: boolean) => {
+    if (!item || whyRated !== null) return;
+    setWhyRated(helpful);
+    logEvent(helpful ? "WhyRatedHelpful" : "WhyRatedNotHelpful", { contentItemId: item.id });
+    await rateWhy(item.id, helpful);
+  };
+
   const toggleSave = async () => {
     if (!item) return;
     const nextSaved = !item.isSaved;
     queryClient.setQueryData(["feed", "item", itemId], { ...item, isSaved: nextSaved });
+    logEvent(nextSaved ? "Save" : "Unsave", { contentItemId: item.id });
     if (nextSaved) await saveFeedItem(item.id);
     else await unsaveFeedItem(item.id);
     queryClient.invalidateQueries({ queryKey: ["feed"] });
@@ -60,6 +82,7 @@ export function FeedDetail() {
     try {
       // Unenriched (freshly ingested) content often has no Topic yet — fall back to the title.
       await addTopicToActiveRoadmap(item.topic || item.title);
+      logEvent("AddToRoadmap", { contentItemId: item.id });
     } catch {
       setAddedToRoadmap(false);
     }
@@ -137,7 +160,29 @@ export function FeedDetail() {
 
       <div className="item-detail-section">
         <div className="item-detail-section-label">WHY IT MATTERS</div>
-        <p>{item.whyItMatters}</p>
+        <p>{whyQuery.data?.text ?? item.whyItMatters}</p>
+        {whyQuery.data && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+            <span style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 600 }}>Was this helpful?</span>
+            <button
+              style={{ fontSize: 13, background: "none", border: "none", cursor: whyRated === null ? "pointer" : "default", opacity: whyRated === false ? 0.35 : 1 }}
+              onClick={() => submitWhyRating(true)}
+              disabled={whyRated !== null}
+              aria-label="Helpful"
+            >
+              👍
+            </button>
+            <button
+              style={{ fontSize: 13, background: "none", border: "none", cursor: whyRated === null ? "pointer" : "default", opacity: whyRated === true ? 0.35 : 1 }}
+              onClick={() => submitWhyRating(false)}
+              disabled={whyRated !== null}
+              aria-label="Not helpful"
+            >
+              👎
+            </button>
+            {whyRated !== null && <span style={{ fontSize: 11.5, color: "var(--cyan)", fontWeight: 600 }}>Thanks</span>}
+          </div>
+        )}
       </div>
 
       <div className="item-detail-section">

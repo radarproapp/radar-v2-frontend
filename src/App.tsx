@@ -9,6 +9,20 @@ import { Today } from "./pages/Today";
 import { Feed } from "./pages/Feed";
 import { FeedDetail } from "./pages/FeedDetail";
 import { Saved } from "./pages/Saved";
+import { Capture } from "./pages/Capture";
+import { Clips } from "./pages/Clips";
+import { WeeklyBrief } from "./pages/WeeklyBrief";
+import { SourcePage } from "./pages/SourcePage";
+import { TopicHub } from "./pages/TopicHub";
+import { Learn } from "./pages/Learn";
+import { LearnHub } from "./pages/LearnHub";
+import { GrowthTracker } from "./pages/GrowthTracker";
+import { ProjectStudio } from "./pages/ProjectStudio";
+import { LearningMentor } from "./pages/LearningMentor";
+import { Notebook } from "./pages/Notebook";
+import { NoteEditor } from "./pages/NoteEditor";
+import { Opportunities } from "./pages/Opportunities";
+import { ResearchDiscovery } from "./pages/ResearchDiscovery";
 import { NotFound } from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -54,6 +68,118 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <Saved />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/capture"
+                element={
+                  <RequireAuth>
+                    <Capture />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/clips"
+                element={
+                  <RequireAuth>
+                    <Clips />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/weekly"
+                element={
+                  <RequireAuth>
+                    <WeeklyBrief />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/source/:sourceId"
+                element={
+                  <RequireAuth>
+                    <SourcePage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/topic/:topicId"
+                element={
+                  <RequireAuth>
+                    <TopicHub />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/learn"
+                element={
+                  <RequireAuth>
+                    <Learn />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/learn/hub"
+                element={
+                  <RequireAuth>
+                    <LearnHub />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/progress"
+                element={
+                  <RequireAuth>
+                    <GrowthTracker />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/projects"
+                element={
+                  <RequireAuth>
+                    <ProjectStudio />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/mentor"
+                element={
+                  <RequireAuth>
+                    <LearningMentor />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/notebook"
+                element={
+                  <RequireAuth>
+                    <Notebook />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/notebook/:noteId"
+                element={
+                  <RequireAuth>
+                    <NoteEditor />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/opportunities"
+                element={
+                  <RequireAuth>
+                    <Opportunities />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/research"
+                element={
+                  <RequireAuth>
+                    <ResearchDiscovery />
                   </RequireAuth>
                 }
               />
