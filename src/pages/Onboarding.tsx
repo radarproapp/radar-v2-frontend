@@ -159,7 +159,7 @@ export function Onboarding() {
           roadmapReminders: notifRoadmap,
         },
       });
-      refetchProfile();
+      await refetchProfile();
       navigate("/");
     } catch (err) {
       setAuthError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");

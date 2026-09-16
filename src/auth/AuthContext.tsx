@@ -9,7 +9,7 @@ interface AuthContextValue {
   isLoading: boolean;
   signIn: (token: string) => void;
   signOut: () => void;
-  refetchProfile: () => void;
+  refetchProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
