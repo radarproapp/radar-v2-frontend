@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { ApiError, completeOnboarding, register } from "../lib/api";
+import { INTEREST_GROUPS } from "../lib/interests";
 import type { PersonaType } from "../lib/types";
 
 const TOTAL_STEPS = 6;
@@ -49,14 +50,6 @@ function goalsFor(persona: PersonaType | null): string[] {
       return [];
   }
 }
-
-const INTEREST_GROUPS: [string, string[]][] = [
-  ["Technology", ["Artificial Intelligence", "Machine Learning", "Data Science", "Software Engineering", "Cloud Computing", "Cybersecurity", "UI/UX", "Product Management"]],
-  ["Business", ["Entrepreneurship", "Marketing", "Finance", "Economics", "Leadership", "Strategy", "Investment"]],
-  ["Research & Academia", ["Academic Writing", "Research Methods", "Statistics", "Systematic Reviews"]],
-  ["Professional Fields", ["Medicine", "Law", "Public Policy", "Engineering", "Agriculture", "Education", "Psychology", "Climate Change"]],
-  ["Creative Fields", ["Design", "Photography", "Content Creation", "Film"]],
-];
 
 function personaLabel(p: PersonaType | null): string {
   return PERSONAS.find(([value]) => value === p)?.[1] ?? "—";
@@ -131,7 +124,7 @@ export function Onboarding() {
   const toggleInterest = (interest: string) => {
     setSelectedInterests((prev) => {
       if (prev.includes(interest)) return prev.filter((i) => i !== interest);
-      if (prev.length >= 5) return prev;
+      if (prev.length >= 8) return prev;
       return [...prev, interest];
     });
   };
@@ -348,8 +341,8 @@ export function Onboarding() {
             <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <div className="ob-step-label">Step 5 of {TOTAL_STEPS} · Interests</div>
               <h1 className="ob-title">Choose your interests.</h1>
-              <p className="ob-sub" style={{ marginBottom: 6 }}>Pick 3 to 5. This shapes your feed, your weekly brief and what Radar recommends you learn.</p>
-              <div className="ob-interests-meta">{selectedInterests.length} of 5 selected</div>
+              <p className="ob-sub" style={{ marginBottom: 6 }}>Pick 3 to 8. This shapes your feed, your weekly brief and what Radar recommends you learn.</p>
+              <div className="ob-interests-meta">{selectedInterests.length} of 8 selected</div>
               <div style={{ overflowY: "auto", flex: 1, paddingBottom: 4 }}>
                 {INTEREST_GROUPS.map(([category, items]) => (
                   <div className="ob-interests-group" key={category}>
@@ -357,7 +350,7 @@ export function Onboarding() {
                     <div className="ob-interests-pills">
                       {items.map((interest) => {
                         const isActive = selectedInterests.includes(interest);
-                        const atMax = selectedInterests.length >= 5 && !isActive;
+                        const atMax = selectedInterests.length >= 8 && !isActive;
                         return (
                           <button
                             key={interest}

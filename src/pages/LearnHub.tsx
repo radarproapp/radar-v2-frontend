@@ -12,6 +12,7 @@ const SECTIONS: { id: string; label: string; type: ContentType }[] = [
   { id: "podcasts", label: "Podcasts", type: "Podcast" },
   { id: "videos", label: "Videos", type: "Video" },
   { id: "papers", label: "Papers", type: "ResearchPaper" },
+  { id: "blogposts", label: "Blog posts", type: "Essay" },
 ];
 
 export function LearnHub() {

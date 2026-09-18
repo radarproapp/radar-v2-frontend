@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import { IconAsk, IconFeed, IconMore, IconSaved, IconToday } from "./NavIcons";
+import { IconAsk, IconFeed, IconLearn, IconMore, IconSaved, IconToday } from "./NavIcons";
 
 const PRIMARY_LINKS = [
   { label: "Today", path: "/", icon: IconToday, match: (p: string) => p === "/" },
   { label: "Feed", path: "/feed", icon: IconFeed, match: (p: string) => p.includes("/feed") },
+  { label: "Learn", path: "/learn", icon: IconLearn, match: (p: string) => ["/learn", "/roadmap", "/lesson", "/progress"].some((s) => p.includes(s)) },
   { label: "Saved", path: "/saved", icon: IconSaved, match: (p: string) => p.includes("/saved") },
   { label: "Ask", path: "/ask", icon: IconAsk, match: (p: string) => p.includes("/ask") },
 ];
@@ -15,13 +16,12 @@ const MORE_LINKS: { label: string; path: string }[] = [
   { label: "Capture", path: "/capture" },
   { label: "Opportunities", path: "/opportunities" },
   { label: "Notebook", path: "/notebook" },
-  { label: "Learn", path: "/learn" },
   { label: "Research", path: "/research" },
   { label: "Library", path: "/library" },
   { label: "Mentor", path: "/mentor" },
 ];
 
-const MORE_PATH_HINTS = ["/clips", "/capture", "/opportunities", "/notebook", "/learn", "/roadmap", "/lesson", "/projects", "/progress", "/research", "/library", "/mentor", "/weekly", "/source", "/topic", "/compare"];
+const MORE_PATH_HINTS = ["/clips", "/capture", "/opportunities", "/notebook", "/projects", "/research", "/library", "/mentor", "/weekly", "/source", "/topic", "/compare"];
 
 function isMoreActive(pathname: string): boolean {
   const p = pathname.toLowerCase();

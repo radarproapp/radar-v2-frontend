@@ -44,6 +44,16 @@ export function IconAsk({ size = 20 }: IconProps) {
   );
 }
 
+export function IconLearn({ size = 20 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+      <path d="M3.5 6.2 12 3l8.5 3.2L12 9.4 3.5 6.2Z" />
+      <path d="M6.5 8.3v5.4c0 .5 2.2 2.3 5.5 2.3s5.5-1.8 5.5-2.3V8.3" />
+      <path d="M20.5 6.2v6" />
+    </svg>
+  );
+}
+
 export function IconMore({ size = 20 }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">

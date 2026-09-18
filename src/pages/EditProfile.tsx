@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { updateMe } from "../lib/api";
+import { ALL_INTERESTS } from "../lib/interests";
 import type { PersonaType } from "../lib/types";
 
 const PERSONAS: [PersonaType, string][] = [
@@ -10,15 +11,6 @@ const PERSONAS: [PersonaType, string][] = [
   ["YoungProfessional", "Young Professional"],
   ["Entrepreneur", "Entrepreneur"],
   ["Researcher", "Researcher"],
-];
-
-const ALL_INTERESTS = [
-  "Artificial Intelligence", "Machine Learning", "Data Science", "Software Engineering",
-  "Cloud Computing", "Cybersecurity", "UI/UX", "Product Management",
-  "Entrepreneurship", "Marketing", "Finance", "Economics", "Leadership", "Strategy", "Investment",
-  "Academic Writing", "Research Methods", "Statistics", "Systematic Reviews",
-  "Medicine", "Law", "Public Policy", "Engineering", "Agriculture", "Education", "Psychology", "Climate Change",
-  "Design", "Photography", "Content Creation", "Film",
 ];
 
 export function EditProfile() {
@@ -45,7 +37,7 @@ export function EditProfile() {
   const toggleInterest = (interest: string) => {
     setInterests((prev) => {
       if (prev.includes(interest)) return prev.filter((i) => i !== interest);
-      if (prev.length >= 5) return prev;
+      if (prev.length >= 8) return prev;
       return [...prev, interest];
     });
   };
