@@ -3,6 +3,11 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { RequireAuth } from "./auth/RequireAuth";
 import { MainLayout } from "./components/MainLayout";
+import { MarketingLayout } from "./components/MarketingLayout";
+import { Landing } from "./pages/Landing";
+import { Product } from "./pages/Product";
+import { HowItWorks } from "./pages/HowItWorks";
+import { Institutions } from "./pages/Institutions";
 import { Login } from "./pages/Login";
 import { Onboarding } from "./pages/Onboarding";
 import { Today } from "./pages/Today";
@@ -48,6 +53,14 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/showcase/:projectId" element={<ProjectShowcase />} />
+
+            <Route element={<MarketingLayout />}>
+              <Route path="/landing" element={<Landing />} />
+              <Route path="/m" element={<Landing />} />
+              <Route path="/product" element={<Product />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
+              <Route path="/institutions" element={<Institutions />} />
+            </Route>
 
             <Route element={<MainLayout />}>
               <Route
