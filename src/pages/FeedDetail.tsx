@@ -4,9 +4,18 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { ErrorState } from "../components/ErrorState";
 import { useAuth } from "../auth/AuthContext";
-import { addTopicToActiveRoadmap, ApiError, getFeedItem, getPersonalizedWhy, logEvent, rateWhy, saveFeedItem, unsaveFeedItem } from "../lib/api";
+import { addTopicToActiveRoadmap, ApiError, getFeedItem, getPersonalizedWhy, logEvent, rateWhy, reportFeedItem, saveFeedItem, unsaveFeedItem } from "../lib/api";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
+import type { ReportReason } from "../lib/types";
+
+const REPORT_REASONS: [ReportReason, string][] = [
+  ["Incorrect", "Incorrect / misleading"],
+  ["LowQuality", "Low quality"],
+  ["BrokenLink", "Broken link"],
+  ["NotRelevantToLayer", "Wrong topic/category"],
+  ["Other", "Other"],
+];
 
 // TimeSpan serialises as "hh:mm:ss[.fffffff]" — the chapter list only needs mm:ss.
 function formatChapterTime(timestamp: string): string {
@@ -39,6 +48,9 @@ export function FeedDetail() {
   const [activePersona, setActivePersona] = useState<string | undefined>(undefined);
   const [addedToRoadmap, setAddedToRoadmap] = useState(false);
   const [whyRated, setWhyRated] = useState<boolean | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false);
+  const [reportNote, setReportNote] = useState("");
 
   const item = itemQuery.data;
   const whyQuery = useQuery({
@@ -74,6 +86,13 @@ export function FeedDetail() {
     if (nextSaved) await saveFeedItem(item.id);
     else await unsaveFeedItem(item.id);
     queryClient.invalidateQueries({ queryKey: ["feed"] });
+  };
+
+  const submitReport = async (reason: ReportReason) => {
+    if (!item) return;
+    setReportSubmitted(true);
+    logEvent("Reported", { contentItemId: item.id, metadata: { reason } });
+    await reportFeedItem(item.id, reason, reportNote.trim() || undefined);
   };
 
   const addToRoadmap = async () => {
@@ -323,7 +342,38 @@ export function FeedDetail() {
         <a className="btn btn--sm" style={{ background: "#f0f2f4", color: "var(--text)", borderColor: "transparent" }} href={item.url} target="_blank" rel="noreferrer">
           Open original →
         </a>
+        {!reportSubmitted && (
+          <button className="btn btn--text btn--sm" onClick={() => setReportOpen((v) => !v)}>
+            Report a problem
+          </button>
+        )}
       </div>
+
+      {reportSubmitted ? (
+        <p style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 10 }}>Thanks — we'll take a look.</p>
+      ) : (
+        reportOpen && (
+          <div style={{ marginTop: 12, background: "#f6f8f9", borderRadius: 13, padding: "15px 17px" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 10 }}>
+              WHAT'S WRONG WITH THIS ITEM?
+            </div>
+            <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 10 }}>
+              {REPORT_REASONS.map(([reason, label]) => (
+                <button key={reason} className="r-chip" onClick={() => submitReport(reason)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <input
+              type="text"
+              className="r-input"
+              placeholder="Add a note (optional)"
+              value={reportNote}
+              onChange={(e) => setReportNote(e.target.value)}
+            />
+          </div>
+        )
+      )}
     </div>
   );
 }

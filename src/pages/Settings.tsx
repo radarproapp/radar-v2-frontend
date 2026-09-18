@@ -154,6 +154,7 @@ export function Settings() {
             ["/saved", "Saved resources"],
             ["/progress", "Growth Tracker"],
             ["/metrics", "Quality Metrics"],
+            ["/source-quality", "Source Quality"],
           ] as const).map(([path, label], i, arr) => (
             <button
               key={path}

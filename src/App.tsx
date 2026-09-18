@@ -32,6 +32,7 @@ import { Settings } from "./pages/Settings";
 import { EditProfile } from "./pages/EditProfile";
 import { Notifications } from "./pages/Notifications";
 import { Metrics } from "./pages/Metrics";
+import { SourceQuality } from "./pages/SourceQuality";
 import { NotFound } from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -262,6 +263,14 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <Metrics />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/source-quality"
+                element={
+                  <RequireAuth>
+                    <SourceQuality />
                   </RequireAuth>
                 }
               />

@@ -184,6 +184,28 @@ export interface NavigatorFocus {
   generatedAt: string;
 }
 
+export type ReportReason = "Incorrect" | "LowQuality" | "BrokenLink" | "NotRelevantToLayer" | "Other";
+
+export interface ContentReport {
+  id: string;
+  userId: string;
+  contentItemId: string;
+  itemSignal: string;
+  source: string;
+  credibilityTier: number;
+  reason: ReportReason;
+  note: string | null;
+  isResolved: boolean;
+  createdAt: string;
+}
+
+export interface SourceReportSummary {
+  source: string;
+  credibilityTier: number;
+  reportCount: number;
+  lastReportedAt: string;
+}
+
 export interface EventsSummary {
   eventCounts: Record<string, number>;
   whyHelpfulRatings: {
@@ -203,7 +225,8 @@ export type AnalyticsEventType =
   | "CaptureCreated"
   | "ClipSaved"
   | "WhyRatedHelpful"
-  | "WhyRatedNotHelpful";
+  | "WhyRatedNotHelpful"
+  | "Reported";
 
 export type CaptureMode = "Link" | "Note" | "Voice" | "Photo";
 

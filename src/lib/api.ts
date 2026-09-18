@@ -5,6 +5,7 @@ import type {
   ChatMessage,
   Clip,
   ContentItem,
+  ContentReport,
   ContentType,
   EventsSummary,
   GrowthRoadmap,
@@ -18,7 +19,9 @@ import type {
   OpportunityType,
   PolicyComparison,
   ProjectTemplate,
+  ReportReason,
   SourceProfile,
+  SourceReportSummary,
   StudioProject,
   SubscriptionPlan,
   TopicProfile,
@@ -176,6 +179,27 @@ export function rateWhy(id: string, helpful: boolean) {
     method: "POST",
     body: JSON.stringify({ helpful }),
   });
+}
+
+export function reportFeedItem(id: string, reason: ReportReason, note?: string) {
+  return request<void>(`/api/feed/${id}/report`, {
+    method: "POST",
+    body: JSON.stringify({ reason, note }),
+  });
+}
+
+// ── Reports (quality review) ────────────────────────────────────────────
+
+export function getOpenReports() {
+  return request<ContentReport[]>("/api/reports");
+}
+
+export function getSourceReportSummary(days = 30) {
+  return request<SourceReportSummary[]>(`/api/reports/sources?days=${days}`);
+}
+
+export function resolveReport(id: string) {
+  return request<void>(`/api/reports/${id}/resolve`, { method: "POST" });
 }
 
 // ── Roadmap ──────────────────────────────────────────────────────────────
