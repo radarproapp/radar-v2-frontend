@@ -353,6 +353,17 @@ export function completeProject(projectId: string) {
   return request<void>(`/api/projects/${projectId}/complete`, { method: "POST" });
 }
 
+export function setProjectVisibility(projectId: string, isPublic: boolean) {
+  return request<void>(`/api/projects/${projectId}/visibility`, {
+    method: "POST",
+    body: JSON.stringify({ isPublic }),
+  });
+}
+
+export function getPublicProject(projectId: string) {
+  return request<StudioProject>(`/api/projects/${projectId}/public`);
+}
+
 // ── Notebook ─────────────────────────────────────────────────────────────
 
 export function getNotes() {

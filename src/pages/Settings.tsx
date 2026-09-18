@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { updateMe } from "../lib/api";
+import { FONT_SCALES, getFontScale, setFontScale } from "../lib/fontSize";
 import type { NotificationPrefs } from "../lib/types";
 
 export function Settings() {
@@ -9,6 +10,7 @@ export function Settings() {
   const { profile, refetchProfile } = useAuth();
   const [notifications, setNotifications] = useState<NotificationPrefs | null>(null);
   const [saving, setSaving] = useState(false);
+  const [fontScale, setFontScaleState] = useState(getFontScale());
 
   useEffect(() => {
     if (profile) setNotifications(profile.notifications);
@@ -104,6 +106,28 @@ export function Settings() {
               </button>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 10 }}>DISPLAY</div>
+        <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: "18px 20px" }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 4 }}>Text size</div>
+          <div style={{ fontSize: 11.5, color: "var(--text-muted)", marginBottom: 14 }}>Make text across Radar bigger or smaller.</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {FONT_SCALES.map((scale) => (
+              <button
+                key={scale.id}
+                className={`r-chip ${fontScale === scale.id ? "active" : ""}`}
+                onClick={() => {
+                  setFontScale(scale.id);
+                  setFontScaleState(scale.id);
+                }}
+              >
+                {scale.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

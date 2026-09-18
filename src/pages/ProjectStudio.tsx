@@ -1,14 +1,18 @@
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, getProjectTemplates, getUserProjects, startProject } from "../lib/api";
+import { ApiError, getProjectTemplates, getUserProjects, sendAskRadarChat, setProjectVisibility, startProject } from "../lib/api";
 import type { StudioProject } from "../lib/types";
 
 export function ProjectStudio() {
   const queryClient = useQueryClient();
   const templatesQuery = useQuery({ queryKey: ["projects", "templates"], queryFn: getProjectTemplates });
   const projectsQuery = useQuery({ queryKey: ["projects", "mine"], queryFn: getUserProjects });
+  const [tipsByProject, setTipsByProject] = useState<Record<string, string>>({});
+  const [tipsLoadingId, setTipsLoadingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const loading = templatesQuery.isLoading || projectsQuery.isLoading;
   const error = templatesQuery.error ?? projectsQuery.error;
@@ -23,6 +27,41 @@ export function ProjectStudio() {
     } catch {
       // silent, matches the original Blazor page's behaviour
     }
+  };
+
+  const askForTips = async (project: StudioProject) => {
+    setTipsLoadingId(project.id);
+    try {
+      const response = await sendAskRadarChat(
+        `Give me specific, practical tips on how to best demonstrate and showcase this project to recruiters or a portfolio audience: "${project.title}" — ${project.description}`,
+        [],
+      );
+      setTipsByProject((prev) => ({ ...prev, [project.id]: response.content }));
+    } finally {
+      setTipsLoadingId(null);
+    }
+  };
+
+  const toggleVisibility = async (project: StudioProject) => {
+    const nextPublic = !project.isPublic;
+    queryClient.setQueryData<StudioProject[]>(["projects", "mine"], (old) =>
+      old?.map((p) => (p.id === project.id ? { ...p, isPublic: nextPublic } : p)),
+    );
+    try {
+      await setProjectVisibility(project.id, nextPublic);
+    } catch {
+      queryClient.setQueryData<StudioProject[]>(["projects", "mine"], (old) =>
+        old?.map((p) => (p.id === project.id ? { ...p, isPublic: !nextPublic } : p)),
+      );
+    }
+  };
+
+  const copyShareLink = (projectId: string) => {
+    const url = `${window.location.origin}/showcase/${projectId}`;
+    navigator.clipboard?.writeText(url).then(() => {
+      setCopiedId(projectId);
+      setTimeout(() => setCopiedId((id) => (id === projectId ? null : id)), 2000);
+    });
   };
 
   return (
@@ -65,6 +104,29 @@ export function ProjectStudio() {
                     )}
                   </div>
                   <div style={{ fontSize: 12.5, color: "var(--text-dim)", marginTop: 4 }}>{project.description}</div>
+
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
+                    <button className="btn btn--sm" onClick={() => askForTips(project)} disabled={tipsLoadingId === project.id}>
+                      {tipsLoadingId === project.id ? "Asking Radar…" : "Ask Radar for tips"}
+                    </button>
+                    <button className="btn btn--sm" onClick={() => toggleVisibility(project)}>
+                      {project.isPublic ? "Public ✓ — make private" : "Make public"}
+                    </button>
+                    {project.isPublic && (
+                      <button className="btn btn--sm" onClick={() => copyShareLink(project.id)}>
+                        {copiedId === project.id ? "Link copied ✓" : "Copy share link"}
+                      </button>
+                    )}
+                  </div>
+
+                  {tipsByProject[project.id] && (
+                    <div style={{ marginTop: 12, background: "var(--cyan-light)", borderRadius: 12, padding: "13px 15px" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--cyan-deep)", marginBottom: 6 }}>
+                        HOW TO SHOWCASE THIS
+                      </div>
+                      <div style={{ fontSize: 13, color: "#0d3d40", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{tipsByProject[project.id]}</div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

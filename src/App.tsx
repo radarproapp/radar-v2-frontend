@@ -18,6 +18,7 @@ import { Learn } from "./pages/Learn";
 import { LearnHub } from "./pages/LearnHub";
 import { GrowthTracker } from "./pages/GrowthTracker";
 import { ProjectStudio } from "./pages/ProjectStudio";
+import { ProjectShowcase } from "./pages/ProjectShowcase";
 import { LearningMentor } from "./pages/LearningMentor";
 import { AskRadar } from "./pages/AskRadar";
 import { Notebook } from "./pages/Notebook";
@@ -44,6 +45,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/showcase/:projectId" element={<ProjectShowcase />} />
 
             <Route element={<MainLayout />}>
               <Route
