@@ -228,9 +228,7 @@ export interface WeeklyBrief {
   id: string;
   userId: string;
   weekOf: string;
-  topOpportunities: Opportunity[];
   topArticles: ContentItem[];
-  topResearchPapers: ContentItem[];
   topVideos: ContentItem[];
   topPodcasts: ContentItem[];
   weeklyRecommendation: string;
@@ -392,6 +390,7 @@ export interface StudioProject {
   description: string;
   userId: string;
   isCompleted: boolean;
+  isPublic: boolean;
   createdAt: string;
   completedAt: string | null;
 }

@@ -1,7 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import { getToday } from "../lib/api";
+import { getFeed, getOpportunities, getToday } from "../lib/api";
+import { isWeeklyBriefUnlocked } from "../lib/schedule";
+import { humanize } from "../lib/date";
+import { layerBg, layerColor, layerLabel } from "../lib/layers";
+import type { ContentType } from "../lib/types";
+
+const BRIEF_TYPES: ContentType[] = ["Article", "Podcast", "Video", "Essay"];
 
 function timeOfDay(): string {
   const hour = new Date().getHours();
@@ -10,14 +16,12 @@ function timeOfDay(): string {
   return "evening";
 }
 
-function personaLabel(persona: string): string {
-  return persona === "YoungProfessional" ? "Young Professional" : persona;
-}
-
 export function Today() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const focusQuery = useQuery({ queryKey: ["today"], queryFn: getToday });
+  const briefQuery = useQuery({ queryKey: ["feed", null], queryFn: () => getFeed(null, 1, 20) });
+  const oppsQuery = useQuery({ queryKey: ["opportunities", null], queryFn: () => getOpportunities(null, 1, 3) });
 
   const focus = focusQuery.data;
 
@@ -33,12 +37,8 @@ export function Today() {
 
   const firstName = profile.name.split(" ")[0] || "there";
   const dateLabel = new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" });
-  const weekday = new Date().toLocaleDateString("en-US", { weekday: "long" });
-
-  const openReadItem = () => {
-    if (focus.read.contentItemId) navigate(`/feed/${focus.read.contentItemId}`);
-    else navigate("/feed");
-  };
+  const dailyBrief = (briefQuery.data ?? []).filter((item) => BRIEF_TYPES.includes(item.type)).slice(0, 5);
+  const opportunities = oppsQuery.data ?? [];
 
   return (
     <div className="r-page">
@@ -48,18 +48,21 @@ export function Today() {
         <div className="nav-tagline">Here's what matters today.</div>
       </div>
 
-      <button className="nav-brief-banner" onClick={() => navigate("/weekly")}>
-        <div className="nav-brief-meta">
-          <span className="nav-brief-label">Weekly Intelligence Brief · {weekday}</span>
-          <span className="nav-brief-time">6 min</span>
-        </div>
-        <div className="nav-brief-text">
-          Your week in one place — top opportunities, articles, papers, videos and podcasts.
-        </div>
-        <span className="nav-brief-cta">Read the brief →</span>
-      </button>
+      {isWeeklyBriefUnlocked() && (
+        <button className="nav-brief-banner" onClick={() => navigate("/weekly")}>
+          <div className="nav-brief-meta">
+            <span className="nav-brief-label">Weekly Intelligence Brief</span>
+            <span className="nav-brief-time">6 min</span>
+          </div>
+          <div className="nav-brief-text">Your week in one place — top articles, blog posts, videos and podcasts.</div>
+          <span className="nav-brief-cta">Read the brief →</span>
+        </button>
+      )}
 
       <div className="nav-section-label">TODAY'S FOCUS</div>
+      <p className="nav-tagline" style={{ marginBottom: 12 }}>
+        {firstName}, this is what you should be learning and the path you should follow to succeed!
+      </p>
 
       <button className="nav-focus-card nav-focus-card--active" onClick={() => navigate("/learn")}>
         <div className="nav-focus-label">LEARN</div>
@@ -73,42 +76,63 @@ export function Today() {
         </div>
       </button>
 
-      <div className="nav-section-label">YOUR SIGNAL</div>
+      <div className="nav-section-label">DAILY INTELLIGENCE BRIEF</div>
+      <p className="nav-tagline" style={{ marginBottom: 12 }}>
+        {firstName}, these are all the articles, podcasts, videos and news you should check out today. They'll take
+        you one step closer to your goal.
+      </p>
 
-      <button className="nav-signal-card" onClick={openReadItem}>
-        <div className="nav-signal-headline">{focus.read.title}</div>
-        <div className="nav-signal-section-label">Why it matters</div>
-        <div className="nav-signal-why">{focus.read.whyItMatters}</div>
-        <div className="nav-signal-edge">
-          <div className="nav-signal-edge-label">Your edge</div>
-          <div className="nav-signal-edge-text">{focus.read.aiSummary}</div>
+      {dailyBrief.length === 0 ? (
+        <div className="nav-signal-card" style={{ cursor: "default" }}>
+          <div className="nav-signal-headline">Your feed is still filling up</div>
+          <div className="nav-signal-why">Check back shortly — Radar curates fresh signals for your interests throughout the day.</div>
         </div>
-        <div className="nav-signal-actions">
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--cyan)" }}>Understand →</span>
-          <span style={{ fontSize: 11.5, color: "var(--text-faint)", fontWeight: 600 }}>{focus.read.subtitle}</span>
-        </div>
-      </button>
+      ) : (
+        dailyBrief.map((item) => (
+          <button key={item.id} className="nav-signal-card" onClick={() => navigate(`/feed/${item.id}`)} style={{ marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
+              <span
+                style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase",
+                  color: layerColor(item.layer), background: layerBg(item.layer), borderRadius: 5, padding: "2px 7px",
+                }}
+              >
+                {layerLabel(item.layer)}
+              </span>
+              <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600 }}>{item.source}</span>
+              <span style={{ fontSize: 11, color: "var(--text-faint)", marginLeft: "auto" }}>{humanize(item.publishedAt)}</span>
+            </div>
+            <div className="nav-signal-headline" style={{ fontSize: 15 }}>{item.signal}</div>
+          </button>
+        ))
+      )}
 
-      <div className="nav-section-label">OPPORTUNITY · FOUND FOR YOU</div>
+      <div className="nav-section-label">OPPORTUNITIES · FOUND FOR YOU</div>
+      <p className="nav-tagline" style={{ marginBottom: 12 }}>
+        {firstName}, these are opportunities I found for you based on what you love. Chase these opportunities and
+        make sure you get them!
+      </p>
 
-      <button className="nav-opp-card" onClick={() => navigate("/opportunities")}>
-        <div className="nav-opp-match-row">
-          <span className="nav-opp-match-num">{focus.apply.matchScorePercent}%</span>
-          <span className="nav-opp-match-label">match</span>
-          {focus.apply.deadlineDays != null && (
-            <span className="nav-opp-deadline" style={{ color: "var(--red)" }}>{focus.apply.deadlineDays} days left</span>
-          )}
+      {opportunities.length === 0 ? (
+        <div className="nav-opp-card" style={{ cursor: "default" }}>
+          <div className="nav-focus-title">Opportunities matched to your profile</div>
+          <div className="opp-org">Radar is still finding opportunities for your interests.</div>
         </div>
-        <div className="nav-focus-title" style={{ marginBottom: 3 }}>{focus.apply.title}</div>
-        <div className="opp-org" style={{ marginBottom: 14 }}>{focus.apply.subtitle}</div>
-        <div className="nav-opp-reasons">
-          <div className="nav-opp-reasons-label">Why Radar matched you</div>
-          <div className="nav-opp-reason">Your goal · {profile.primaryGoal}</div>
-          <div className="nav-opp-reason">Your interests · {profile.interests.slice(0, 2).join(" + ")}</div>
-          <div className="nav-opp-reason">Your profile · {personaLabel(profile.persona)}</div>
-        </div>
-        <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--cyan)" }}>Explore →</span>
-      </button>
+      ) : (
+        opportunities.map((opp) => (
+          <button className="nav-opp-card" key={opp.id} onClick={() => navigate("/opportunities")} style={{ marginBottom: 10 }}>
+            <div className="nav-opp-match-row">
+              <span className="nav-opp-match-num">{opp.matchScorePercent}%</span>
+              <span className="nav-opp-match-label">match</span>
+              {opp.daysUntilDeadline !== 2147483647 && (
+                <span className="nav-opp-deadline" style={{ color: "var(--red)" }}>{opp.daysUntilDeadline} days left</span>
+              )}
+            </div>
+            <div className="nav-focus-title" style={{ marginBottom: 3 }}>{opp.title}</div>
+            <div className="opp-org">{opp.organisation}</div>
+          </button>
+        ))
+      )}
 
       <div className="nav-section-label">YOUR NEXT MOVE</div>
 

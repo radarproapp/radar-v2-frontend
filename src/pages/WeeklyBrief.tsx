@@ -5,18 +5,26 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { useAuth } from "../auth/AuthContext";
 import { ApiError, getWeeklyBrief } from "../lib/api";
+import { isWeeklyBriefUnlocked } from "../lib/schedule";
 
 export function WeeklyBrief() {
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const briefQuery = useQuery({ queryKey: ["weekly-brief"], queryFn: getWeeklyBrief });
+  const unlocked = isWeeklyBriefUnlocked();
+  const briefQuery = useQuery({ queryKey: ["weekly-brief"], queryFn: getWeeklyBrief, enabled: unlocked });
   const brief = briefQuery.data;
 
   const errorMessage = briefQuery.error instanceof ApiError ? briefQuery.error.message : "Failed to load weekly brief.";
 
   return (
     <div className="r-page" style={{ maxWidth: 720 }}>
-      {briefQuery.isLoading ? (
+      {!unlocked ? (
+        <EmptyState icon="📋" title="Your weekly brief unlocks Saturday evening" description="Radar spends the week gathering your best signals, then wraps them up for you every Saturday from 6pm.">
+          <button className="btn btn--primary btn--sm" onClick={() => navigate("/feed")}>
+            Browse the feed
+          </button>
+        </EmptyState>
+      ) : briefQuery.isLoading ? (
         <>
           <LoadingSkeleton variant="card" count={1} />
           <div style={{ height: 16 }} />
@@ -25,7 +33,7 @@ export function WeeklyBrief() {
       ) : briefQuery.isError ? (
         <ErrorState title="Failed to load weekly brief" description={errorMessage} onRetry={() => briefQuery.refetch()} />
       ) : !brief ? (
-        <EmptyState icon="📋" title="No weekly brief yet" description="Your first weekly brief will arrive on Monday. Check back then.">
+        <EmptyState icon="📋" title="No weekly brief yet" description="Check back once Radar has finished gathering this week's signals.">
           <button className="btn btn--primary btn--sm" onClick={() => navigate("/feed")}>
             Browse the feed
           </button>
@@ -53,22 +61,6 @@ export function WeeklyBrief() {
             <div className="weekly-rec-text">{brief.weeklyRecommendation}</div>
           </div>
 
-          {brief.topOpportunities.length > 0 && (
-            <div className="weekly-section">
-              <div className="weekly-section-label">TOP OPPORTUNITIES</div>
-              {brief.topOpportunities.map((opp) => (
-                <button className="weekly-item" key={opp.id} onClick={() => navigate("/opportunities")}>
-                  <div className="weekly-item-meta">
-                    {opp.type} · {opp.daysUntilDeadline} days left · {opp.matchScorePercent}% match
-                  </div>
-                  <div className="weekly-item-title">
-                    {opp.title} — {opp.organisation}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-
           {brief.topArticles.length > 0 && (
             <div className="weekly-section">
               <div className="weekly-section-label">TOP ARTICLES</div>
@@ -76,20 +68,6 @@ export function WeeklyBrief() {
                 <button className="weekly-item" key={item.id} onClick={() => navigate(`/feed/${item.id}`)}>
                   <div className="weekly-item-meta">
                     {item.source} · {item.estimatedReadTime}
-                  </div>
-                  <div className="weekly-item-title">{item.signal}</div>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {brief.topResearchPapers.length > 0 && (
-            <div className="weekly-section">
-              <div className="weekly-section-label">TOP RESEARCH PAPERS</div>
-              {brief.topResearchPapers.map((item) => (
-                <button className="weekly-item" key={item.id} onClick={() => navigate(`/feed/${item.id}`)}>
-                  <div className="weekly-item-meta">
-                    {item.journal} · {new Date(item.publishedAt).getFullYear()}
                   </div>
                   <div className="weekly-item-title">{item.signal}</div>
                 </button>
