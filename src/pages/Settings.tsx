@@ -153,7 +153,8 @@ export function Settings() {
             ["/notebook", "Notebook"],
             ["/saved", "Saved resources"],
             ["/progress", "Growth Tracker"],
-          ] as const).map(([path, label], i) => (
+            ["/metrics", "Quality Metrics"],
+          ] as const).map(([path, label], i, arr) => (
             <button
               key={path}
               style={{
@@ -166,7 +167,7 @@ export function Settings() {
                 background: "none",
                 cursor: "pointer",
                 textAlign: "left",
-                borderBottom: i < 2 ? "1px solid rgba(20,24,31,.06)" : "none",
+                borderBottom: i < arr.length - 1 ? "1px solid rgba(20,24,31,.06)" : "none",
               }}
               onClick={() => navigate(path)}
             >

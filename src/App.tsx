@@ -31,6 +31,7 @@ import { Plans } from "./pages/Plans";
 import { Settings } from "./pages/Settings";
 import { EditProfile } from "./pages/EditProfile";
 import { Notifications } from "./pages/Notifications";
+import { Metrics } from "./pages/Metrics";
 import { NotFound } from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -253,6 +254,14 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <Notifications />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/metrics"
+                element={
+                  <RequireAuth>
+                    <Metrics />
                   </RequireAuth>
                 }
               />

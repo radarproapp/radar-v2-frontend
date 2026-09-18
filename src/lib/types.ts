@@ -184,6 +184,15 @@ export interface NavigatorFocus {
   generatedAt: string;
 }
 
+export interface EventsSummary {
+  eventCounts: Record<string, number>;
+  whyHelpfulRatings: {
+    helpful: number;
+    notHelpful: number;
+    helpfulRatePercent: number | null;
+  };
+}
+
 export type AnalyticsEventType =
   | "Impression"
   | "Open"

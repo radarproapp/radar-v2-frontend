@@ -6,6 +6,7 @@ import type {
   Clip,
   ContentItem,
   ContentType,
+  EventsSummary,
   GrowthRoadmap,
   LibraryDocument,
   MentorQuiz,
@@ -263,6 +264,10 @@ export function logEvent(type: AnalyticsEventType, options: LogEventOptions = {}
     method: "POST",
     body: JSON.stringify({ type, ...options }),
   }).catch(() => {});
+}
+
+export function getEventsSummary(days = 7) {
+  return request<EventsSummary>(`/api/events/summary?days=${days}`);
 }
 
 // ── Roadmap / Learn ──────────────────────────────────────────────────────
