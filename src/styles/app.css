@@ -49,7 +49,6 @@
   --t-fast: 0.15s var(--ease);
   --t:      0.25s var(--ease);
 
-  --nav-h:     56px;
   --page-px:   clamp(1rem, 3.5vw, 2.25rem);
   --content-w: 780px;
 
@@ -84,35 +83,16 @@ a:hover { color: var(--cyan-deep); }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ═══════════════════════════════════════════════
-   TOP NAV
+   APP NAV — icon rail (desktop) + bottom tabs (mobile)
    ═══════════════════════════════════════════════ */
-.r-nav {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  height: var(--nav-h);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding-inline: var(--page-px);
-  background: rgba(255,255,255,0.88);
-  backdrop-filter: blur(14px) saturate(1.4);
-  -webkit-backdrop-filter: blur(14px) saturate(1.4);
-  border-bottom: 1px solid var(--border);
-  flex-wrap: nowrap;
+:root {
+  --rail-w: 76px;
+  --tabbar-h: 62px;
 }
 
-.r-nav__brand {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  flex: none;
-  text-decoration: none;
-}
-.r-nav__mark {
-  width: 28px;
-  height: 28px;
+.r-rail__brand {
+  width: 32px;
+  height: 32px;
   background: var(--navy);
   color: var(--cyan-bright);
   border-radius: 50%;
@@ -120,75 +100,95 @@ a:hover { color: var(--cyan-deep); }
   place-items: center;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   flex: none;
-}
-.r-nav__brand-text {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: -0.01em;
-  color: var(--text);
+  text-decoration: none;
+  margin-bottom: 26px;
 }
 
-/* Desktop nav links */
-.r-nav__links {
+.r-rail {
   display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--rail-w);
+  flex-direction: column;
+  align-items: center;
+  padding-block: 20px 16px;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border-right: 1px solid var(--border);
+  z-index: 50;
+}
+@media (min-width: 860px) {
+  .r-rail { display: flex; }
+}
+
+.r-rail__links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.r-rail__spacer { flex: 1; }
+
+.r-rail__item {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 3px;
-}
-@media (min-width: 920px) {
-  .r-nav__links { display: flex; }
-}
-.r-nav__link {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 13px;
-  border-radius: var(--r-pill);
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-dim);
+  width: 58px;
+  padding: 9px 4px 8px;
+  border-radius: var(--r-md);
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
   transition: color var(--t-fast), background var(--t-fast);
-  border: none;
-  background: none;
-  cursor: pointer;
-  text-decoration: none;
-  white-space: nowrap;
 }
-.r-nav__link:hover { color: var(--text); }
-.r-nav__link.active { color: var(--cyan); background: var(--cyan-light); font-weight: 700; }
+.r-rail__item span { font-size: 10px; font-weight: 600; letter-spacing: -0.01em; }
+.r-rail__item:hover { color: var(--text-dim); background: var(--bg-hover); }
+.r-rail__item.active { color: var(--cyan); background: var(--cyan-light); }
 
-/* Right section */
-.r-nav__right {
+/* Bottom tab bar — mobile */
+.r-tabbar {
   display: flex;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--tabbar-h);
   align-items: center;
-  gap: 9px;
-  flex: none;
+  justify-content: space-around;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 50;
 }
-
-/* Segmented Intelligence/Learn pill */
-.r-nav__section-pills {
+@media (min-width: 860px) {
+  .r-tabbar { display: none; }
+}
+.r-tabbar__item {
   display: flex;
-  background: #f0f2f4;
-  border-radius: var(--r-pill);
-  padding: 3px;
+  flex-direction: column;
+  align-items: center;
   gap: 2px;
-}
-.r-nav__pill {
-  font-size: 11.5px;
-  font-weight: 700;
-  padding: 7px 13px;
-  border-radius: var(--r-pill);
+  flex: 1;
   border: none;
   background: none;
-  color: var(--text-dim);
+  color: var(--text-muted);
   cursor: pointer;
-  transition: background var(--t-fast), color var(--t-fast);
-  white-space: nowrap;
+  padding: 8px 4px;
 }
-.r-nav__pill.active { background: var(--cyan); color: #fff; }
+.r-tabbar__item span { font-size: 10px; font-weight: 600; }
+.r-tabbar__item.active { color: var(--cyan); }
 
-/* Avatar */
+/* Shared avatar control (rail footer + last tab slot) */
 .r-nav__avatar {
   width: 30px;
   height: 30px;
@@ -203,6 +203,44 @@ a:hover { color: var(--cyan-deep); }
   cursor: pointer;
   flex: none;
   border: none;
+}
+
+/* Overflow ("More") + account panels */
+.r-nav-panel {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  min-width: 190px;
+  z-index: 200;
+  overflow: hidden;
+  padding: 6px;
+}
+.r-nav-panel__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: none;
+  background: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  color: var(--text);
+}
+.r-nav-panel__item:hover { background: var(--bg-hover); }
+.r-nav-panel__item.active { color: var(--cyan); background: var(--cyan-light); }
+.r-nav-panel__item.danger { color: #d94f4f; }
+.r-nav-panel__divider { height: 1px; background: rgba(20,24,31,.07); margin: 4px 12px; }
+
+/* Content offset for rail/tabbar */
+.r-app-content { min-height: 100dvh; }
+@media (min-width: 860px) {
+  .r-app-content { margin-left: var(--rail-w); }
+}
+@media (max-width: 859px) {
+  .r-app-content { padding-bottom: var(--tabbar-h); }
 }
 
 /* ═══════════════════════════════════════════════
@@ -1183,20 +1221,12 @@ a:hover { color: var(--cyan-deep); }
 /* ═══════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════ */
-@media (min-width: 920px) {
-  .r-nav__links { display: flex; }
-}
-@media (max-width: 919px) {
-  .r-nav__links { display: none; }
-}
 @media (max-width: 700px) {
-  .r-nav__section-pills { display: none; }
   .r-page { padding-top: 1.25rem; }
   .nav-momentum-stats { gap: 1.25rem; }
   .opp-have-miss { flex-direction: column; }
 }
 @media (max-width: 480px) {
-  .r-nav__brand-text { display: none; }
   .ob-card { padding: clamp(26px, 4vw, 36px); }
 }
 

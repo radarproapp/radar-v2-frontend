@@ -19,6 +19,7 @@ import { LearnHub } from "./pages/LearnHub";
 import { GrowthTracker } from "./pages/GrowthTracker";
 import { ProjectStudio } from "./pages/ProjectStudio";
 import { LearningMentor } from "./pages/LearningMentor";
+import { AskRadar } from "./pages/AskRadar";
 import { Notebook } from "./pages/Notebook";
 import { NoteEditor } from "./pages/NoteEditor";
 import { Opportunities } from "./pages/Opportunities";
@@ -146,6 +147,14 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <ProjectStudio />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/ask"
+                element={
+                  <RequireAuth>
+                    <AskRadar />
                   </RequireAuth>
                 }
               />

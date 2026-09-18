@@ -326,6 +326,15 @@ export function reviewWork(workTitle: string, workContent: string, reviewType: s
   });
 }
 
+// ── Ask Radar ────────────────────────────────────────────────────────────
+
+export function sendAskRadarChat(message: string, history: ChatMessage[]) {
+  return request<ChatMessage>("/api/ask/chat", {
+    method: "POST",
+    body: JSON.stringify({ message, history }),
+  });
+}
+
 // ── Project Studio ───────────────────────────────────────────────────────
 
 export function getProjectTemplates() {
