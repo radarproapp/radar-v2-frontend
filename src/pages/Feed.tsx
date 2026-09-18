@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, getFeed, logEvent, saveFeedItem, unsaveFeedItem } from "../lib/api";
+import { ApiError, dismissFeedItem, getFeed, logEvent, saveFeedItem, unsaveFeedItem } from "../lib/api";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ContentItem, ContentType } from "../lib/types";
@@ -46,6 +46,16 @@ export function Feed() {
         old?.map((i) => (i.id === item.id ? { ...i, isSaved: !nextSaved } : i)),
       );
     }
+  };
+
+  const dismissItem = (item: ContentItem, position: number) => {
+    const queryKey = ["feed", activeFilter] as const;
+    logEvent("NotRelevant", { contentItemId: item.id, position });
+    queryClient.setQueryData<ContentItem[]>(queryKey, (old) => old?.filter((i) => i.id !== item.id));
+    dismissFeedItem(item.id).catch(() => {
+      // couldn't persist the dismissal server-side — restore truth from the API
+      queryClient.invalidateQueries({ queryKey });
+    });
   };
 
   const items = feedQuery.data ?? [];
@@ -146,6 +156,9 @@ export function Feed() {
                 </button>
                 <button className="btn btn--sm" onClick={() => toggleSave(item, position)}>
                   {item.isSaved ? "Saved ✓" : "Save"}
+                </button>
+                <button className="btn btn--text btn--sm" onClick={() => dismissItem(item, position)}>
+                  Not relevant
                 </button>
               </div>
               <div className="feed-actions-right">{item.estimatedReadTime ?? item.estimatedWatchTime ?? ""}</div>

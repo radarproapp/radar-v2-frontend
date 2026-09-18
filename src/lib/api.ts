@@ -152,6 +152,10 @@ export function unsaveFeedItem(id: string) {
   return request<void>(`/api/feed/${id}/save`, { method: "DELETE" });
 }
 
+export function dismissFeedItem(id: string) {
+  return request<void>(`/api/feed/${id}/dismiss`, { method: "POST" });
+}
+
 export function getSavedItems() {
   return request<ContentItem[]>("/api/feed/saved");
 }
