@@ -73,6 +73,49 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return body as T;
 }
 
+// Shared by Ask Radar and Mentor chat: POSTs { message, history } to an SSE endpoint and calls
+// onChunk with each text delta as it arrives. Uses fetch + a stream reader rather than
+// EventSource, since EventSource can't send a POST body.
+async function streamChat(path: string, message: string, history: ChatMessage[], onChunk: (text: string) => void, signal?: AbortSignal): Promise<void> {
+  const token = getToken();
+  const headers = new Headers({ "Content-Type": "application/json" });
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ message, history }),
+    signal,
+  });
+
+  if (!res.ok || !res.body) throw new ApiError(res.status, "Failed to start chat stream.");
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) return;
+    buffer += decoder.decode(value, { stream: true });
+
+    let sepIndex: number;
+    while ((sepIndex = buffer.indexOf("\n\n")) !== -1) {
+      const line = buffer.slice(0, sepIndex).trim();
+      buffer = buffer.slice(sepIndex + 2);
+      if (!line.startsWith("data: ")) continue;
+
+      const data = line.slice("data: ".length);
+      if (data === "[DONE]") return;
+      try {
+        onChunk((JSON.parse(data) as { content: string }).content);
+      } catch {
+        // ignore a malformed chunk rather than aborting the whole stream
+      }
+    }
+  }
+}
+
 // ── Auth ─────────────────────────────────────────────────────────────────
 
 export interface AuthResponse {
@@ -316,11 +359,8 @@ export function getRoadmapProgress(roadmapId: string) {
 
 // ── Mentor ───────────────────────────────────────────────────────────────
 
-export function sendMentorChat(message: string, history: ChatMessage[]) {
-  return request<ChatMessage>("/api/mentor/chat", {
-    method: "POST",
-    body: JSON.stringify({ message, history }),
-  });
+export function streamMentorChat(message: string, history: ChatMessage[], onChunk: (text: string) => void, signal?: AbortSignal) {
+  return streamChat("/api/mentor/chat/stream", message, history, onChunk, signal);
 }
 
 export function generateQuiz(topic: string, questionCount = 5) {
@@ -357,11 +397,17 @@ export function reviewWork(workTitle: string, workContent: string, reviewType: s
 
 // ── Ask Radar ────────────────────────────────────────────────────────────
 
+// One-shot completion (e.g. Project Studio's "Ask Radar for tips") — just wants a finished
+// string, not a typing effect, so it stays on the plain request/response endpoint.
 export function sendAskRadarChat(message: string, history: ChatMessage[]) {
   return request<ChatMessage>("/api/ask/chat", {
     method: "POST",
     body: JSON.stringify({ message, history }),
   });
+}
+
+export function streamAskRadarChat(message: string, history: ChatMessage[], onChunk: (text: string) => void, signal?: AbortSignal) {
+  return streamChat("/api/ask/chat/stream", message, history, onChunk, signal);
 }
 
 // ── Project Studio ───────────────────────────────────────────────────────

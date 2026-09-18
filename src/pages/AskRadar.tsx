@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { sendAskRadarChat } from "../lib/api";
+import { streamAskRadarChat } from "../lib/api";
 import type { ChatMessage } from "../lib/types";
 
 const SUGGESTIONS = [
@@ -12,20 +12,34 @@ const SUGGESTIONS = [
 export function AskRadar() {
   const [inputText, setInputText] = useState("");
   const [thinking, setThinking] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const send = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || busy) return;
     const history = [...messages, { id: crypto.randomUUID(), role: "user" as const, content: trimmed, timestamp: new Date().toISOString(), suggestedResources: [] }];
     setMessages(history);
     setInputText("");
     setThinking(true);
+    setBusy(true);
+
+    const assistantId = crypto.randomUUID();
+    let started = false;
+
     try {
-      const response = await sendAskRadarChat(trimmed, history);
-      setMessages([...history, response]);
+      await streamAskRadarChat(trimmed, history, (chunk) => {
+        if (!started) {
+          started = true;
+          setThinking(false);
+          setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: chunk, timestamp: new Date().toISOString(), suggestedResources: [] }]);
+        } else {
+          setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + chunk } : m)));
+        }
+      });
     } finally {
       setThinking(false);
+      setBusy(false);
     }
   };
 
@@ -76,7 +90,7 @@ export function AskRadar() {
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={handleKey}
         />
-        <button className="ask-send-btn" onClick={() => send(inputText)} disabled={thinking || !inputText.trim()}>
+        <button className="ask-send-btn" onClick={() => send(inputText)} disabled={busy || !inputText.trim()}>
           →
         </button>
       </div>

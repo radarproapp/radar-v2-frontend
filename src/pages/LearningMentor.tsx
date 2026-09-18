@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import { getToday, createStudyPlan, generateQuiz, reviewWork, sendMentorChat, submitQuizAnswer } from "../lib/api";
+import { getToday, createStudyPlan, generateQuiz, reviewWork, streamMentorChat, submitQuizAnswer } from "../lib/api";
 import type { ChatMessage, MentorQuiz, MentorStudyPlan, MentorWorkReview } from "../lib/types";
 
 const MODES: { id: string; label: string }[] = [
@@ -40,6 +40,7 @@ export function LearningMentor() {
   // Chat
   const [chatInput, setChatInput] = useState("");
   const [chatThinking, setChatThinking] = useState(false);
+  const [chatBusy, setChatBusy] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   // Quiz
@@ -73,16 +74,29 @@ export function LearningMentor() {
 
   const sendChat = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || chatBusy) return;
     const history = [...chatMessages, { id: crypto.randomUUID(), role: "user" as const, content: trimmed, timestamp: new Date().toISOString(), suggestedResources: [] }];
     setChatMessages(history);
     setChatInput("");
     setChatThinking(true);
+    setChatBusy(true);
+
+    const assistantId = crypto.randomUUID();
+    let started = false;
+
     try {
-      const response = await sendMentorChat(trimmed, history);
-      setChatMessages([...history, response]);
+      await streamMentorChat(trimmed, history, (chunk) => {
+        if (!started) {
+          started = true;
+          setChatThinking(false);
+          setChatMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: chunk, timestamp: new Date().toISOString(), suggestedResources: [] }]);
+        } else {
+          setChatMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + chunk } : m)));
+        }
+      });
     } finally {
       setChatThinking(false);
+      setChatBusy(false);
     }
   };
 
@@ -181,7 +195,7 @@ export function LearningMentor() {
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={handleChatKey}
             />
-            <button className="ask-send-btn" onClick={() => sendChat(chatInput)} disabled={chatThinking || !chatInput.trim()}>
+            <button className="ask-send-btn" onClick={() => sendChat(chatInput)} disabled={chatBusy || !chatInput.trim()}>
               →
             </button>
           </div>
