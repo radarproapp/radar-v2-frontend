@@ -8,9 +8,9 @@ import { Landing } from "./pages/Landing";
 import { Product } from "./pages/Product";
 import { HowItWorks } from "./pages/HowItWorks";
 import { Institutions } from "./pages/Institutions";
+import { HomeGate } from "./pages/HomeGate";
 import { Login } from "./pages/Login";
 import { Onboarding } from "./pages/Onboarding";
-import { Today } from "./pages/Today";
 import { Feed } from "./pages/Feed";
 import { FeedDetail } from "./pages/FeedDetail";
 import { Saved } from "./pages/Saved";
@@ -50,6 +50,7 @@ export default function App() {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            <Route path="/" element={<HomeGate />} />
             <Route path="/login" element={<Login />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/showcase/:projectId" element={<ProjectShowcase />} />
@@ -63,14 +64,6 @@ export default function App() {
             </Route>
 
             <Route element={<MainLayout />}>
-              <Route
-                path="/"
-                element={
-                  <RequireAuth>
-                    <Today />
-                  </RequireAuth>
-                }
-              />
               <Route
                 path="/feed"
                 element={

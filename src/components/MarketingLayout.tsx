@@ -1,6 +1,7 @@
+import type { ReactNode } from "react";
 import { Link, Outlet } from "react-router-dom";
 
-export function MarketingLayout() {
+export function MarketingLayout({ children }: { children?: ReactNode } = {}) {
   return (
     <div style={{ minHeight: "100dvh", overflowX: "hidden", display: "flex", flexDirection: "column" }}>
       <nav className="mkt-nav">
@@ -25,7 +26,7 @@ export function MarketingLayout() {
       </nav>
 
       <main style={{ flex: 1 }}>
-        <Outlet />
+        {children ?? <Outlet />}
       </main>
 
       <footer className="mkt-footer">

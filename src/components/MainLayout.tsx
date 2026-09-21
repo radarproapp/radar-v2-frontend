@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { IconAsk, IconFeed, IconLearn, IconMore, IconSaved, IconToday } from "./NavIcons";
@@ -30,7 +30,7 @@ function isMoreActive(pathname: string): boolean {
 
 type OpenPanel = "more" | "account" | null;
 
-export function MainLayout() {
+export function MainLayout({ children }: { children?: ReactNode } = {}) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { profile, signOut } = useAuth();
@@ -174,7 +174,7 @@ export function MainLayout() {
       )}
 
       <div className={showNav ? "r-app-content" : undefined}>
-        <Outlet />
+        {children ?? <Outlet />}
       </div>
 
       {openPanel && <div style={{ position: "fixed", inset: 0, zIndex: 199 }} onClick={() => setOpenPanel(null)} />}
