@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { RequireAuth } from "./auth/RequireAuth";
+import { RequireAdmin } from "./auth/RequireAdmin";
 import { MainLayout } from "./components/MainLayout";
 import { MarketingLayout } from "./components/MarketingLayout";
 import { Landing } from "./pages/Landing";
@@ -61,17 +62,17 @@ export default function App() {
             <Route
               path="/admin"
               element={
-                <RequireAuth>
+                <RequireAdmin>
                   <AdminDashboard />
-                </RequireAuth>
+                </RequireAdmin>
               }
             />
             <Route
               path="/admin/:Page"
               element={
-                <RequireAuth>
+                <RequireAdmin>
                   <AdminDashboard />
-                </RequireAuth>
+                </RequireAdmin>
               }
             />
 

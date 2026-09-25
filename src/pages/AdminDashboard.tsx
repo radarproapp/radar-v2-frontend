@@ -1,5 +1,7 @@
 import { useState, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
+import { getAdminSummary, type AdminSummary } from "../lib/api";
 
 type AdminSection = "overview" | "queue" | "sources" | "quality" | "users" | "institutions" | "growth" | "moderation" | "authoring" | "team";
 
@@ -39,6 +41,7 @@ export function AdminDashboard() {
   const section: AdminSection = requested in pageMeta ? requested : "overview";
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const meta = pageMeta[section];
+  const summaryQuery = useQuery({ queryKey: ["admin-summary"], queryFn: getAdminSummary });
 
   const go = (next: AdminSection) => {
     setSidebarOpen(false);
@@ -64,7 +67,7 @@ export function AdminDashboard() {
       </aside>
       <div className="r-admin-main">
         <header className="admin-header"><button className="admin-header__burger" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button><div className="admin-header__title"><div>{meta.title}</div><div className="admin-header__sub">{meta.sub}</div></div><input className="admin-header__search" placeholder="Search users, sources, briefs…" /><div className="admin-header__avatar">R</div></header>
-        <main className="r-admin-content">{renderSection(section)}</main>
+        <main className="r-admin-content">{renderSection(section, summaryQuery.data)}</main>
       </div>
     </div>
   );
@@ -76,8 +79,8 @@ function Kpis({ values }: { values: [string, string, string?][] }) {
 
 function Banner({ label, children }: { label: string; children: ReactNode }) { return <div className="admin-banner"><div className="admin-banner__label">{label}</div><div className="admin-banner__title">{children}</div></div>; }
 
-function renderSection(section: AdminSection) {
-  if (section === "overview") return <Overview />;
+function renderSection(section: AdminSection, summary?: AdminSummary) {
+  if (section === "overview") return <Overview summary={summary} />;
   if (section === "queue") return <Queue />;
   if (section === "sources") return <Sources />;
   if (section === "quality") return <Quality />;
@@ -89,8 +92,8 @@ function renderSection(section: AdminSection) {
   return <Team />;
 }
 
-function Overview() {
-  return <div className="r-admin-page"><Banner label="What needs you today">12 briefs awaiting review, 3 quality flags need attention</Banner><Kpis values={[["Published today", "24", "+6 vs yesterday"], ["Active users", "3,847", "+12% this week"], ["Avg confidence", "91.3%", "+0.4%"], ["Open flags", "3", "+2 since Monday"]]} /><div className="admin-split"><div className="admin-split__left"><div className="admin-card"><div className="admin-card__header"><div className="admin-card__title">Needs a decision</div><span className="admin-card__meta">Oldest first</span></div>{["OpenAI releases new reasoning framework", "World Bank Africa economic outlook 2026", "Conflicting sources on fintech regulation", "MIT OCW new ML course announcement", "NVIDIA Q3 earnings — AI infrastructure spend"].map((item, i) => <div className="admin-action-row" key={item}><span className={`admin-tag ${i === 2 ? "admin-tag--flag" : i === 4 ? "admin-tag--review" : "admin-tag--pending"}`}>{i === 2 ? "Flag" : i === 4 ? "Edit" : "Review"}</span><span className="admin-action-row__label">{item}</span><span className="admin-action-row__age">{i * 2 + 2}h ago</span></div>)}</div><Pipeline /></div><div className="admin-split__right"><Health /><div className="admin-insight-card"><div className="admin-insight-card__label">Worth knowing</div><p>Usage spikes 40 minutes before university lectures start. Scheduling briefs for 7:30 AM WAT catches the morning peak.</p></div></div></div></div>;
+function Overview({ summary }: { summary?: AdminSummary }) {
+  return <div className="r-admin-page"><Banner label="What needs you today">{summary ? `${summary.openReports} quality flags need attention` : "Loading admin summary…"}</Banner><Kpis values={[["Published content", String(summary?.publishedContent ?? "—")], ["Total users", String(summary?.users ?? "—")], ["Open reports", String(summary?.openReports ?? "—")], ["Admin role", summary?.role ?? "—"]]} /><div className="admin-split"><div className="admin-split__left"><div className="admin-card"><div className="admin-card__header"><div className="admin-card__title">Needs a decision</div><span className="admin-card__meta">Oldest first</span></div>{["OpenAI releases new reasoning framework", "World Bank Africa economic outlook 2026", "Conflicting sources on fintech regulation", "MIT OCW new ML course announcement", "NVIDIA Q3 earnings — AI infrastructure spend"].map((item, i) => <div className="admin-action-row" key={item}><span className={`admin-tag ${i === 2 ? "admin-tag--flag" : i === 4 ? "admin-tag--review" : "admin-tag--pending"}`}>{i === 2 ? "Flag" : i === 4 ? "Edit" : "Review"}</span><span className="admin-action-row__label">{item}</span><span className="admin-action-row__age">{i * 2 + 2}h ago</span></div>)}</div><Pipeline /></div><div className="admin-split__right"><Health /><div className="admin-insight-card"><div className="admin-insight-card__label">Worth knowing</div><p>Usage spikes 40 minutes before university lectures start. Scheduling briefs for 7:30 AM WAT catches the morning peak.</p></div></div></div></div>;
 }
 
 function Pipeline() { const bars = [[40, 8], [55, 12], [48, 6], [62, 15], [45, 10], [20, 4], [10, 2]]; return <div className="admin-card"><div className="admin-card__title" style={{ marginBottom: 13 }}>This week&apos;s pipeline</div><div className="admin-pipeline-chart">{bars.map(([pub, rej], i) => <div className="admin-pipeline-chart__col" key={i}><div className="admin-pipeline-chart__bars"><div className="admin-pipeline-chart__pub" style={{ height: pub }} /><div className="admin-pipeline-chart__rej" style={{ height: rej }} /></div><div className="admin-pipeline-chart__day">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][i]}</div></div>)}</div><div className="admin-pipeline-legend"><span><span className="admin-pipeline-legend__dot" style={{ background: "#008c93" }} />Published</span><span><span className="admin-pipeline-legend__dot" style={{ background: "#e7f5f4" }} />Rejected</span></div></div>; }

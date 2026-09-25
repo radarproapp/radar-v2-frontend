@@ -99,6 +99,7 @@ export interface UserProfile {
   id: string;
   name: string;
   email: string;
+  role: "User" | "PlatformAdmin" | "SuperAdmin";
   persona: PersonaType;
   primaryGoal: string;
   interests: string[];

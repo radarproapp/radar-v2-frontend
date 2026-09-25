@@ -517,3 +517,16 @@ export function getComparison(id: string) {
 export function getPlans() {
   return request<SubscriptionPlan[]>("/api/plans");
 }
+
+// ── Admin ─────────────────────────────────────────────────────────────────
+
+export interface AdminSummary {
+  users: number;
+  publishedContent: number;
+  openReports: number;
+  role: "PlatformAdmin" | "SuperAdmin";
+}
+
+export function getAdminSummary() {
+  return request<AdminSummary>("/api/admin/summary");
+}
