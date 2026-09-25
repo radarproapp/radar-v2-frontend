@@ -38,6 +38,8 @@ import { EditProfile } from "./pages/EditProfile";
 import { Notifications } from "./pages/Notifications";
 import { Metrics } from "./pages/Metrics";
 import { SourceQuality } from "./pages/SourceQuality";
+import { EntryScreens } from "./pages/EntryScreens";
+import { AdminDashboard } from "./pages/AdminDashboard";
 import { NotFound } from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -53,7 +55,25 @@ export default function App() {
             <Route path="/" element={<HomeGate />} />
             <Route path="/login" element={<Login />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/entry" element={<EntryScreens />} />
             <Route path="/showcase/:projectId" element={<ProjectShowcase />} />
+
+            <Route
+              path="/admin"
+              element={
+                <RequireAuth>
+                  <AdminDashboard />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/admin/:Page"
+              element={
+                <RequireAuth>
+                  <AdminDashboard />
+                </RequireAuth>
+              }
+            />
 
             <Route element={<MarketingLayout />}>
               <Route path="/landing" element={<Landing />} />
