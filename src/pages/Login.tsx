@@ -106,7 +106,7 @@ export function Login() {
 
       <div className="ob-photo">
         <img
-          src="https://images.unsplash.com/photo-1758874383904-c3c409aeb32d?fm=jpg&q=80&w=1200&auto=format&fit=crop"
+          src="/images/marketing/welcome.jpg"
           alt=""
         />
         <div className="ob-photo-overlay" />

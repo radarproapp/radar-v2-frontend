@@ -102,7 +102,7 @@ export function SourcePage() {
             </div>
           )}
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 20 }}>
+          <div className="source-stats" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 20 }}>
             <div style={{ textAlign: "center", padding: "15px 8px", borderRadius: 13, background: "#fff", border: "1px solid rgba(20,24,31,.1)" }}>
               <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.3rem", color: "var(--cyan-deep)", lineHeight: 1, marginBottom: 5 }}>
                 {current.itemsInRadar}

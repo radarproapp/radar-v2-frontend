@@ -63,15 +63,15 @@ function personaLabel(p: PersonaType | null): string {
 }
 
 const SIDE_IMAGE: Record<number, string> = {
-  0: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=85",
-  1: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1200&q=85",
-  2: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1200&q=85",
-  3: "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=1200&q=85",
-  4: "https://images.unsplash.com/photo-1590103514966-5e2a11c13e21?auto=format&fit=crop&w=1200&q=85",
-  5: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=85",
-  6: "https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&w=1200&q=85",
-  7: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=85",
-  8: "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1200&q=85",
+  0: "/images/marketing/welcome.jpg",
+  1: "/images/marketing/account.jpg",
+  2: "/images/marketing/persona.jpg",
+  3: "/images/marketing/region.jpg",
+  4: "/images/marketing/goal.jpg",
+  5: "/images/marketing/interests.jpg",
+  6: "/images/marketing/intelligence.jpg",
+  7: "/images/marketing/schedule.jpg",
+  8: "/images/marketing/complete.jpg",
 };
 const SIDE_IMAGE_DEFAULT = SIDE_IMAGE[0];
 
@@ -96,15 +96,15 @@ const SIDE_CAPTION: Record<number, string> = {
   8: "Your personal intelligence system is ready to begin.",
 };
 const SIDE_ALT: Record<number, string> = {
-  0: "Person learning at a laptop",
-  1: "Colleagues collaborating around a table",
-  2: "Professional portrait",
-  3: "Map and travel planning materials",
-  4: "Person planning on a whiteboard",
-  5: "Team brainstorming together",
+  0: "African woman portrait",
+  1: "African woman portrait",
+  2: "African woman portrait",
+  3: "African Union headquarters in Addis Ababa",
+  4: "African man portrait",
+  5: "African woman portrait",
   6: "Notebook and reading materials on a desk",
   7: "Organised desk ready for the day",
-  8: "Sunlight over a landscape",
+  8: "Maasai man in Kenya",
 };
 
 export function Onboarding() {

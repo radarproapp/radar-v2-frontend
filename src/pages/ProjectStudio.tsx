@@ -67,7 +67,10 @@ export function ProjectStudio() {
   return (
     <div className="r-page" style={{ maxWidth: 780 }}>
       <div className="r-page-head">
-        <h1 className="r-page-title">Project Studio</h1>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <h1 className="r-page-title">Project Studio</h1>
+          <button className="btn btn--primary" onClick={() => document.getElementById("project-templates")?.scrollIntoView({ behavior: "smooth" })}>Start New Project</button>
+        </div>
         <p className="r-page-sub">Practical projects that turn what you've learned into something you can show.</p>
       </div>
 
@@ -86,7 +89,7 @@ export function ProjectStudio() {
         <>
           {userProjects.length > 0 ? (
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 10 }}>
+           <div id="project-templates" style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 10 }}>
                 YOUR PROJECTS
               </div>
               {userProjects.map((project) => (
@@ -167,7 +170,7 @@ export function ProjectStudio() {
                   ))}
                 </div>
                 <button className="btn btn--primary btn--sm" onClick={() => handleStart(template.id)}>
-                  Start project
+                   Start project demonstration
                 </button>
               </div>
             ))}

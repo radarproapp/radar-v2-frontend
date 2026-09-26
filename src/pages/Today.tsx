@@ -44,8 +44,9 @@ export function Today() {
     <div className="r-page">
       <div className="nav-greeting">
         <div className="nav-date">{dateLabel}</div>
-        <h1 className="nav-good-morning">Good {timeOfDay()}, {firstName}.</h1>
-        <div className="nav-tagline">Here's what matters today.</div>
+        <h1 className="nav-good-morning">Good {timeOfDay()}, {firstName}</h1>
+        <div className="nav-tagline">Here are the things worth your attention today,</div>
+        <div className="nav-tagline">These stories, conversations and ideas are relevant to what you care about and will help you move closer to your goals.</div>
       </div>
 
       {isWeeklyBriefUnlocked() && (
@@ -59,24 +60,7 @@ export function Today() {
         </button>
       )}
 
-      <div className="nav-section-label">TODAY'S FOCUS</div>
-      <p className="nav-tagline" style={{ marginBottom: 12 }}>
-        {firstName}, this is what you should be learning and the path you should follow to succeed!
-      </p>
-
-      <button className="nav-focus-card nav-focus-card--active" onClick={() => navigate("/learn")}>
-        <div className="nav-focus-label">LEARN</div>
-        <div className="nav-focus-title">{focus.learn.title}</div>
-        <div className="nav-focus-sub">{focus.learn.subtitle}</div>
-        <div className="nav-focus-meta">
-          <span className="btn btn--primary btn--sm">Start →</span>
-          {focus.learn.estimatedTime && (
-            <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{focus.learn.estimatedTime} today</span>
-          )}
-        </div>
-      </button>
-
-      <div className="nav-section-label">DAILY INTELLIGENCE BRIEF</div>
+       <div className="nav-section-label">DAILY INTELLIGENCE BRIEF</div>
       <p className="nav-tagline" style={{ marginBottom: 12 }}>
         {firstName}, these are all the articles, podcasts, videos and news you should check out today. They'll take
         you one step closer to your goal.
@@ -105,9 +89,26 @@ export function Today() {
             <div className="nav-signal-headline" style={{ fontSize: 15 }}>{item.signal}</div>
           </button>
         ))
-      )}
+       )}
 
-      <div className="nav-section-label">OPPORTUNITIES · FOUND FOR YOU</div>
+       <div className="nav-section-label">TODAY'S FOCUS</div>
+       <p className="nav-tagline" style={{ marginBottom: 12 }}>
+         {firstName}, this is what you should be learning and the path you should follow to succeed!
+       </p>
+
+       <button className="nav-focus-card nav-focus-card--active" onClick={() => navigate("/learn")}>
+         <div className="nav-focus-label">TODAY'S FOCUS</div>
+         <div className="nav-focus-title">{focus.learn.title}</div>
+         <div className="nav-focus-sub">{focus.learn.subtitle}</div>
+         <div className="nav-focus-meta">
+           <span className="btn btn--primary btn--sm">Start →</span>
+           {focus.learn.estimatedTime && (
+             <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{focus.learn.estimatedTime} today</span>
+           )}
+         </div>
+       </button>
+
+       <div className="nav-section-label">OPPORTUNITIES · FOUND FOR YOU</div>
       <p className="nav-tagline" style={{ marginBottom: 12 }}>
         {firstName}, these are opportunities I found for you based on what you love. Chase these opportunities and
         make sure you get them!

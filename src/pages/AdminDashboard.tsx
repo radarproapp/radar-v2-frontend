@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
-import { getAdminSummary, type AdminSummary } from "../lib/api";
+import { getAdminQueue, getAdminReports, getAdminSources, getAdminSummary, getAdminUsers, resolveAdminReport, type AdminReport, type AdminSummary } from "../lib/api";
 
 type AdminSection = "overview" | "queue" | "sources" | "quality" | "users" | "institutions" | "growth" | "moderation" | "authoring" | "team";
 
@@ -81,15 +81,88 @@ function Banner({ label, children }: { label: string; children: ReactNode }) { r
 
 function renderSection(section: AdminSection, summary?: AdminSummary) {
   if (section === "overview") return <Overview summary={summary} />;
-  if (section === "queue") return <Queue />;
-  if (section === "sources") return <Sources />;
+  if (section === "queue") return <LiveQueue />;
+  if (section === "sources") return <LiveSources />;
   if (section === "quality") return <Quality />;
-  if (section === "users") return <Users />;
+  if (section === "users") return <LiveUsers />;
   if (section === "institutions") return <Institutions />;
   if (section === "growth") return <Growth />;
-  if (section === "moderation") return <Moderation />;
+  if (section === "moderation") return <LiveModeration />;
   if (section === "authoring") return <Authoring />;
   return <Team />;
+}
+
+// Kept as visual fallbacks for environments without the admin API.
+void Queue;
+void Sources;
+void Users;
+void Moderation;
+
+function LiveQueue() {
+  const queueQuery = useQuery({ queryKey: ["admin", "queue"], queryFn: getAdminQueue });
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const items = queueQuery.data ?? [];
+  const selected = items.find((item) => item.id === selectedId) ?? items[0];
+
+  return <div className="r-admin-page">
+    <div className="admin-card admin-queue-banner"><div><div style={{ fontSize: 13, fontWeight: 700 }}>Every brief is gated — nothing publishes without you.</div><div style={{ fontSize: 11.5, color: "#8a91a0" }}>{queueQuery.isLoading ? "Loading queue…" : `${items.length} recent items available for review`}</div></div><div className="admin-queue-filters"><span className="admin-chip active">All</span><span className="admin-chip">Articles</span><span className="admin-chip">Papers</span><span className="admin-chip">Videos</span></div></div>
+    {queueQuery.isError ? <div className="admin-card">Could not load the review queue.</div> : <div className="admin-split"><div className="admin-split__left">{items.map((item) => <button className="admin-queue-item" key={item.id} onClick={() => setSelectedId(item.id)} style={{ textAlign: "left", width: "100%", border: selected?.id === item.id ? "1.5px solid #008c93" : undefined }}><div className="admin-queue-item__meta"><span className="admin-tag admin-tag--pending">Tier {item.credibilityTier || 3}</span><span className="admin-queue-item__source">{item.source || "Unknown source"} · {new Date(item.publishedAt).toLocaleDateString()}</span></div><div className="admin-queue-item__title">{item.title || item.signal}</div><div className="admin-queue-item__conf"><div className="admin-queue-item__conf-bar"><div style={{ width: `${item.isEnriched ? 92 : 68}%`, background: item.isEnriched ? "#008c93" : "#b7791a" }} /></div><span>{item.isEnriched ? "Enriched" : "Needs enrichment"}</span></div></button>)}</div><div className="admin-split__right">{selected ? <div className="admin-card admin-queue-detail"><div className="admin-queue-detail__label">Reviewing</div><div className="admin-queue-detail__title">{selected.title || selected.signal}</div><div className="admin-queue-detail__thesis"><div className="admin-queue-detail__thesis-label">Signal</div><p>{selected.signal || "No signal summary available."}</p></div><div className="admin-queue-detail__actions"><button className="btn btn--accent">Approve & publish</button><button className="btn btn--subtle">Edit</button><button className="btn btn--danger-outline">Reject</button></div></div> : <div className="admin-card">No content items available.</div>}</div></div>}
+  </div>;
+}
+
+function LiveSources() {
+  const query = useQuery({ queryKey: ["admin", "sources"], queryFn: getAdminSources });
+  const sources = query.data ?? [];
+  return <div className="r-admin-page"><Kpis values={[["Active sources", String(sources.filter((source) => source.active).length)], ["Items in Radar", String(sources.reduce((sum, source) => sum + source.itemsInRadar, 0))], ["Needs attention", query.isError ? "—" : "0"]]} /><div className="admin-card"><div className="admin-card__header"><div className="admin-card__title">Source register</div><button className="btn btn--accent">+ Add source</button></div>{query.isLoading ? <div className="admin-empty-state">Loading sources…</div> : sources.map((source) => <div className="admin-table-row" key={source.id}><div style={{ flex: 2.4, minWidth: 0 }}><div style={{ fontSize: 12.5, fontWeight: 700 }}>{source.name}</div><div style={{ fontSize: 11, color: "#8a91a0" }}>{source.domain} · {source.itemsInRadar} items</div></div><div style={{ flex: 1 }}><span className="admin-tag admin-tag--tier1">{source.type || "Source"}</span></div><div style={{ flex: 1, fontSize: 11.5, color: "#535c6b" }}>{source.publishFrequency || "—"}</div><div style={{ flex: 1, textAlign: "right", color: source.active ? "#008c93" : "#c0392b", fontSize: 11, fontWeight: 700 }}>{source.active ? "Active" : "Error"}</div></div>)}</div></div>;
+}
+
+/* function LiveUsers() {
+  const query = useQuery({ queryKey: ["admin", "users"], queryFn: getAdminUsers });
+  const [search, setSearch] = useState("");
+  const users = (query.data ?? []).filter((user) => `${user.name} ${user.email} ${user.persona} ${user.region}`.toLowerCase().includes(search.toLowerCase()));
+  const selected = users[0];
+  return <div className="r-admin-page"><Kpis values={[["Users", String(query.data?.length ?? "—")], ["Onboarding done", query.data ? `${Math.round(query.data.filter((user) => user.onboardingComplete).length / Math.max(query.data.length, 1) * 100)}%` : "—"], ["Avg roadmap", query.data ? `${Math.round(query.data.reduce((sum, user) => sum + user.roadmapProgressPercent, 0) / Math.max(query.data.length, 1))}%` : "—"]]} /><div className="admin-split"><div className="admin-split__left"><div className="admin-card" style={{ padding: 0, overflow: "hidden" }}><div style={{ padding: "14px 18px" }}><input className="admin-search" placeholder="Search by name, email or region…" value={search} onChange={(event) => setSearch(event.target.value)} /></div>{users.map((user) => <button className="admin-user-row" key={user.id} onClick={() => undefined}><div className="admin-user-row__avatar">{user.name?.[0] ?? "U"}</div><div style={{ flex: 1, minWidth: 0, textAlign: "left" }}><div style={{ fontSize: 12.5, fontWeight: 700 }}>{user.name || "Unnamed user"}</div><div style={{ fontSize: 11, color: "#8a91a0" }}>{user.persona} · {user.region || "No location"}</div></div><span className={`admin-tag admin-tag--${user.onboardingComplete ? "tier1" : "pending"}`}>{user.onboardingComplete ? "Active" : "Onboarding"}</span></button>)}</div></div><div className="admin-split__right">{selected ? <div className="admin-card"><div style={{ display: "flex", gap: 12, marginBottom: 16 }}><div className="admin-user-detail__avatar">{selected.name?.[0] ?? "U"}</div><div><strong>{selected.name || "Unnamed user"}</strong><div style={{ fontSize: 11.5, color: "#8a91a0" }}>{selected.email}</div></div></div>{[["Persona", selected.persona], ["Region", selected.region || "—"], ["Goal", selected.goal || "—"], ["Roadmap", `${selected.roadmapProgressPercent}% complete"]].map(([label, value]) => <div className="admin-user-detail__row" key={label}><span>{label}</span><span>{value}</span></div>)}</div> : <div className="admin-card">No users match your search.</div>}</div></div></div>;
+}
+
+} */
+
+function LiveUsers() {
+  const query = useQuery({ queryKey: ["admin", "users"], queryFn: getAdminUsers });
+  const [search, setSearch] = useState("");
+  const users = (query.data ?? []).filter((user) => `${user.name} ${user.email} ${user.persona} ${user.region}`.toLowerCase().includes(search.toLowerCase()));
+  const selected = users[0];
+
+  return (
+    <div className="r-admin-page">
+      <Kpis values={[["Users", String(query.data?.length ?? "—")], ["Onboarding done", query.data ? `${Math.round(query.data.filter((user) => user.onboardingComplete).length / Math.max(query.data.length, 1) * 100)}%` : "—"], ["Avg roadmap", query.data ? `${Math.round(query.data.reduce((sum, user) => sum + user.roadmapProgressPercent, 0) / Math.max(query.data.length, 1))}%` : "—"]]} />
+      <div className="admin-split">
+        <div className="admin-split__left">
+          <div className="admin-card" style={{ padding: 0, overflow: "hidden" }}>
+            <div style={{ padding: "14px 18px" }}><input className="admin-search" placeholder="Search by name, email or region…" value={search} onChange={(event) => setSearch(event.target.value)} /></div>
+            {users.map((user) => (
+              <button className="admin-user-row" key={user.id} type="button">
+                <div className="admin-user-row__avatar">{user.name?.[0] ?? "U"}</div>
+                <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}><div style={{ fontSize: 12.5, fontWeight: 700 }}>{user.name || "Unnamed user"}</div><div style={{ fontSize: 11, color: "#8a91a0" }}>{user.persona} · {user.region || "No location"}</div></div>
+                <span className={`admin-tag admin-tag--${user.onboardingComplete ? "tier1" : "pending"}`}>{user.onboardingComplete ? "Active" : "Onboarding"}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="admin-split__right">
+          {selected ? <div className="admin-card"><div style={{ display: "flex", gap: 12, marginBottom: 16 }}><div className="admin-user-detail__avatar">{selected.name?.[0] ?? "U"}</div><div><strong>{selected.name || "Unnamed user"}</strong><div style={{ fontSize: 11.5, color: "#8a91a0" }}>{selected.email}</div></div></div>{[["Persona", selected.persona], ["Region", selected.region || "—"], ["Goal", selected.goal || "—"], ["Roadmap", `${selected.roadmapProgressPercent}% complete`]].map(([label, value]) => <div className="admin-user-detail__row" key={label}><span>{label}</span><span>{value}</span></div>)}</div> : <div className="admin-card">No users match your search.</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LiveModeration() {
+  const queryClient = useQueryClient();
+  const query = useQuery({ queryKey: ["admin", "reports"], queryFn: getAdminReports });
+  const resolve = async (report: AdminReport) => { await resolveAdminReport(report.id); await queryClient.invalidateQueries({ queryKey: ["admin", "reports"] }); await queryClient.invalidateQueries({ queryKey: ["admin-summary"] }); };
+  const reports = query.data ?? [];
+  return <div className="r-admin-page"><div className="admin-card"><strong>{reports.length} open report{reports.length === 1 ? "" : "s"}</strong><div style={{ fontSize: 11.5, color: "#8a91a0" }}>Resolve reports after reviewing the signal and source.</div></div>{reports.length === 0 ? <div className="admin-empty-state"><div className="admin-empty-state__icon">✓</div><div className="admin-empty-state__title">Nothing to moderate.</div><p>All reports resolved.</p></div> : <div className="admin-card">{reports.map((report) => <div className="admin-flag-item" key={report.id}><div className="admin-flag-item__meta"><span className="admin-tag admin-tag--flag">{report.reason}</span><span style={{ fontSize: 11.5, color: "#8a91a0" }}>{report.source}</span></div><div className="admin-flag-item__title">{report.signal}</div>{report.note && <p className="admin-flag-item__desc">{report.note}</p>}<button className="btn btn--accent" onClick={() => resolve(report)}>Resolve report</button></div>)}</div>}
+  </div>;
 }
 
 function Overview({ summary }: { summary?: AdminSummary }) {

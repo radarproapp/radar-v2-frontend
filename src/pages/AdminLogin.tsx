@@ -89,7 +89,7 @@ export function AdminLogin() {
 
       <div className="ob-photo">
         <img
-          src="https://images.unsplash.com/photo-1518770660439-4636190af475?fm=jpg&q=80&w=1200&auto=format&fit=crop"
+          src="/images/marketing/intelligence.jpg"
           alt=""
         />
         <div className="ob-photo-overlay" />

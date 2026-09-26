@@ -1769,10 +1769,10 @@ a:hover { color: var(--cyan-deep); }
 .mkt-checklist li { font-size: 13.5px; color: var(--navy); padding-left: 20px; position: relative; }
 .mkt-checklist__arrow { position: absolute; left: 0; color: var(--accent); font-weight: 700; }
 .mkt-product-mockup { width: 100%; height: 320px; border-radius: 18px; }
-.mkt-product-mockup--intelligence { background: linear-gradient(135deg, rgba(13,37,48,.35), rgba(13,37,48,.9)), url(https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&w=1200&q=85) center / cover; }
-.mkt-product-mockup--learn { background: linear-gradient(135deg, rgba(42,32,16,.28), rgba(37,32,21,.9)), url(https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=85) center / cover; }
-.mkt-product-mockup--insights { background: linear-gradient(135deg, rgba(13,32,24,.3), rgba(13,37,32,.9)), url(https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=85) center / cover; }
-.mkt-product-mockup--career { background: linear-gradient(135deg, rgba(18,22,29,.38), rgba(18,22,29,.94)), url(https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=85) center / cover; padding: 24px; display: flex; align-items: center; justify-content: center; }
+.mkt-product-mockup--intelligence { background: linear-gradient(135deg, rgba(13,37,48,.35), rgba(13,37,48,.9)), url(/images/marketing/intelligence.jpg) center / cover; }
+.mkt-product-mockup--learn { background: linear-gradient(135deg, rgba(42,32,16,.28), rgba(37,32,21,.9)), url(/images/marketing/learn.jpg) center / cover; }
+.mkt-product-mockup--insights { background: linear-gradient(135deg, rgba(13,32,24,.3), rgba(13,37,32,.9)), url(/images/marketing/enterprise.jpg) center / cover; }
+.mkt-product-mockup--career { background: linear-gradient(135deg, rgba(18,22,29,.38), rgba(18,22,29,.94)), url(/images/marketing/career.jpg) center / cover; padding: 24px; display: flex; align-items: center; justify-content: center; }
 .mkt-career-score { width: 100%; }
 .mkt-career-score__header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; }
 .mkt-career-score__header span:first-child { font-size: 11px; color: #8993a3; letter-spacing: .05em; text-transform: uppercase; }

@@ -178,36 +178,38 @@ export function FeedDetail() {
       )}
 
       <div className="item-detail-section">
-        <div className="item-detail-section-label">WHY IT MATTERS</div>
-        <p>{whyQuery.data?.text ?? item.whyItMatters}</p>
+        <div className="item-detail-section-label">WHAT HAPPENED</div>
+        <p>{item.whatHappened || item.aiSummary}</p>
+      </div>
+
+      <div className="item-detail-section">
+        <div className="item-detail-section-label">WHY IT MATTERS TO YOU</div>
+        <p>{whyQuery.data?.text ?? item.personalizedWhy ?? item.whyItMatters}</p>
+        {whyQuery.data?.isPersonalized && <div style={{ fontSize: 11.5, color: "var(--cyan)", fontWeight: 700, marginTop: 7 }}>Calibrated to your goal, path and current context</div>}
         {whyQuery.data && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
             <span style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 600 }}>Was this helpful?</span>
-            <button
-              style={{ fontSize: 13, background: "none", border: "none", cursor: whyRated === null ? "pointer" : "default", opacity: whyRated === false ? 0.35 : 1 }}
-              onClick={() => submitWhyRating(true)}
-              disabled={whyRated !== null}
-              aria-label="Helpful"
-            >
-              👍
-            </button>
-            <button
-              style={{ fontSize: 13, background: "none", border: "none", cursor: whyRated === null ? "pointer" : "default", opacity: whyRated === true ? 0.35 : 1 }}
-              onClick={() => submitWhyRating(false)}
-              disabled={whyRated !== null}
-              aria-label="Not helpful"
-            >
-              👎
-            </button>
+            <button style={{ fontSize: 13, background: "none", border: "none", cursor: whyRated === null ? "pointer" : "default", opacity: whyRated === false ? 0.35 : 1 }} onClick={() => submitWhyRating(true)} disabled={whyRated !== null} aria-label="Helpful">👍</button>
+            <button style={{ fontSize: 13, background: "none", border: "none", cursor: whyRated === null ? "pointer" : "default", opacity: whyRated === true ? 0.35 : 1 }} onClick={() => submitWhyRating(false)} disabled={whyRated !== null} aria-label="Not helpful">👎</button>
             {whyRated !== null && <span style={{ fontSize: 11.5, color: "var(--cyan)", fontWeight: 600 }}>Thanks</span>}
           </div>
         )}
       </div>
 
-      <div className="item-detail-section">
-        <div className="item-detail-section-label">WHAT HAPPENED</div>
-        <p>{item.whatHappened}</p>
+      <div className="item-detail-section" style={{ borderLeft: "3px solid var(--cyan)", paddingLeft: 16 }}>
+        <div className="item-detail-section-label">YOUR NEXT MOVE</div>
+        <p>{whyQuery.data?.nextMove ?? item.recommendedActions[0] ?? `Read the brief and decide whether ${item.topic || "this signal"} belongs on your roadmap.`}</p>
+        <button className="btn btn--primary btn--sm" onClick={addToRoadmap} disabled={addedToRoadmap}>
+          {addedToRoadmap ? "Added to roadmap ✓" : "Add this to my roadmap"}
+        </button>
       </div>
+
+      {whyQuery.data?.whatToKnow && whyQuery.data.whatToKnow !== item.whatHappened && (
+        <div className="item-detail-section">
+          <div className="item-detail-section-label">WHAT YOU SHOULD KNOW</div>
+          <p>{whyQuery.data.whatToKnow}</p>
+        </div>
+      )}
 
       {item.keyInsights.length > 0 && (
         <div className="item-detail-section">
