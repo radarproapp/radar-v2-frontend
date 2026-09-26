@@ -30,7 +30,7 @@ import type {
   WeeklyBrief,
 } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:5080";
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "https://radar-v2-backend-production.up.railway.app";
 const TOKEN_KEY = "radar_jwt";
 
 export class ApiError extends Error {
