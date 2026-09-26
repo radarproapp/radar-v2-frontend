@@ -11,6 +11,7 @@ import { HowItWorks } from "./pages/HowItWorks";
 import { Institutions } from "./pages/Institutions";
 import { HomeGate } from "./pages/HomeGate";
 import { Login } from "./pages/Login";
+import { AdminLogin } from "./pages/AdminLogin";
 import { Onboarding } from "./pages/Onboarding";
 import { Feed } from "./pages/Feed";
 import { FeedDetail } from "./pages/FeedDetail";
@@ -55,6 +56,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<HomeGate />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/entry" element={<EntryScreens />} />
             <Route path="/showcase/:projectId" element={<ProjectShowcase />} />
