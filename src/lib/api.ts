@@ -26,6 +26,7 @@ import type {
   SubscriptionPlan,
   TopicProfile,
   UserProfile,
+  UserInterestContext,
   WeeklyBrief,
 } from "./types";
 
@@ -156,6 +157,8 @@ export interface UpdateProfileRequest {
   region?: string;
   city?: string;
   interests?: string[];
+  interestContexts?: UserInterestContext[];
+  dominantInterests?: string[];
   personaDetails?: Record<string, string>;
   notifications?: {
     weeklyBrief: boolean;
@@ -217,6 +220,8 @@ export function getSavedItems() {
 
 export interface PersonalizedWhy {
   text: string;
+  whatToKnow: string;
+  nextMove: string;
   isPersonalized: boolean;
   isHelpful: boolean | null;
 }
@@ -526,6 +531,10 @@ export function getPlans() {
   return request<SubscriptionPlan[]>("/api/plans");
 }
 
+export function getFocus() {
+  return request<{ paths: import("./types").InterestPath[]; suggestedDominantInterests: string[] }>("/api/me/focus");
+}
+
 // ── Admin ─────────────────────────────────────────────────────────────────
 
 export interface AdminSummary {
@@ -535,6 +544,69 @@ export interface AdminSummary {
   role: "PlatformAdmin" | "SuperAdmin";
 }
 
+export interface AdminQueueItem {
+  id: string;
+  title: string;
+  signal: string;
+  source: string;
+  publishedAt: string;
+  credibilityTier: number;
+  isEnriched: boolean;
+  type: string;
+}
+
+export interface AdminSource {
+  id: string;
+  name: string;
+  domain: string;
+  type: string;
+  itemsInRadar: number;
+  itemsRead: number;
+  publishFrequency: string;
+  active: boolean;
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  persona: string;
+  goal: string;
+  region: string;
+  onboardingComplete: boolean;
+  roadmapProgressPercent: number;
+  createdAt: string;
+}
+
+export interface AdminReport {
+  id: string;
+  signal: string;
+  source: string;
+  reason: string;
+  note: string | null;
+  createdAt: string;
+}
+
 export function getAdminSummary() {
   return request<AdminSummary>("/api/admin/summary");
+}
+
+export function getAdminQueue() {
+  return request<AdminQueueItem[]>("/api/admin/queue");
+}
+
+export function getAdminSources() {
+  return request<AdminSource[]>("/api/admin/sources");
+}
+
+export function getAdminUsers() {
+  return request<AdminUser[]>("/api/admin/users");
+}
+
+export function getAdminReports() {
+  return request<AdminReport[]>("/api/admin/reports");
+}
+
+export function resolveAdminReport(id: string) {
+  return request<void>(`/api/admin/reports/${id}/resolve`, { method: "POST" });
 }
