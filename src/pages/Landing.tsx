@@ -23,7 +23,15 @@ export function Landing() {
           </div>
         </div>
         <div className="mkt-hero__visual">
-          <div className="mkt-hero__photo" />
+          <div
+            className="mkt-hero__photo"
+            role="img"
+            aria-label="A team reviewing information together"
+            style={{
+              backgroundImage:
+                "linear-gradient(135deg, rgba(13,37,48,.16), rgba(13,37,48,.72)), url(https://images.unsplash.com/photo-1758518731706-be5d5230e5a5?auto=format&fit=crop&w=1200&q=85)",
+            }}
+          />
           <div className="mkt-hero__stat-card">
             <div className="mkt-hero__stat">
               <div className="mkt-hero__stat-val" style={{ color: "#00c2cb" }}>
@@ -153,19 +161,39 @@ export function Landing() {
           </div>
           <div className="mkt-inst-grid">
             <Link to="/institutions" className="mkt-inst-card">
-              <div className="mkt-inst-card__img" style={{ background: "linear-gradient(135deg,#1a3a4a,#0d2530)" }} />
+              <div
+                className="mkt-inst-card__img"
+                role="img"
+                aria-label="University students learning together"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(13,37,48,.12), rgba(13,37,48,.65)), url(https://images.unsplash.com/photo-1758270704602-9d4103704ad4?auto=format&fit=crop&w=900&q=80)" }}
+              />
               <div className="mkt-inst-card__name">Universities</div>
             </Link>
             <Link to="/institutions" className="mkt-inst-card">
-              <div className="mkt-inst-card__img" style={{ background: "linear-gradient(135deg,#1a2a3a,#0d1820)" }} />
+              <div
+                className="mkt-inst-card__img"
+                role="img"
+                aria-label="Professionals collaborating around a table"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(13,24,32,.12), rgba(13,24,32,.68)), url(https://images.unsplash.com/photo-1758518727929-4506fc031e1c?auto=format&fit=crop&w=900&q=80)" }}
+              />
               <div className="mkt-inst-card__name">Banks &amp; enterprises</div>
             </Link>
             <Link to="/institutions" className="mkt-inst-card">
-              <div className="mkt-inst-card__img" style={{ background: "linear-gradient(135deg,#2a2a3a,#181820)" }} />
+              <div
+                className="mkt-inst-card__img"
+                role="img"
+                aria-label="A government policy briefing"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(24,24,32,.1), rgba(24,24,32,.7)), url(https://images.unsplash.com/photo-1541726260-e6b6a6a08b27?auto=format&fit=crop&w=900&q=80)" }}
+              />
               <div className="mkt-inst-card__name">Government</div>
             </Link>
             <Link to="/institutions" className="mkt-inst-card">
-              <div className="mkt-inst-card__img" style={{ background: "linear-gradient(135deg,#1a3a2a,#0d2018)" }} />
+              <div
+                className="mkt-inst-card__img"
+                role="img"
+                aria-label="Community volunteers working together"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(13,32,24,.1), rgba(13,32,24,.68)), url(https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=900&q=80)" }}
+              />
               <div className="mkt-inst-card__name">NGOs &amp; partners</div>
             </Link>
           </div>
@@ -179,7 +207,12 @@ export function Landing() {
           <h2>Real people, real decisions.</h2>
           <div className="mkt-testimonials__grid">
             <div className="mkt-testimonial-card">
-              <div className="mkt-testimonial-card__img" style={{ background: "linear-gradient(135deg,#1a3040,#0d1f2a)" }} />
+              <div
+                className="mkt-testimonial-card__img"
+                role="img"
+                aria-label="Student portrait"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(13,31,42,.1), rgba(13,31,42,.55)), url(https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=85)" }}
+              />
               <div className="mkt-testimonial-card__body">
                 <div className="mkt-testimonial-card__name">Ada</div>
                 <div className="mkt-testimonial-card__role">200-level Economics student</div>
@@ -187,7 +220,12 @@ export function Landing() {
               </div>
             </div>
             <div className="mkt-testimonial-card">
-              <div className="mkt-testimonial-card__img" style={{ background: "linear-gradient(135deg,#1a2a3a,#0d1a25)" }} />
+              <div
+                className="mkt-testimonial-card__img"
+                role="img"
+                aria-label="Software engineer portrait"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(13,26,37,.1), rgba(13,26,37,.55)), url(https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=85)" }}
+              />
               <div className="mkt-testimonial-card__body">
                 <div className="mkt-testimonial-card__name">David</div>
                 <div className="mkt-testimonial-card__role">Software engineer, 29</div>
@@ -195,7 +233,12 @@ export function Landing() {
               </div>
             </div>
             <div className="mkt-testimonial-card">
-              <div className="mkt-testimonial-card__img" style={{ background: "linear-gradient(135deg,#2a2a30,#1a1a20)" }} />
+              <div
+                className="mkt-testimonial-card__img"
+                role="img"
+                aria-label="Business leader portrait"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(26,26,32,.1), rgba(26,26,32,.58)), url(https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=900&q=85)" }}
+              />
               <div className="mkt-testimonial-card__body">
                 <div className="mkt-testimonial-card__name">Mr. Okafor</div>
                 <div className="mkt-testimonial-card__role">Managing Director, Manufacturing</div>

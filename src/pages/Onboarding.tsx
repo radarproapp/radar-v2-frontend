@@ -5,7 +5,8 @@ import { ApiError, completeOnboarding, register } from "../lib/api";
 import { INTEREST_GROUPS } from "../lib/interests";
 import type { PersonaType } from "../lib/types";
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
+const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 
 const PERSONAS: [PersonaType, string][] = [
   ["Student", "Student"],
@@ -16,6 +17,12 @@ const PERSONAS: [PersonaType, string][] = [
 ];
 
 const REGIONS = ["Africa", "Middle East", "Asia-Pacific", "Europe", "Americas", "Global"];
+const INDUSTRIES = [
+  "Technology & Software", "Finance & Banking", "Healthcare & Medicine", "Education & EdTech",
+  "Government & Public Policy", "Consulting", "Retail & E-commerce", "Media & Entertainment",
+  "Energy & Climate", "Agriculture & Food", "Manufacturing & Engineering", "Logistics & Transportation",
+  "Real Estate", "Nonprofit & Social Impact", "Legal", "Creative Industries", "Other",
+];
 
 function personaDetailFields(persona: PersonaType | null): [string, string][] {
   switch (persona) {
@@ -56,15 +63,17 @@ function personaLabel(p: PersonaType | null): string {
 }
 
 const SIDE_IMAGE: Record<number, string> = {
-  0: "https://images.unsplash.com/photo-1758874383904-c3c409aeb32d?fm=jpg&q=80&w=1200&auto=format&fit=crop",
-  1: "https://images.unsplash.com/photo-1758874383904-c3c409aeb32d?fm=jpg&q=80&w=1200&auto=format&fit=crop",
-  2: "https://images.unsplash.com/photo-1724627561948-3004cc467dc6?fm=jpg&q=80&w=1200&auto=format&fit=crop",
-  3: "https://images.unsplash.com/photo-1642009071428-119813340e22?fm=jpg&q=80&w=1200&auto=format&fit=crop",
-  4: "https://images.unsplash.com/photo-1693597046525-f0727538336b?fm=jpg&q=80&w=1200&auto=format&fit=crop",
-  5: "https://images.unsplash.com/photo-1689421755116-afec95af4f69?fm=jpg&q=80&w=1200&auto=format&fit=crop",
-  6: "https://images.unsplash.com/photo-1643845892686-30c241c3938c?fm=jpg&q=80&w=1200&auto=format&fit=crop",
+  0: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=85",
+  1: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1200&q=85",
+  2: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1200&q=85",
+  3: "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=1200&q=85",
+  4: "https://images.unsplash.com/photo-1590103514966-5e2a11c13e21?auto=format&fit=crop&w=1200&q=85",
+  5: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=85",
+  6: "https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&w=1200&q=85",
+  7: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=85",
+  8: "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1200&q=85",
 };
-const SIDE_IMAGE_DEFAULT = "https://images.unsplash.com/photo-1663026287805-6ef59d3feb19?fm=jpg&q=80&w=1200&auto=format&fit=crop";
+const SIDE_IMAGE_DEFAULT = SIDE_IMAGE[0];
 
 const SIDE_EYEBROW: Record<number, string> = {
   0: "Getting started",
@@ -76,13 +85,26 @@ const SIDE_EYEBROW: Record<number, string> = {
   6: "On your schedule",
 };
 const SIDE_CAPTION: Record<number, string> = {
-  0: "Know what matters. Learn what matters. Become ready for what matters.",
+  0: "Start with a clearer view of the world around you.",
   1: "One account, calibrated entirely to you.",
-  2: "Radar asks different questions depending on who you are.",
-  3: "Personalised to where you are, and what is happening there.",
-  4: "Everything Radar recommends is prioritised against this.",
-  5: "Curated from trusted sources, explained in minutes.",
-  6: "Delivered when you need it, never more than that.",
+  2: "Your experience shapes the questions Radar asks next.",
+  3: "Your region changes what is relevant, nearby and next.",
+  4: "A clear goal turns information into forward motion.",
+  5: "Follow the subjects that make your curiosity useful.",
+  6: "Give each interest a direction, not just a label.",
+  7: "Make useful intelligence fit the rhythm of your day.",
+  8: "Your personal intelligence system is ready to begin.",
+};
+const SIDE_ALT: Record<number, string> = {
+  0: "Person learning at a laptop",
+  1: "Colleagues collaborating around a table",
+  2: "Professional portrait",
+  3: "Map and travel planning materials",
+  4: "Person planning on a whiteboard",
+  5: "Team brainstorming together",
+  6: "Notebook and reading materials on a desk",
+  7: "Organised desk ready for the day",
+  8: "Sunlight over a landscape",
 };
 
 export function Onboarding() {
@@ -100,6 +122,8 @@ export function Onboarding() {
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
   const [customGoal, setCustomGoal] = useState("");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [interestContexts, setInterestContexts] = useState<Record<string, { level: typeof LEVELS[number]; lens: string }>>({});
+  const [dominantInterests, setDominantInterests] = useState<string[]>([]);
   const [notifWeekly, setNotifWeekly] = useState(true);
   const [notifDeadlines, setNotifDeadlines] = useState(true);
   const [notifRoadmap, setNotifRoadmap] = useState(false);
@@ -108,6 +132,7 @@ export function Onboarding() {
 
   const accountReady = name.trim().length > 0 && email.trim().length > 0 && password.length >= 8;
   const goalReady = Boolean(selectedGoal) || customGoal.trim().length > 0;
+  const locationReady = Boolean(selectedRegion) && city.trim().length > 0;
   const regionSummary = city.trim() ? `${selectedRegion} · ${city}` : selectedRegion ?? "—";
 
   const selectPersona = (persona: PersonaType) => {
@@ -129,7 +154,7 @@ export function Onboarding() {
     });
   };
 
-  const next = () => setStep((s) => Math.min(s + 1, 7));
+  const next = () => setStep((s) => Math.min(s + 1, 8));
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
   const finish = async () => {
@@ -142,7 +167,14 @@ export function Onboarding() {
       await completeOnboarding({
         persona: selectedPersona ?? undefined,
         primaryGoal: selectedGoal ?? customGoal,
-        interests: selectedInterests,
+          interests: selectedInterests,
+          interestContexts: selectedInterests.map((interest) => ({
+            interest,
+            goal: selectedGoal ?? customGoal,
+            level: interestContexts[interest]?.level ?? "Beginner",
+            lens: interestContexts[interest]?.lens ?? "",
+          })),
+          dominantInterests,
         region: selectedRegion ?? "Global",
         city,
         personaDetails,
@@ -260,13 +292,14 @@ export function Onboarding() {
                   {personaDetailFields(selectedPersona).map(([key, label]) => (
                     <div key={key} style={{ marginBottom: 12 }}>
                       <label style={{ fontSize: 12.5, fontWeight: 600, color: "#535c6b", display: "block", marginBottom: 6 }}>{label}</label>
-                      <input
-                        type="text"
-                        placeholder={label}
-                        value={personaDetails[key] ?? ""}
-                        onChange={(e) => setPersonaDetails((prev) => ({ ...prev, [key]: e.target.value }))}
-                        className="r-input"
-                      />
+                      {key === "industry" ? (
+                        <select className="r-input" value={personaDetails[key] ?? ""} onChange={(e) => setPersonaDetails((prev) => ({ ...prev, [key]: e.target.value }))}>
+                          <option value="">Select your industry</option>
+                          {INDUSTRIES.map((industry) => <option key={industry} value={industry}>{industry}</option>)}
+                        </select>
+                      ) : (
+                        <input type="text" placeholder={label} value={personaDetails[key] ?? ""} onChange={(e) => setPersonaDetails((prev) => ({ ...prev, [key]: e.target.value }))} className="r-input" />
+                      )}
                     </div>
                   ))}
                 </div>
@@ -295,11 +328,11 @@ export function Onboarding() {
                   </button>
                 ))}
               </div>
-              <label style={{ fontSize: 12.5, fontWeight: 600, color: "#535c6b", display: "block", marginBottom: 6 }}>Country or city (optional)</label>
-              <input type="text" placeholder="e.g. Lagos, Nigeria" value={city} onChange={(e) => setCity(e.target.value)} className="r-input" />
+               <label style={{ fontSize: 12.5, fontWeight: 600, color: "#535c6b", display: "block", marginBottom: 6 }}>Country or city <span style={{ color: "#d94f4f" }}>*</span></label>
+               <input required type="text" placeholder="e.g. Lagos, Nigeria" value={city} onChange={(e) => setCity(e.target.value)} className="r-input" />
               <div className="ob-actions">
                 <button className="btn" onClick={back}>Back</button>
-                <button className="btn btn--primary" style={{ flex: 1 }} onClick={next} disabled={!selectedRegion}>Continue</button>
+                 <button className="btn btn--primary" style={{ flex: 1 }} onClick={next} disabled={!locationReady}>Continue</button>
               </div>
             </div>
           )}
@@ -378,7 +411,37 @@ export function Onboarding() {
 
           {step === 6 && (
             <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-              <div className="ob-step-label">Step 6 of {TOTAL_STEPS} · Notifications</div>
+              <div className="ob-step-label">Step 6 of {TOTAL_STEPS} · Context</div>
+              <h1 className="ob-title">Give each interest a direction.</h1>
+              <p className="ob-sub" style={{ marginBottom: 18 }}>Two people can choose the same interest and need completely different Radar experiences.</p>
+              <div style={{ overflowY: "auto", flex: 1, paddingRight: 2 }}>
+                {selectedInterests.map((interest) => {
+                  const context = interestContexts[interest] ?? { level: "Beginner" as const, lens: "" };
+                  return (
+                    <div key={interest} style={{ padding: "13px 0", borderTop: "1px solid rgba(20,24,31,.08)" }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 9 }}>{interest}</div>
+                      <div style={{ display: "flex", gap: 6, marginBottom: 9 }}>
+                        {LEVELS.map((level) => (
+                          <button key={level} className={`r-chip ${context.level === level ? "active" : ""}`} onClick={() => setInterestContexts((prev) => ({ ...prev, [interest]: { ...context, level } }))}>{level}</button>
+                        ))}
+                      </div>
+                      <input className="r-input" placeholder="What are you trying to do with this? (optional)" value={context.lens} onChange={(e) => setInterestContexts((prev) => ({ ...prev, [interest]: { ...context, lens: e.target.value } }))} />
+                    </div>
+                  );
+                })}
+                <div style={{ padding: "16px 0", borderTop: "1px solid rgba(20,24,31,.08)" }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 5 }}>What should Radar prioritize?</div>
+                  <div style={{ color: "#8a91a0", fontSize: 12.5, marginBottom: 10 }}>Choose up to two primary interests. The others stay visible as secondary signals.</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>{selectedInterests.map((interest) => <button key={interest} className={`r-interest-pill ${dominantInterests.includes(interest) ? "active" : ""}`} onClick={() => setDominantInterests((prev) => prev.includes(interest) ? prev.filter((item) => item !== interest) : prev.length < 2 ? [...prev, interest] : prev)}>{interest}</button>)}</div>
+                </div>
+              </div>
+              <div className="ob-actions"><button className="btn" onClick={back}>Back</button><button className="btn btn--primary" style={{ flex: 1 }} onClick={next}>Continue</button></div>
+            </div>
+          )}
+
+          {step === 7 && (
+            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <div className="ob-step-label">Step 7 of {TOTAL_STEPS} · Notifications</div>
               <h1 className="ob-title">Stay on your schedule.</h1>
               <p className="ob-sub" style={{ marginBottom: 22 }}>Choose when Radar should reach you. You can turn these off at any time.</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -408,7 +471,7 @@ export function Onboarding() {
             </div>
           )}
 
-          {step === 7 && (
+          {step === 8 && (
             <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <div className="ob-step-label">You're set</div>
               <h1 className="ob-title" style={{ marginBottom: 10 }}>Your Personal Intelligence Profile is ready.</h1>
@@ -429,10 +492,14 @@ export function Onboarding() {
                   <span className="ob-profile-row-key">Region</span>
                   <span className="ob-profile-row-val">{regionSummary}</span>
                 </div>
-                <div className="ob-profile-row">
-                  <span className="ob-profile-row-key">Interests</span>
-                  <span className="ob-profile-row-val" style={{ maxWidth: "60%" }}>{selectedInterests.join(" · ")}</span>
-                </div>
+                  <div className="ob-profile-row">
+                    <span className="ob-profile-row-key">Interests</span>
+                    <span className="ob-profile-row-val" style={{ maxWidth: "60%" }}>{selectedInterests.join(" · ")}</span>
+                  </div>
+                  <div className="ob-profile-row">
+                    <span className="ob-profile-row-key">Primary focus</span>
+                    <span className="ob-profile-row-val" style={{ maxWidth: "60%" }}>{dominantInterests.length > 0 ? dominantInterests.join(" · ") : "Radar will suggest a starting point"}</span>
+                  </div>
               </div>
               {authError && (
                 <div style={{ marginTop: 14, padding: "12px 14px", background: "#fff0f0", borderRadius: 10, border: "1px solid #f5c6c6", fontSize: 13, color: "#d94f4f" }}>
@@ -448,11 +515,11 @@ export function Onboarding() {
           )}
         </div>
 
-        {step >= 1 && step <= 6 && <div className="ob-footnote">Step {step} of {TOTAL_STEPS}</div>}
+        {step >= 1 && step <= 7 && <div className="ob-footnote">Step {step} of {TOTAL_STEPS}</div>}
       </div>
 
       <div className="ob-photo">
-        <img src={SIDE_IMAGE[step] ?? SIDE_IMAGE_DEFAULT} alt="" />
+        <img src={SIDE_IMAGE[step] ?? SIDE_IMAGE_DEFAULT} alt={SIDE_ALT[step] ?? "Radar onboarding"} />
         <div className="ob-photo-overlay" />
         <div className="ob-photo-caption">
           <div className="ob-photo-eyebrow">{SIDE_EYEBROW[step] ?? "You're in"}</div>

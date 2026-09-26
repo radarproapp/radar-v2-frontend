@@ -18,7 +18,7 @@ const TABS: TabData[] = [
     title: "Every student graduates with a portfolio, not just a transcript.",
     body: "Radar gives each student a personalised intelligence feed and learning pathway aligned to their programme. Faculty see which modules are driving real capability growth, and employers discover graduates with verified skills.",
     quote: "We used to measure success by graduation rates. Now we measure it by capability at graduation.",
-    imgBg: "linear-gradient(135deg,#1a3a4a,#0d2530)",
+    imgBg: "linear-gradient(135deg,rgba(13,37,48,.1),rgba(13,37,48,.7)),url(https://images.unsplash.com/photo-1758270704602-9d4103704ad4?auto=format&fit=crop&w=1200&q=85)",
     stats: [["12,400+", "Active students"], ["89%", "Daily usage"], ["3.2×", "Portfolio completion"]],
   },
   {
@@ -27,7 +27,7 @@ const TABS: TabData[] = [
     title: "Your workforce stays current without leaving their desk.",
     body: "Radar delivers curated intelligence to every employee based on their role — risk, compliance, strategy, tech — and tracks which teams are building the capabilities your next quarter demands.",
     quote: "Our compliance team catches regulatory shifts weeks earlier than before.",
-    imgBg: "linear-gradient(135deg,#1a2a3a,#0d1820)",
+    imgBg: "linear-gradient(135deg,rgba(13,24,32,.1),rgba(13,24,32,.7)),url(https://images.unsplash.com/photo-1758518731706-be5d5230e5a5?auto=format&fit=crop&w=1200&q=85)",
     stats: [["4,200+", "Employees enrolled"], ["94%", "Weekly return rate"], ["67%", "Skills gap reduced"]],
   },
   {
@@ -36,7 +36,7 @@ const TABS: TabData[] = [
     title: "Policy teams stay ahead of change — not behind it.",
     body: "Radar monitors domestic and international policy shifts, translates them into plain language briefs, and connects each update to the departments and skills it affects.",
     quote: "Five minutes on Radar replaced three hours of manual policy scanning.",
-    imgBg: "linear-gradient(135deg,#2a2a3a,#181820)",
+    imgBg: "linear-gradient(135deg,rgba(24,24,32,.1),rgba(24,24,32,.72)),url(https://images.unsplash.com/photo-1541726260-e6b6a6a08b27?auto=format&fit=crop&w=1200&q=85)",
     stats: [["8", "Ministries onboarded"], ["200+", "Policy briefs / week"], ["34%", "Faster response time"]],
   },
   {
@@ -45,7 +45,7 @@ const TABS: TabData[] = [
     title: "Programme teams track what matters — without the data lag.",
     body: "Radar turns scattered reports, field data, and research into actionable briefs — so programme leads can make decisions based on what's happening now, not what was true three months ago.",
     quote: "Radar helped us spot a funding opportunity we would have missed entirely.",
-    imgBg: "linear-gradient(135deg,#1a3a2a,#0d2018)",
+    imgBg: "linear-gradient(135deg,rgba(13,32,24,.1),rgba(13,32,24,.7)),url(https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=1200&q=85)",
     stats: [["16", "Programme teams"], ["92%", "Brief relevance score"], ["2.8×", "Faster reporting"]],
   },
 ];
