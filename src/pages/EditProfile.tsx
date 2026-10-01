@@ -9,8 +9,6 @@ const PERSONAS: [PersonaType, string][] = [
   ["Student", "Student"],
   ["Graduate", "Graduate"],
   ["YoungProfessional", "Young Professional"],
-  ["Entrepreneur", "Entrepreneur"],
-  ["Researcher", "Researcher"],
 ];
 const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 

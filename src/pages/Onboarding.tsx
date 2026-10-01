@@ -12,8 +12,6 @@ const PERSONAS: [PersonaType, string][] = [
   ["Student", "Student"],
   ["Graduate", "Graduate"],
   ["YoungProfessional", "Young Professional"],
-  ["Entrepreneur", "Entrepreneur"],
-  ["Researcher", "Researcher"],
 ];
 
 const REGIONS = ["Africa", "Middle East", "Asia-Pacific", "Europe", "Americas", "Global"];
@@ -32,10 +30,6 @@ function personaDetailFields(persona: PersonaType | null): [string, string][] {
       return [["university", "University attended"], ["discipline", "Discipline"], ["year", "Year graduated"]];
     case "YoungProfessional":
       return [["industry", "Industry"], ["role", "Current role"], ["experience", "Years of experience"]];
-    case "Entrepreneur":
-      return [["business", "Business name"], ["industry", "Industry"], ["stage", "Stage (e.g. Pre-seed)"]];
-    case "Researcher":
-      return [["institution", "Institution"], ["researchArea", "Research area"], ["position", "Current position"]];
     default:
       return [];
   }
@@ -49,10 +43,6 @@ function goalsFor(persona: PersonaType | null): string[] {
       return ["Get First Job", "Learn AI", "Build Professional Portfolio", "Switch Career", "Prepare for NYSC Opportunities"];
     case "YoungProfessional":
       return ["Get Promotion", "Career Transition", "Become Team Lead", "Learn New Skills", "Earn Professional Certification"];
-    case "Entrepreneur":
-      return ["Get Customers", "Raise Funding", "Build AI Startup", "Scale Business", "Expand Internationally"];
-    case "Researcher":
-      return ["Publish Papers", "Find Academic Literature", "Find Research Grants", "Apply for PhD", "Improve Academic Writing"];
     default:
       return [];
   }
