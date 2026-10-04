@@ -28,10 +28,11 @@ import type {
   SubscriptionPlan,
   TopicProfile,
   UserProfile,
+  UserInterestContext,
   WeeklyBrief,
 } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:5080";
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "https://radar-v2-backend-production.up.railway.app";
 const TOKEN_KEY = "radar_jwt";
 
 export class ApiError extends Error {
@@ -125,6 +126,7 @@ export interface AuthResponse {
   expiresAtUtc: string;
   userId: string;
   userName: string;
+  role: string;
 }
 
 export function register(name: string, email: string, password: string) {
@@ -141,6 +143,13 @@ export function login(email: string, password: string) {
   });
 }
 
+export function adminLogin(email: string, password: string) {
+  return request<AuthResponse>("/api/admin/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+}
+
 // ── Me / profile ─────────────────────────────────────────────────────────
 
 export interface UpdateProfileRequest {
@@ -150,6 +159,8 @@ export interface UpdateProfileRequest {
   region?: string;
   city?: string;
   interests?: string[];
+  interestContexts?: UserInterestContext[];
+  dominantInterests?: string[];
   personaDetails?: Record<string, string>;
   notifications?: {
     weeklyBrief: boolean;
@@ -592,4 +603,84 @@ export function getComparison(id: string) {
 
 export function getPlans() {
   return request<SubscriptionPlan[]>("/api/plans");
+}
+
+export function getFocus() {
+  return request<{ paths: import("./types").InterestPath[]; suggestedDominantInterests: string[] }>("/api/me/focus");
+}
+
+// ── Admin ─────────────────────────────────────────────────────────────────
+
+export interface AdminSummary {
+  users: number;
+  publishedContent: number;
+  openReports: number;
+  role: "PlatformAdmin" | "SuperAdmin";
+}
+
+export interface AdminQueueItem {
+  id: string;
+  title: string;
+  signal: string;
+  source: string;
+  publishedAt: string;
+  credibilityTier: number;
+  isEnriched: boolean;
+  type: string;
+}
+
+export interface AdminSource {
+  id: string;
+  name: string;
+  domain: string;
+  type: string;
+  itemsInRadar: number;
+  itemsRead: number;
+  publishFrequency: string;
+  active: boolean;
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  persona: string;
+  goal: string;
+  region: string;
+  onboardingComplete: boolean;
+  roadmapProgressPercent: number;
+  createdAt: string;
+}
+
+export interface AdminReport {
+  id: string;
+  signal: string;
+  source: string;
+  reason: string;
+  note: string | null;
+  createdAt: string;
+}
+
+export function getAdminSummary() {
+  return request<AdminSummary>("/api/admin/summary");
+}
+
+export function getAdminQueue() {
+  return request<AdminQueueItem[]>("/api/admin/queue");
+}
+
+export function getAdminSources() {
+  return request<AdminSource[]>("/api/admin/sources");
+}
+
+export function getAdminUsers() {
+  return request<AdminUser[]>("/api/admin/users");
+}
+
+export function getAdminReports() {
+  return request<AdminReport[]>("/api/admin/reports");
+}
+
+export function resolveAdminReport(id: string) {
+  return request<void>(`/api/admin/reports/${id}/resolve`, { method: "POST" });
 }

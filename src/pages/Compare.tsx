@@ -80,7 +80,7 @@ export function Compare() {
                   {row.tag === "Differs" ? "Differs" : row.tag === "Same" ? "Same" : "Context"}
                 </span>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div className="compare-cells" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                 <div style={{ background: "#fff", border: "1px solid rgba(20,24,31,.1)", borderRadius: 14, padding: "15px 17px" }}>
                   <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".05em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 7 }}>
                     {row.labelA ?? comparison.items[0] ?? "A"}

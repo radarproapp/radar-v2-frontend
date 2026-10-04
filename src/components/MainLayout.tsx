@@ -4,7 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 import { IconAsk, IconFeed, IconLearn, IconMore, IconSaved, IconToday } from "./NavIcons";
 
 const PRIMARY_LINKS = [
-  { label: "Today", path: "/", icon: IconToday, match: (p: string) => p === "/" },
+  { label: "Radar Intelligence", path: "/", icon: IconToday, match: (p: string) => p === "/" },
   { label: "Feed", path: "/feed", icon: IconFeed, match: (p: string) => p.includes("/feed") },
   { label: "Learn", path: "/learn", icon: IconLearn, match: (p: string) => ["/learn", "/roadmap", "/lesson", "/progress"].some((s) => p.includes(s)) },
   { label: "Saved", path: "/saved", icon: IconSaved, match: (p: string) => p.includes("/saved") },

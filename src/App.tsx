@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { RequireAuth } from "./auth/RequireAuth";
+import { RequireAdmin } from "./auth/RequireAdmin";
 import { MainLayout } from "./components/MainLayout";
 import { MarketingLayout } from "./components/MarketingLayout";
 import { HomeGate } from "./pages/HomeGate";
@@ -46,6 +47,11 @@ const Metrics = lazy(() => import("./pages/Metrics").then((m) => ({ default: m.M
 const SourceQuality = lazy(() => import("./pages/SourceQuality").then((m) => ({ default: m.SourceQuality })));
 const NotFound = lazy(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
 
+// Admin + entry screens, loaded on demand like everything else.
+const AdminLogin = lazy(() => import("./pages/AdminLogin").then((m) => ({ default: m.AdminLogin })));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard").then((m) => ({ default: m.AdminDashboard })));
+const EntryScreens = lazy(() => import("./pages/EntryScreens").then((m) => ({ default: m.EntryScreens })));
+
 // Marketing pages are their own chunk group: only an unauthenticated visitor to the public site
 // needs them, and never alongside the app screens.
 const Landing = lazy(() => import("./pages/Landing").then((m) => ({ default: m.Landing })));
@@ -80,8 +86,13 @@ export default function App() {
             <Routes>
               <Route path="/" element={<HomeGate />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/entry" element={<EntryScreens />} />
               <Route path="/showcase/:projectId" element={<ProjectShowcase />} />
+
+              <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
+              <Route path="/admin/:Page" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
 
               <Route element={<MarketingLayout />}>
                 <Route path="/landing" element={<Landing />} />

@@ -134,10 +134,6 @@ export function Feed() {
         ))}
       </div>
 
-      <div className="feed-sources">
-        Sources: MIT · Stanford · Harvard · OpenAI · Google · World Bank · IMF · McKinsey · Stripe · Y Combinator
-      </div>
-
       {feedQuery.isLoading ? (
         <LoadingSkeleton variant="feed" count={4} />
       ) : feedQuery.isError ? (
@@ -193,12 +189,24 @@ export function Feed() {
 
                 <div className="feed-item-signal">{item.signal}</div>
 
-                {item.whyItMatters && (
+                {item.whatHappened && (
                   <>
-                    <div className="feed-section-label">WHY IT MATTERS</div>
-                    <div className="feed-why">{item.whyItMatters}</div>
+                    <div className="feed-section-label">WHAT HAPPENED</div>
+                    <div className="feed-why">{item.whatHappened}</div>
                   </>
                 )}
+
+                {(item.personalizedWhy || item.whyItMatters) && (
+                  <>
+                    <div className="feed-section-label">WHY IT MATTERS TO YOU</div>
+                    <div className="feed-why">{item.personalizedWhy || item.whyItMatters}</div>
+                  </>
+                )}
+
+                <div style={{ marginTop: 10, padding: "10px 13px", background: "#f6f8f9", borderRadius: 9, borderLeft: "3px solid var(--cyan)" }}>
+                  <div className="feed-section-label" style={{ marginBottom: 5 }}>YOUR NEXT MOVE</div>
+                  <div style={{ fontSize: 13, color: "#14181f", lineHeight: 1.55 }}>{item.nextMove || item.recommendedActions[0] || `Read the brief and decide whether ${item.topic || "this signal"} belongs on your roadmap.`}</div>
+                </div>
 
                 {item.opportunities && item.opportunities.length > 0 && (
                   <div style={{ marginTop: 10, padding: "10px 13px", background: "#f0fafa", borderRadius: 9, borderLeft: "3px solid var(--cyan)" }}>

@@ -37,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = (token: string) => {
     persistToken(token);
+    queryClient.removeQueries({ queryKey: ["me"] });
     setHasToken(true);
   };
 

@@ -23,7 +23,15 @@ export function Landing() {
           </div>
         </div>
         <div className="mkt-hero__visual">
-          <div className="mkt-hero__photo" />
+          <div
+            className="mkt-hero__photo"
+            role="img"
+            aria-label="African professional portrait"
+            style={{
+              backgroundImage:
+                "linear-gradient(135deg, rgba(13,37,48,.16), rgba(13,37,48,.72)), url(/images/marketing/hero.jpg)",
+            }}
+          />
           <div className="mkt-hero__stat-card">
             <div className="mkt-hero__stat">
               <div className="mkt-hero__stat-val" style={{ color: "#00c2cb" }}>
@@ -153,19 +161,39 @@ export function Landing() {
           </div>
           <div className="mkt-inst-grid">
             <Link to="/institutions" className="mkt-inst-card">
-              <div className="mkt-inst-card__img" style={{ background: "linear-gradient(135deg,#1a3a4a,#0d2530)" }} />
+              <div
+                className="mkt-inst-card__img"
+                role="img"
+                aria-label="African woman representing university learners"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(13,37,48,.12), rgba(13,37,48,.65)), url(/images/marketing/university.jpg)" }}
+              />
               <div className="mkt-inst-card__name">Universities</div>
             </Link>
             <Link to="/institutions" className="mkt-inst-card">
-              <div className="mkt-inst-card__img" style={{ background: "linear-gradient(135deg,#1a2a3a,#0d1820)" }} />
+              <div
+                className="mkt-inst-card__img"
+                role="img"
+                aria-label="African professional portrait"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(13,24,32,.12), rgba(13,24,32,.68)), url(/images/marketing/enterprise.jpg)" }}
+              />
               <div className="mkt-inst-card__name">Banks &amp; enterprises</div>
             </Link>
             <Link to="/institutions" className="mkt-inst-card">
-              <div className="mkt-inst-card__img" style={{ background: "linear-gradient(135deg,#2a2a3a,#181820)" }} />
+              <div
+                className="mkt-inst-card__img"
+                role="img"
+                aria-label="African Union headquarters in Addis Ababa"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(24,24,32,.1), rgba(24,24,32,.7)), url(/images/marketing/government.jpg)" }}
+              />
               <div className="mkt-inst-card__name">Government</div>
             </Link>
             <Link to="/institutions" className="mkt-inst-card">
-              <div className="mkt-inst-card__img" style={{ background: "linear-gradient(135deg,#1a3a2a,#0d2018)" }} />
+              <div
+                className="mkt-inst-card__img"
+                role="img"
+                aria-label="African community member"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(13,32,24,.1), rgba(13,32,24,.68)), url(/images/marketing/ngo.jpg)" }}
+              />
               <div className="mkt-inst-card__name">NGOs &amp; partners</div>
             </Link>
           </div>
@@ -179,7 +207,12 @@ export function Landing() {
           <h2>Real people, real decisions.</h2>
           <div className="mkt-testimonials__grid">
             <div className="mkt-testimonial-card">
-              <div className="mkt-testimonial-card__img" style={{ background: "linear-gradient(135deg,#1a3040,#0d1f2a)" }} />
+              <div
+                className="mkt-testimonial-card__img"
+                role="img"
+                aria-label="African woman portrait"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(13,31,42,.1), rgba(13,31,42,.55)), url(/images/marketing/student.jpg)" }}
+              />
               <div className="mkt-testimonial-card__body">
                 <div className="mkt-testimonial-card__name">Ada</div>
                 <div className="mkt-testimonial-card__role">200-level Economics student</div>
@@ -187,7 +220,12 @@ export function Landing() {
               </div>
             </div>
             <div className="mkt-testimonial-card">
-              <div className="mkt-testimonial-card__img" style={{ background: "linear-gradient(135deg,#1a2a3a,#0d1a25)" }} />
+              <div
+                className="mkt-testimonial-card__img"
+                role="img"
+                aria-label="African man portrait"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(13,26,37,.1), rgba(13,26,37,.55)), url(/images/marketing/engineer.jpg)" }}
+              />
               <div className="mkt-testimonial-card__body">
                 <div className="mkt-testimonial-card__name">David</div>
                 <div className="mkt-testimonial-card__role">Software engineer, 29</div>
@@ -195,7 +233,12 @@ export function Landing() {
               </div>
             </div>
             <div className="mkt-testimonial-card">
-              <div className="mkt-testimonial-card__img" style={{ background: "linear-gradient(135deg,#2a2a30,#1a1a20)" }} />
+              <div
+                className="mkt-testimonial-card__img"
+                role="img"
+                aria-label="African woman leader portrait"
+                style={{ backgroundImage: "linear-gradient(135deg, rgba(26,26,32,.1), rgba(26,26,32,.58)), url(/images/marketing/leader.jpg)" }}
+              />
               <div className="mkt-testimonial-card__body">
                 <div className="mkt-testimonial-card__name">Mr. Okafor</div>
                 <div className="mkt-testimonial-card__role">Managing Director, Manufacturing</div>

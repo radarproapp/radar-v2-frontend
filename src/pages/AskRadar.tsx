@@ -11,6 +11,10 @@ const SUGGESTIONS = [
 
 export function AskRadar() {
   const [inputText, setInputText] = useState("");
+  const [summaryMode, setSummaryMode] = useState<"chat" | "file" | "link">("chat");
+  const [fileName, setFileName] = useState("");
+  const [fileText, setFileText] = useState("");
+  const [link, setLink] = useState("");
   const [thinking, setThinking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -50,6 +54,16 @@ export function AskRadar() {
     }
   };
 
+  const summarizeFile = () => {
+    if (!fileText.trim() || busy) return;
+    send(`Summarize this file for me. Explain the key points, why they matter to my goals, and my next move.\n\nFile: ${fileName}\n\n${fileText.slice(0, 50000)}`);
+  };
+
+  const summarizeLink = () => {
+    if (!link.trim() || busy) return;
+    send(`Summarize this link for me. Explain what happened, why it matters to my goals, and my next move.\n\n${link.trim()}`);
+  };
+
   return (
     <div className="r-page">
       <div className="r-page-head">
@@ -81,11 +95,34 @@ export function AskRadar() {
         </div>
       )}
 
+      <div style={{ display: "flex", gap: 7, marginBottom: 10, flexWrap: "wrap" }}>
+        {(["chat", "file", "link"] as const).map((mode) => (
+          <button key={mode} className={`r-chip ${summaryMode === mode ? "active" : ""}`} onClick={() => setSummaryMode(mode)}>
+            {mode === "chat" ? "Ask Radar" : mode === "file" ? "Summarize file" : "Summarize link"}
+          </button>
+        ))}
+      </div>
+
+      {summaryMode === "file" && (
+        <div style={{ marginBottom: 10, padding: 12, background: "var(--bg-hover)", borderRadius: 10 }}>
+          <input type="file" accept=".txt,.md,.csv,.json,.html,.rtf" onChange={async (e) => { const file = e.target.files?.[0]; if (!file) return; setFileName(file.name); setFileText(await file.text()); }} />
+          {fileName && <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 7 }}>{fileName} ready to summarize</div>}
+          <button className="btn btn--primary btn--sm" style={{ marginTop: 9 }} onClick={summarizeFile} disabled={!fileText.trim() || busy}>Summarize file</button>
+        </div>
+      )}
+
+      {summaryMode === "link" && (
+        <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+          <input className="r-input" type="url" placeholder="Paste an article or webpage link" value={link} onChange={(e) => setLink(e.target.value)} />
+          <button className="btn btn--primary btn--sm" onClick={summarizeLink} disabled={!link.trim() || busy}>Summarize</button>
+        </div>
+      )}
+
       <div className="ask-input-row">
         <textarea
           className="ask-input-field"
           rows={1}
-          placeholder="Ask Radar anything…"
+          placeholder={summaryMode === "chat" ? "Ask Radar anything…" : "Add a question or context (optional)…"}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={handleKey}

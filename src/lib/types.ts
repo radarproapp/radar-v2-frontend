@@ -103,16 +103,36 @@ export interface UserStats {
   lastActivityDate: string | null;
 }
 
+export interface UserInterestContext {
+  interest: string;
+  goal: string;
+  level: "Beginner" | "Intermediate" | "Advanced";
+  lens: string;
+}
+
+export interface InterestPath {
+  id: string;
+  title: string;
+  interests: string[];
+  relationshipStrength: number;
+  isPrimary: boolean;
+  priority: string;
+}
+
 export interface UserProfile {
   id: string;
   name: string;
   email: string;
+  role: "User" | "PlatformAdmin" | "SuperAdmin";
   persona: PersonaType;
   primaryGoal: string;
   interests: string[];
   region: string;
   city: string;
   personaDetails: Record<string, string>;
+  interestContexts: UserInterestContext[];
+  dominantInterests: string[];
+  interestPaths: InterestPath[];
   notifications: NotificationPrefs;
   createdAt: string;
   onboardingComplete: boolean;
@@ -138,6 +158,7 @@ export interface ContentItem {
   aiSummary: string;
   keyInsights: string[];
   whyItMatters: string;
+  personalizedWhy?: string | null;
   tags: string[];
   secondaryTopics: string[];
   nextMove: string | null;
@@ -354,6 +375,8 @@ export interface GrowthRoadmap {
   userId: string;
   title: string;
   goal: string;
+  interest: string;
+  level: string;
   modules: RoadmapModule[];
   progressPercent: number;
   createdAt: string;
