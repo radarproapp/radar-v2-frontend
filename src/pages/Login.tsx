@@ -105,9 +105,12 @@ export function Login() {
       </div>
 
       <div className="ob-photo">
+        {/* Decorative and below the fold on small screens — never let it block first paint. */}
         <img
           src="https://images.unsplash.com/photo-1758874383904-c3c409aeb32d?fm=jpg&q=80&w=1200&auto=format&fit=crop"
           alt=""
+          loading="lazy"
+          decoding="async"
         />
         <div className="ob-photo-overlay" />
         <div className="ob-photo-caption">

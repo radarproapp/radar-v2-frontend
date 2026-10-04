@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, getProjectTemplates, getUserProjects, sendAskRadarChat, setProjectVisibility, startProject } from "../lib/api";
+import { ApiError, generateProjectPlan, getProjectTemplates, getUserProjects, sendAskRadarChat, setProjectVisibility, startProject } from "../lib/api";
 import type { StudioProject } from "../lib/types";
 
 export function ProjectStudio() {
@@ -12,6 +12,7 @@ export function ProjectStudio() {
   const projectsQuery = useQuery({ queryKey: ["projects", "mine"], queryFn: getUserProjects });
   const [tipsByProject, setTipsByProject] = useState<Record<string, string>>({});
   const [tipsLoadingId, setTipsLoadingId] = useState<string | null>(null);
+  const [planLoadingId, setPlanLoadingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const loading = templatesQuery.isLoading || projectsQuery.isLoading;
@@ -39,6 +40,20 @@ export function ProjectStudio() {
       setTipsByProject((prev) => ({ ...prev, [project.id]: response.content }));
     } finally {
       setTipsLoadingId(null);
+    }
+  };
+
+  const handleGeneratePlan = async (project: StudioProject) => {
+    setPlanLoadingId(project.id);
+    try {
+      const updated = await generateProjectPlan(project.id);
+      queryClient.setQueryData<StudioProject[]>(["projects", "mine"], (old) =>
+        old?.map((p) => (p.id === project.id ? updated : p)),
+      );
+    } catch {
+      // silent, matches the original Blazor page's behaviour
+    } finally {
+      setPlanLoadingId(null);
     }
   };
 
@@ -106,6 +121,11 @@ export function ProjectStudio() {
                   <div style={{ fontSize: 12.5, color: "var(--text-dim)", marginTop: 4 }}>{project.description}</div>
 
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
+                    {!project.plan && (
+                      <button className="btn btn--sm" onClick={() => handleGeneratePlan(project)} disabled={planLoadingId === project.id}>
+                        {planLoadingId === project.id ? "Building your plan…" : "Generate plan"}
+                      </button>
+                    )}
                     <button className="btn btn--sm" onClick={() => askForTips(project)} disabled={tipsLoadingId === project.id}>
                       {tipsLoadingId === project.id ? "Asking Radar…" : "Ask Radar for tips"}
                     </button>
@@ -118,6 +138,77 @@ export function ProjectStudio() {
                       </button>
                     )}
                   </div>
+
+                  {project.plan && (
+                    <div style={{ marginTop: 12, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 6 }}>
+                        YOUR PLAN
+                      </div>
+                      {project.plan.summary && (
+                        <div style={{ fontSize: 13, color: "var(--text-dim)", lineHeight: 1.6, marginBottom: 10 }}>{project.plan.summary}</div>
+                      )}
+
+                      {project.plan.milestones.map((milestone, i) => (
+                        <div key={`${project.id}-${i}`} style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+                          <div
+                            style={{
+                              flex: "0 0 22px",
+                              height: 22,
+                              borderRadius: 99,
+                              background: "var(--cyan-light)",
+                              color: "var(--cyan-deep)",
+                              fontSize: 11.5,
+                              fontWeight: 700,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {i + 1}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+                              <span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 13 }}>{milestone.title}</span>
+                              {milestone.estimatedTime && (
+                                <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600 }}>{milestone.estimatedTime}</span>
+                              )}
+                            </div>
+                            {milestone.outcome && (
+                              <div style={{ fontSize: 12.5, color: "var(--text-dim)", marginTop: 2 }}>{milestone.outcome}</div>
+                            )}
+                            {milestone.steps.length > 0 && (
+                              <ul style={{ margin: "6px 0 0", paddingLeft: 16, fontSize: 12.5, color: "var(--text-dim)", lineHeight: 1.6 }}>
+                                {milestone.steps.map((step) => (
+                                  <li key={step}>{step}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+
+                      {project.plan.deliverables.length > 0 && (
+                        <div style={{ marginTop: 4 }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 5 }}>
+                            YOU'LL END UP WITH
+                          </div>
+                          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                            {project.plan.deliverables.map((deliverable) => (
+                              <span key={deliverable} style={{ fontSize: 10.5, fontWeight: 600, background: "#f0f2f4", borderRadius: 99, padding: "3px 8px" }}>
+                                {deliverable}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {project.plan.successCriteria && (
+                        <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 10, fontStyle: "italic" }}>
+                          Done when: {project.plan.successCriteria}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {tipsByProject[project.id] && (
                     <div style={{ marginTop: 12, background: "var(--cyan-light)", borderRadius: 12, padding: "13px 15px" }}>

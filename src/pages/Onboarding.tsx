@@ -452,7 +452,8 @@ export function Onboarding() {
       </div>
 
       <div className="ob-photo">
-        <img src={SIDE_IMAGE[step] ?? SIDE_IMAGE_DEFAULT} alt="" />
+        {/* Decorative: decoded off the main thread and deferred until it is actually in view. */}
+        <img src={SIDE_IMAGE[step] ?? SIDE_IMAGE_DEFAULT} alt="" loading="lazy" decoding="async" />
         <div className="ob-photo-overlay" />
         <div className="ob-photo-caption">
           <div className="ob-photo-eyebrow">{SIDE_EYEBROW[step] ?? "You're in"}</div>

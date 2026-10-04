@@ -1,12 +1,29 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, getActiveRoadmap } from "../lib/api";
+import { ApiError, generateLearningPathway, getActiveRoadmap } from "../lib/api";
 
 export function Learn() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [generating, setGenerating] = useState(false);
+
+  // Replaces the active roadmap with a pathway built from the profile, so the current one stays
+  // on screen until the new one arrives (and survives a failure).
+  const handleGeneratePathway = async () => {
+    setGenerating(true);
+    try {
+      const roadmap = await generateLearningPathway();
+      queryClient.setQueryData(["roadmap", "active"], roadmap);
+    } catch {
+      // keep showing the existing roadmap rather than surfacing a dead end
+    } finally {
+      setGenerating(false);
+    }
+  };
   const roadmapQuery = useQuery({ queryKey: ["roadmap", "active"], queryFn: getActiveRoadmap, retry: false });
   const roadmap = roadmapQuery.data;
   const errorMessage = roadmapQuery.error instanceof ApiError ? roadmapQuery.error.message : "Failed to load roadmap.";
@@ -39,7 +56,10 @@ export function Learn() {
                 <div className="r-kicker">PERSONAL GROWTH ROADMAP</div>
                 <h1 className="r-page-title">{roadmap.goal}</h1>
               </div>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button className="btn btn--sm" onClick={handleGeneratePathway} disabled={generating}>
+                  {generating ? "Building your pathway…" : "Build a personalised pathway"}
+                </button>
                 <button className="btn btn--sm" onClick={() => navigate("/learn/hub")}>
                   Learn Hub
                 </button>

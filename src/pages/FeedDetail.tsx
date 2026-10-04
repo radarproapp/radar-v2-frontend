@@ -17,6 +17,12 @@ const REPORT_REASONS: [ReportReason, string][] = [
   ["Other", "Other"],
 ];
 
+// Some items (seeded/synthetic) carry no real destination. Render those as plain text
+// rather than a link that silently goes nowhere.
+function hasRealUrl(url: string | null | undefined): url is string {
+  return !!url && url !== "#" && /^https?:\/\//i.test(url);
+}
+
 // TimeSpan serialises as "hh:mm:ss[.fffffff]" — the chapter list only needs mm:ss.
 function formatChapterTime(timestamp: string): string {
   const parts = timestamp.split(":");
@@ -50,7 +56,9 @@ export function FeedDetail() {
   const [whyRated, setWhyRated] = useState<boolean | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportSubmitted, setReportSubmitted] = useState(false);
+  const [reportReason, setReportReason] = useState<ReportReason | null>(null);
   const [reportNote, setReportNote] = useState("");
+  const [reportSubmitting, setReportSubmitting] = useState(false);
 
   const item = itemQuery.data;
   const whyQuery = useQuery({
@@ -88,11 +96,16 @@ export function FeedDetail() {
     queryClient.invalidateQueries({ queryKey: ["feed"] });
   };
 
-  const submitReport = async (reason: ReportReason) => {
-    if (!item) return;
-    setReportSubmitted(true);
-    logEvent("Reported", { contentItemId: item.id, metadata: { reason } });
-    await reportFeedItem(item.id, reason, reportNote.trim() || undefined);
+  const submitReport = async () => {
+    if (!item || !reportReason || reportSubmitting) return;
+    setReportSubmitting(true);
+    try {
+      await reportFeedItem(item.id, reportReason, reportNote.trim() || undefined);
+      logEvent("Reported", { contentItemId: item.id, metadata: { reason: reportReason } });
+      setReportSubmitted(true);
+    } finally {
+      setReportSubmitting(false);
+    }
   };
 
   const addToRoadmap = async () => {
@@ -177,6 +190,24 @@ export function FeedDetail() {
         </div>
       )}
 
+      {(item.topic || (item.secondaryTopics?.length ?? 0) > 0) && (
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 18 }}>
+          {item.topic && (
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--cyan)", background: "#e0f4f6", borderRadius: 99, padding: "4px 11px" }}>
+              {item.topic}
+            </span>
+          )}
+          {item.secondaryTopics?.map((topic) => (
+            <span
+              key={topic}
+              style={{ fontSize: 11.5, fontWeight: 600, color: "var(--text-muted)", border: "1px solid rgba(20,24,31,.12)", borderRadius: 99, padding: "4px 11px" }}
+            >
+              {topic}
+            </span>
+          ))}
+        </div>
+      )}
+
       <div className="item-detail-section">
         <div className="item-detail-section-label">WHY IT MATTERS</div>
         <p>{whyQuery.data?.text ?? item.whyItMatters}</p>
@@ -203,6 +234,13 @@ export function FeedDetail() {
           </div>
         )}
       </div>
+
+      {(whyQuery.data?.nextMove || item.nextMove) && (
+        <div className="item-detail-section">
+          <div className="item-detail-section-label">NEXT MOVE</div>
+          <p>{whyQuery.data?.nextMove ?? item.nextMove}</p>
+        </div>
+      )}
 
       <div className="item-detail-section">
         <div className="item-detail-section-label">WHAT HAPPENED</div>
@@ -339,9 +377,19 @@ export function FeedDetail() {
         <button className="btn btn--sm" onClick={toggleSave}>
           {item.isSaved ? "Saved ✓" : "Save"}
         </button>
-        <a className="btn btn--sm" style={{ background: "#f0f2f4", color: "var(--text)", borderColor: "transparent" }} href={item.url} target="_blank" rel="noreferrer">
-          Open original →
-        </a>
+        {hasRealUrl(item.url) ? (
+          <a className="btn btn--sm" style={{ background: "#f0f2f4", color: "var(--text)", borderColor: "transparent" }} href={item.url} target="_blank" rel="noreferrer">
+            Open original →
+          </a>
+        ) : (
+          <span
+            className="btn btn--sm"
+            style={{ background: "#f0f2f4", color: "var(--text-muted)", borderColor: "transparent", cursor: "not-allowed", opacity: 0.6 }}
+            title="No source link available for this item"
+          >
+            No source link
+          </span>
+        )}
         {!reportSubmitted && (
           <button className="btn btn--text btn--sm" onClick={() => setReportOpen((v) => !v)}>
             Report a problem
@@ -350,7 +398,7 @@ export function FeedDetail() {
       </div>
 
       {reportSubmitted ? (
-        <p style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 10 }}>Thanks — we'll take a look.</p>
+        <p style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 10 }}>Report submitted. Thank you for helping us improve Radar.</p>
       ) : (
         reportOpen && (
           <div style={{ marginTop: 12, background: "#f6f8f9", borderRadius: 13, padding: "15px 17px" }}>
@@ -359,7 +407,11 @@ export function FeedDetail() {
             </div>
             <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 10 }}>
               {REPORT_REASONS.map(([reason, label]) => (
-                <button key={reason} className="r-chip" onClick={() => submitReport(reason)}>
+                <button
+                  key={reason}
+                  className={`r-chip ${reportReason === reason ? "active" : ""}`}
+                  onClick={() => setReportReason(reason)}
+                >
                   {label}
                 </button>
               ))}
@@ -371,6 +423,18 @@ export function FeedDetail() {
               value={reportNote}
               onChange={(e) => setReportNote(e.target.value)}
             />
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <button
+                className="btn btn--primary btn--sm"
+                onClick={submitReport}
+                disabled={!reportReason || reportSubmitting}
+              >
+                {reportSubmitting ? "Submitting…" : "Submit report"}
+              </button>
+              <button className="btn btn--text btn--sm" onClick={() => setReportOpen(false)} disabled={reportSubmitting}>
+                Cancel
+              </button>
+            </div>
           </div>
         )
       )}

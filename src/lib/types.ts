@@ -3,6 +3,14 @@
 
 export type PersonaType = "Student" | "Graduate" | "YoungProfessional" | "Entrepreneur" | "Researcher";
 
+/// One keyset-paginated page. `nextCursor` is null on the last page, so stop on null rather than
+/// inferring the end from a short page. Mirrors RadarV2/Models/Paging.cs.
+export interface Page<T> {
+  items: T[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
 export type ContentType =
   | "Article"
   | "Podcast"
@@ -131,6 +139,8 @@ export interface ContentItem {
   keyInsights: string[];
   whyItMatters: string;
   tags: string[];
+  secondaryTopics: string[];
+  nextMove: string | null;
   publishedAt: string;
   estimatedReadTime: string | null;
   estimatedWatchTime: string | null;
@@ -215,6 +225,10 @@ export interface EventsSummary {
   };
 }
 
+// Mirrors RadarV2.Models.AnalyticsEventType. The values below are the subset the server maps into
+// persisted behavioural signals (see MongoAnalyticsService.MapAction), which is why they matter
+// beyond analytics: Search, Read, Complete, Applied, MoreLikeThis and LessLikeThis all move a
+// signal's strength, so they must stay in step with the C# enum.
 export type AnalyticsEventType =
   | "Impression"
   | "Open"
@@ -226,7 +240,13 @@ export type AnalyticsEventType =
   | "ClipSaved"
   | "WhyRatedHelpful"
   | "WhyRatedNotHelpful"
-  | "Reported";
+  | "Reported"
+  | "MoreLikeThis"
+  | "LessLikeThis"
+  | "Search"
+  | "Read"
+  | "Complete"
+  | "Applied";
 
 export type CaptureMode = "Link" | "Note" | "Voice" | "Photo";
 
@@ -415,6 +435,23 @@ export interface ProjectTemplate {
   tags: string[];
 }
 
+export interface ProjectMilestone {
+  title: string;
+  outcome: string;
+  estimatedTime: string;
+  steps: string[];
+  isComplete: boolean;
+}
+
+/// Generated on demand from the project plus the user's profile, then persisted server-side.
+export interface ProjectPlan {
+  summary: string;
+  milestones: ProjectMilestone[];
+  deliverables: string[];
+  successCriteria: string | null;
+  generatedAt: string;
+}
+
 export interface StudioProject {
   id: string;
   templateId: string;
@@ -425,6 +462,34 @@ export interface StudioProject {
   isPublic: boolean;
   createdAt: string;
   completedAt: string | null;
+  /** Null until the user asks for a plan. */
+  plan?: ProjectPlan | null;
+}
+
+// ── Personalization signals ──────────────────────────────────────────────
+// Persisted server-side per user: stated preferences and behaviour-derived inference are kept
+// separate, and strength is recency-decayed at read time rather than recomputed on write.
+
+export type SignalSource = "Declared" | "Inferred";
+
+export interface BehavioralSignal {
+  term: string;
+  source: SignalSource;
+  strength: number;
+  confidence: number;
+  explicitFeedback: number;
+  positiveCount: number;
+  negativeCount: number;
+  updatedAt: string;
+  /** Strength after recency decay — what ranking and prompt context actually use. */
+  decayedStrength: number;
+}
+
+export interface SignalsSummary {
+  profileConfidence: number;
+  declaredCount: number;
+  inferredCount: number;
+  signals: BehavioralSignal[];
 }
 
 // ── Notebook ─────────────────────────────────────────────────────────────

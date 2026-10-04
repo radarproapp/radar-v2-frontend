@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, saveFeedItem, searchResearch, unsaveFeedItem } from "../lib/api";
+import { ApiError, logEvent, saveFeedItem, searchResearch, unsaveFeedItem } from "../lib/api";
 import type { ContentItem } from "../lib/types";
 
 const YEAR_RANGES: { label: string; value: number }[] = [
@@ -29,6 +29,9 @@ export function ResearchDiscovery() {
     setSearching(true);
     setHasSearched(true);
     setError(null);
+    // The query is the term: what someone searches for is a stronger statement of interest than
+    // what they were merely shown, and it feeds the persisted behavioural-signal memory.
+    logEvent("Search", { metadata: { term: q.trim() } });
     try {
       const yearFrom = yearRange > 0 ? new Date().getUTCFullYear() - yearRange : 0;
       setResults(await searchResearch(q.trim(), yearFrom));

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import { getFeed, getOpportunities, getToday } from "../lib/api";
+import { FEED_CARD_FIELDS, getFeed, getOpportunities, getToday } from "../lib/api";
 import { isWeeklyBriefUnlocked } from "../lib/schedule";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
@@ -20,7 +20,10 @@ export function Today() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const focusQuery = useQuery({ queryKey: ["today"], queryFn: getToday });
-  const briefQuery = useQuery({ queryKey: ["feed", null], queryFn: () => getFeed(null, 1, 20) });
+  const briefQuery = useQuery({
+    queryKey: ["feed", null],
+    queryFn: () => getFeed(null, { limit: 20, fields: FEED_CARD_FIELDS }),
+  });
   const oppsQuery = useQuery({ queryKey: ["opportunities", null], queryFn: () => getOpportunities(null, 1, 3) });
 
   const focus = focusQuery.data;
@@ -37,7 +40,7 @@ export function Today() {
 
   const firstName = profile.name.split(" ")[0] || "there";
   const dateLabel = new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" });
-  const dailyBrief = (briefQuery.data ?? []).filter((item) => BRIEF_TYPES.includes(item.type)).slice(0, 5);
+  const dailyBrief = (briefQuery.data?.items ?? []).filter((item) => BRIEF_TYPES.includes(item.type)).slice(0, 5);
   const opportunities = oppsQuery.data ?? [];
 
   return (

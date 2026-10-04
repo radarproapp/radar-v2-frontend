@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../auth/AuthContext";
-import { updateMe } from "../lib/api";
+import { getSignals, removeSignalTerm, updateMe } from "../lib/api";
 import { ALL_INTERESTS } from "../lib/interests";
-import type { PersonaType } from "../lib/types";
+import type { PersonaType, SignalsSummary } from "../lib/types";
 
 const PERSONAS: [PersonaType, string][] = [
   ["Student", "Student"],
@@ -23,6 +24,26 @@ export function EditProfile() {
   const [city, setCity] = useState("");
   const [interests, setInterests] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const signalsQuery = useQuery({ queryKey: ["signals"], queryFn: getSignals });
+  const signals = signalsQuery.data;
+  const [pendingTerm, setPendingTerm] = useState<string | null>(null);
+
+  // Independent of the profile form: suppressing a signal takes effect immediately server-side,
+  // so it must not wait for (or be undone by) "Save changes".
+  const handleRemoveSignal = async (term: string) => {
+    setPendingTerm(term);
+    try {
+      await removeSignalTerm(term);
+      queryClient.setQueryData<SignalsSummary>(["signals"], (old) =>
+        old ? { ...old, signals: old.signals.filter((s) => s.term !== term) } : old,
+      );
+    } catch {
+      // leave the list as-is; the next load reflects whatever the server actually holds
+    } finally {
+      setPendingTerm(null);
+    }
+  };
 
   useEffect(() => {
     if (!profile) return;
@@ -115,6 +136,88 @@ export function EditProfile() {
             </button>
           ))}
         </div>
+      </div>
+
+      <div style={{ marginBottom: 22 }}>
+        <label style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-dim)", display: "block", marginBottom: 8 }}>
+          What Radar has learned about you
+        </label>
+
+        {signalsQuery.isLoading ? (
+          <div className="r-empty">
+            <div className="r-spinner" />
+          </div>
+        ) : signals ? (
+          <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: "16px 18px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--text-muted)", marginBottom: 4 }}>
+              <span>How well Radar knows you</span>
+              <span>{Math.round(signals.profileConfidence * 100)}%</span>
+            </div>
+            <div style={{ height: 5, background: "var(--bg-hover)", borderRadius: 99, overflow: "hidden", marginBottom: 14 }}>
+              <div
+                style={{
+                  height: "100%",
+                  width: `${Math.round(signals.profileConfidence * 100)}%`,
+                  background: "var(--cyan)",
+                  borderRadius: 99,
+                  transition: "width .4s var(--ease)",
+                }}
+              />
+            </div>
+
+            {signals.signals.length === 0 ? (
+              <div style={{ fontSize: 12.5, color: "var(--text-dim)" }}>
+                Nothing yet — reading, saving and dismissing items builds this up.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {signals.signals.map((signal) => (
+                  <div key={`${signal.term}-${signal.source}`} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 13, fontWeight: 600 }}>{signal.term}</span>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            letterSpacing: ".04em",
+                            textTransform: "uppercase",
+                            color: signal.source === "Declared" ? "var(--cyan-deep)" : "var(--text-faint)",
+                            background: signal.source === "Declared" ? "var(--cyan-light)" : "#f0f2f4",
+                            borderRadius: 99,
+                            padding: "2px 7px",
+                          }}
+                        >
+                          {signal.source === "Declared" ? "You said" : "From behaviour"}
+                        </span>
+                      </div>
+                      <div style={{ height: 4, background: "var(--bg-hover)", borderRadius: 99, overflow: "hidden", marginTop: 5 }}>
+                        <div
+                          style={{
+                            height: "100%",
+                            width: `${Math.round(Math.max(0, Math.min(1, signal.decayedStrength)) * 100)}%`,
+                            background: "var(--cyan)",
+                            borderRadius: 99,
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <button
+                      className="r-chip"
+                      onClick={() => handleRemoveSignal(signal.term)}
+                      disabled={pendingTerm === signal.term}
+                      title="Stop showing this topic to me"
+                    >
+                      {pendingTerm === signal.term ? "…" : "Not for me"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={{ fontSize: 12.5, color: "var(--text-dim)" }}>Could not load your signals right now.</div>
+        )}
       </div>
 
       <div style={{ display: "flex", gap: 10 }}>

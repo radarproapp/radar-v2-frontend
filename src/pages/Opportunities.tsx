@@ -120,9 +120,19 @@ export function Opportunities() {
                 </div>
                 <span className="opp-match-num">{opp.matchScorePercent}% match</span>
               </div>
-              <a className="btn btn--primary btn--sm" href={opp.url} target="_blank" rel="noreferrer">
-                Apply →
-              </a>
+              {opp.url && opp.url !== "#" && /^https?:\/\//i.test(opp.url) ? (
+                <a className="btn btn--primary btn--sm" href={opp.url} target="_blank" rel="noreferrer">
+                  Apply →
+                </a>
+              ) : (
+                <span
+                  className="btn btn--primary btn--sm"
+                  style={{ opacity: 0.5, cursor: "not-allowed" }}
+                  title="No application link available"
+                >
+                  Apply →
+                </span>
+              )}
               <button className="btn btn--sm" onClick={() => toggleSave(opp)}>
                 {opp.isSaved ? "Saved ✓" : "Save"}
               </button>

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, getFeed } from "../lib/api";
+import { ApiError, FEED_CARD_FIELDS, getFeed } from "../lib/api";
 import type { ContentType } from "../lib/types";
 
 const SECTIONS: { id: string; label: string; type: ContentType }[] = [
@@ -22,10 +22,10 @@ export function LearnHub() {
 
   const itemsQuery = useQuery({
     queryKey: ["learn-hub", activeSection],
-    queryFn: () => getFeed(section.type, 1, 20),
+    queryFn: () => getFeed(section.type, { limit: 20, fields: FEED_CARD_FIELDS }),
   });
 
-  const items = itemsQuery.data ?? [];
+  const items = itemsQuery.data?.items ?? [];
   const errorMessage = itemsQuery.error instanceof ApiError ? itemsQuery.error.message : "Could not load resources.";
 
   return (

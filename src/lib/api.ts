@@ -1,5 +1,6 @@
 import type {
   AnalyticsEventType,
+  Page,
   CaptureMode,
   CapturedItem,
   ChatMessage,
@@ -20,6 +21,7 @@ import type {
   PolicyComparison,
   ProjectTemplate,
   ReportReason,
+  SignalsSummary,
   SourceProfile,
   SourceReportSummary,
   StudioProject,
@@ -171,6 +173,19 @@ export function completeOnboarding(body: UpdateProfileRequest) {
   });
 }
 
+// ── Personalization signals ──────────────────────────────────────────────
+// What Radar has learned about the user. Signals are recorded server-side from real behaviour
+// (POST /api/events), so these endpoints only read them back and let the user override one.
+
+export function getSignals() {
+  return request<SignalsSummary>("/api/me/signals");
+}
+
+/** Explicitly suppresses a topic — recorded against every source that already holds that term. */
+export function removeSignalTerm(term: string) {
+  return request<void>(`/api/me/signals?term=${encodeURIComponent(term)}`, { method: "DELETE" });
+}
+
 // ── Today ────────────────────────────────────────────────────────────────
 
 export function getToday() {
@@ -179,12 +194,52 @@ export function getToday() {
 
 // ── Feed ─────────────────────────────────────────────────────────────────
 
-export function getFeed(type: ContentType | null, page = 1, pageSize = 20) {
+/// The feed is keyset-paginated, not offset-paginated: the server returns the items plus an opaque
+/// `nextCursor`, and you pass that back to continue. Offsets were dropped because the feed grows
+/// while it is read, so page numbers silently duplicate or skip items.
+///
+/// `fields` asks for a sparse fieldset — only name what you actually render. It is an explicit
+/// whitelist server-side, and an unknown name is a 400 rather than a quiet omission.
+export interface GetFeedOptions {
+  cursor?: string | null;
+  limit?: number;
+  fields?: readonly string[];
+}
+
+/// Fields a feed *row* actually renders. The full document carries podcast chapters, transcripts,
+/// paper metadata and persona breakdowns that no list view reads — asking for just these is the
+/// difference between a few KB and tens of KB per page. Detail pages still fetch the whole item.
+/// Keep this in step with the server-side whitelist in FeedController.FeedFieldProjectors.
+export const FEED_CARD_FIELDS = [
+  "id",
+  "type",
+  "title",
+  "signal",
+  "source",
+  "topic",
+  "secondaryTopics",
+  "layer",
+  "credibilityTier",
+  "publishedAt",
+  "whyItMatters",
+  "personalizedWhy",
+  "aiSummary",
+  "isSaved",
+  "tags",
+  "opportunities",
+  "estimatedReadTime",
+  "estimatedWatchTime",
+  "url",
+  "thumbnailUrl",
+] as const;
+
+export function getFeed(type: ContentType | null, options: GetFeedOptions = {}) {
   const params = new URLSearchParams();
   if (type) params.set("type", type);
-  params.set("page", String(page));
-  params.set("pageSize", String(pageSize));
-  return request<ContentItem[]>(`/api/feed?${params.toString()}`);
+  if (options.cursor) params.set("cursor", options.cursor);
+  if (options.limit) params.set("limit", String(options.limit));
+  if (options.fields?.length) params.set("fields", options.fields.join(","));
+  return request<Page<ContentItem>>(`/api/feed?${params.toString()}`);
 }
 
 export function getFeedItem(id: string) {
@@ -209,6 +264,11 @@ export function getSavedItems() {
 
 export interface PersonalizedWhy {
   text: string;
+  whatToKnow: string;
+  nextMove: string;
+  relevanceScore: number;
+  relevanceConfidence: number;
+  matchedSignals: string[];
   isPersonalized: boolean;
   isHelpful: boolean | null;
 }
@@ -357,6 +417,11 @@ export function getRoadmapProgress(roadmapId: string) {
   return request<{ progressPercent: number }>(`/api/roadmaps/${roadmapId}/progress`);
 }
 
+/// Replaces the active roadmap with an AI-built pathway tailored to the profile.
+export function generateLearningPathway() {
+  return request<GrowthRoadmap>("/api/roadmaps/generate", { method: "POST" });
+}
+
 // ── Mentor ───────────────────────────────────────────────────────────────
 
 export function streamMentorChat(message: string, history: ChatMessage[], onChunk: (text: string) => void, signal?: AbortSignal) {
@@ -428,6 +493,11 @@ export function completeProject(projectId: string) {
   return request<void>(`/api/projects/${projectId}/complete`, { method: "POST" });
 }
 
+/// Builds and persists the project's execution plan. Idempotent — re-calling returns the stored one.
+export function generateProjectPlan(projectId: string) {
+  return request<StudioProject>(`/api/projects/${projectId}/plan`, { method: "POST" });
+}
+
 export function setProjectVisibility(projectId: string, isPublic: boolean) {
   return request<void>(`/api/projects/${projectId}/visibility`, {
     method: "POST",
@@ -469,11 +539,17 @@ export function deleteNote(id: string) {
 
 // ── Opportunities ────────────────────────────────────────────────────────
 
-export function getOpportunities(type: OpportunityType | null, page = 1, pageSize = 20) {
+export function getOpportunities(
+  type: OpportunityType | null,
+  page = 1,
+  pageSize = 20,
+  fields?: readonly string[],
+) {
   const params = new URLSearchParams();
   if (type) params.set("type", type);
   params.set("page", String(page));
   params.set("pageSize", String(pageSize));
+  if (fields?.length) params.set("fields", fields.join(","));
   return request<Opportunity[]>(`/api/opportunities?${params.toString()}`);
 }
 
