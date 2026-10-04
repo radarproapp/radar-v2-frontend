@@ -198,7 +198,7 @@ export function FeedDetail() {
 
       <div className="item-detail-section" style={{ borderLeft: "3px solid var(--cyan)", paddingLeft: 16 }}>
         <div className="item-detail-section-label">YOUR NEXT MOVE</div>
-        <p>{whyQuery.data?.nextMove ?? item.recommendedActions[0] ?? `Read the brief and decide whether ${item.topic || "this signal"} belongs on your roadmap.`}</p>
+        <p>{whyQuery.data?.nextMove ?? item.nextMove ?? item.recommendedActions[0] ?? `Read the brief and decide whether ${item.topic || "this signal"} belongs on your roadmap.`}</p>
         <button className="btn btn--primary btn--sm" onClick={addToRoadmap} disabled={addedToRoadmap}>
           {addedToRoadmap ? "Added to roadmap ✓" : "Add this to my roadmap"}
         </button>

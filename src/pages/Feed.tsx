@@ -120,6 +120,12 @@ export function Feed() {
               )}
               <span style={{ fontSize: 10.5, color: "var(--text-muted)", marginLeft: "auto" }}>{humanize(item.publishedAt)}</span>
             </div>
+            {item.tags.length > 0 && (
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+                {item.tags.slice(0, 4).map((tag) => <span key={tag} className="r-chip" style={{ fontSize: 10.5, padding: "3px 7px" }}>{tag}</span>)}
+                <span className="r-chip" style={{ fontSize: 10.5, padding: "3px 7px", color: "var(--cyan)" }}>{item.type}</span>
+              </div>
+            )}
 
              <div className="feed-item-signal">{item.signal}</div>
 
@@ -139,7 +145,7 @@ export function Feed() {
 
              <div style={{ marginTop: 10, padding: "10px 13px", background: "#f6f8f9", borderRadius: 9, borderLeft: "3px solid var(--cyan)" }}>
                <div className="feed-section-label" style={{ marginBottom: 5 }}>YOUR NEXT MOVE</div>
-               <div style={{ fontSize: 13, color: "#14181f", lineHeight: 1.55 }}>{item.recommendedActions[0] || `Read the brief and decide whether ${item.topic || "this signal"} belongs on your roadmap.`}</div>
+                <div style={{ fontSize: 13, color: "#14181f", lineHeight: 1.55 }}>{item.nextMove || item.recommendedActions[0] || `Read the brief and decide whether ${item.topic || "this signal"} belongs on your roadmap.`}</div>
              </div>
 
              {item.opportunities.length > 0 && (

@@ -4,7 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, getOpportunities, saveOpportunity, unsaveOpportunity } from "../lib/api";
+import { ApiError, getOpportunities, logEvent, markOpportunityApplied, saveOpportunity, unsaveOpportunity } from "../lib/api";
 import type { Opportunity, OpportunityType } from "../lib/types";
 
 const TYPE_FILTERS: [string, OpportunityType][] = [
@@ -95,6 +95,13 @@ export function Opportunities() {
                 <div className="opp-match-row">Your profile · {profile.persona}</div>
               </div>
             )}
+            {opp.whyItFits && (
+              <div className="opp-match-section">
+                <div className="opp-match-label">WHY THIS FITS YOU</div>
+                <div className="opp-match-row">{opp.whyItFits}</div>
+                {opp.preparationSteps.length > 0 && <div className="opp-match-row">Next: {opp.preparationSteps[0]}</div>}
+              </div>
+            )}
 
             {opp.requirements.length > 0 && (
               <div className="opp-have-miss">
@@ -120,7 +127,7 @@ export function Opportunities() {
                 </div>
                 <span className="opp-match-num">{opp.matchScorePercent}% match</span>
               </div>
-              <a className="btn btn--primary btn--sm" href={opp.url} target="_blank" rel="noreferrer">
+              <a className="btn btn--primary btn--sm" href={opp.url === "#" ? undefined : opp.url} target="_blank" rel="noreferrer" onClick={() => { logEvent("Open", { opportunityId: opp.id }); void markOpportunityApplied(opp.id); }}>
                 Apply →
               </a>
               <button className="btn btn--sm" onClick={() => toggleSave(opp)}>

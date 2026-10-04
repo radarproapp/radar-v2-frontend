@@ -71,6 +71,9 @@ export interface Opportunity {
   location: string | null;
   isRemote: boolean;
   isSaved: boolean;
+  whyItFits: string | null;
+  matchConfidence: number;
+  preparationSteps: string[];
   discoveredAt: string;
   daysUntilDeadline: number;
 }
@@ -151,7 +154,13 @@ export interface ContentItem {
   keyInsights: string[];
   whyItMatters: string;
   personalizedWhy?: string | null;
+  relevanceScore: number;
+  relevanceConfidence: number;
+  matchedSignals: string[];
+  nextMove: string | null;
   tags: string[];
+  secondaryTopics: string[];
+  classificationConfidence: number;
   publishedAt: string;
   estimatedReadTime: string | null;
   estimatedWatchTime: string | null;
