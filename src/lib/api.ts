@@ -572,6 +572,10 @@ export function unsaveOpportunity(id: string) {
   return request<void>(`/api/opportunities/${id}/save`, { method: "DELETE" });
 }
 
+export function markOpportunityApplied(id: string) {
+  return request<void>(`/api/opportunities/${id}/applied`, { method: "POST" });
+}
+
 // ── Research ─────────────────────────────────────────────────────────────
 
 export function searchResearch(query: string, yearFrom: number) {

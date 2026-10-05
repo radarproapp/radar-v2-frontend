@@ -174,6 +174,13 @@ export function Feed() {
                   <span style={{ fontSize: 10.5, color: "var(--text-muted)", marginLeft: "auto" }}>{humanize(item.publishedAt)}</span>
                 </div>
 
+                {item.tags.length > 0 && (
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+                    {item.tags.slice(0, 4).map((tag) => <span key={tag} className="r-chip" style={{ fontSize: 10.5, padding: "3px 7px" }}>{tag}</span>)}
+                    <span className="r-chip" style={{ fontSize: 10.5, padding: "3px 7px", color: "var(--cyan)" }}>{item.type}</span>
+                  </div>
+                )}
+
                 {/* Topic line, in the review's requested shape: "Climate · Finance · Policy — Premium Times · Article".
                     Primary topic first, then the curated secondary topics, so the category reflects the
                     subject rather than only the source's coarse layer. */}
