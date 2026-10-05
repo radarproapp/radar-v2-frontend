@@ -1077,6 +1077,70 @@ a:hover { color: var(--cyan-deep); }
 .learn-lesson__muted { color: var(--text-faint); }
 .learn-lesson__completed-note { font-size: 11.5px; font-weight: 700; color: #1f9d63; }
 
+/* --- Inline video player (Learn Hub) --- */
+.video-embed {
+  position: relative; width: 100%; aspect-ratio: 16 / 9;
+  border-radius: 14px; overflow: hidden; background: #0b0e13;
+  border: 1px solid var(--border); margin-bottom: 12px; display: block;
+}
+.video-embed--poster { padding: 0; cursor: pointer; }
+.video-embed--poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.video-embed__play { position: absolute; inset: 0; display: grid; place-items: center; }
+.video-embed__play::before {
+  content: ""; position: absolute; width: 60px; height: 60px; border-radius: 50%;
+  background: rgba(0,0,0,.55); transition: transform .15s;
+}
+.video-embed--poster:hover .video-embed__play::before { transform: scale(1.07); }
+.video-embed__play svg { position: relative; color: #fff; margin-left: 2px; }
+.video-embed__badge {
+  position: absolute; left: 10px; bottom: 10px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  color: #fff; background: rgba(0,0,0,.55); border-radius: 99px; padding: 4px 9px;
+}
+.video-embed__media { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; object-fit: cover; background: #000; }
+.video-embed--link {
+  display: inline-flex; align-items: center; gap: 6px; width: auto; aspect-ratio: auto;
+  padding: 11px 15px; font-size: 13px; font-weight: 700; text-decoration: none;
+  color: var(--cyan-deep); background: var(--cyan-light); border-radius: 10px;
+}
+
+/* --- Clips: vertical social feed --- */
+.r-clips { height: 100dvh; display: flex; flex-direction: column; background: #080b0e; overflow: hidden; }
+@media (max-width: 859px) { .r-clips { height: calc(100dvh - var(--tabbar-h)); } }
+.r-clips__top { flex: none; position: relative; z-index: 5; display: flex; align-items: center; gap: 14px; padding: 16px clamp(16px,4vw,28px) 14px; }
+.r-clips__back { font-size: 18px; line-height: 1; color: #fff; text-decoration: none; }
+.r-clips__title { font-family: var(--font-display); font-weight: 700; font-size: 15px; flex: 1; color: #fff; }
+.r-clips__counter { font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,.5); }
+.r-clips__progress { position: absolute; left: clamp(16px,4vw,28px); right: clamp(16px,4vw,28px); bottom: 0; display: flex; gap: 3px; }
+.r-clips__progress button { flex: 1; height: 2.5px; border: none; padding: 0; border-radius: 2px; background: rgba(255,255,255,.18); cursor: pointer; transition: background .2s; }
+.r-clips__progress button.done { background: var(--cyan-bright); }
+.r-clips__feed { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; overscroll-behavior: contain; }
+.r-clips__feed::-webkit-scrollbar { display: none; }
+.r-clips__slide {
+  position: relative; height: 100%; scroll-snap-align: start; scroll-snap-stop: always;
+  display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; color: #fff;
+}
+.r-clips__body { position: relative; padding: 0 clamp(76px,12vw,104px) 28px clamp(20px,5vw,44px); max-width: 760px; }
+.r-clips__tag { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--cyan-bright); margin-bottom: 14px; }
+.r-clips__signal { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.5rem,5vw,2.2rem); line-height: 1.2; letter-spacing: -.01em; margin: 0 0 22px; }
+.r-clips__why-label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: 8px; }
+.r-clips__why { font-size: clamp(.95rem,2.4vw,1.08rem); line-height: 1.68; color: rgba(255,255,255,.8); margin: 0 0 20px; }
+.r-clips__source { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.45); }
+.r-clips__actions { position: absolute; right: clamp(14px,4vw,26px); bottom: clamp(90px,18vh,150px); display: flex; flex-direction: column; gap: 18px; align-items: center; }
+.r-clips__action { display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: none; padding: 0; cursor: pointer; color: #fff; text-decoration: none; }
+.r-clips__action-icon { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-size: 19px; background: rgba(255,255,255,.13); backdrop-filter: blur(8px); transition: transform .12s, background .12s, color .12s; }
+.r-clips__action:active .r-clips__action-icon { transform: scale(.9); }
+.r-clips__action.saved .r-clips__action-icon { background: var(--cyan-bright); color: #07131a; }
+.r-clips__action-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.75); }
+.r-clips__hint { position: absolute; left: 0; right: 0; bottom: clamp(12px,3vh,22px); text-align: center; font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,.35); animation: r-clips-bounce 2.2s ease-in-out infinite; }
+@keyframes r-clips-bounce { 0%,100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(3px); opacity: .85; } }
+@media (prefers-reduced-motion: reduce) { .r-clips__hint { animation: none; } }
+.r-clips__state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 40px; text-align: center; }
+.r-clips__state-title { font-family: var(--font-display); font-weight: 700; font-size: 16px; color: #fff; }
+.r-clips__state-desc { font-size: 13px; color: rgba(255,255,255,.5); max-width: 34ch; line-height: 1.6; }
+.r-clips__spinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(255,255,255,.18); border-top-color: var(--cyan-bright); animation: r-clips-spin .9s linear infinite; }
+@keyframes r-clips-spin { to { transform: rotate(360deg); } }
+
 .learn-module-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
 .learn-module-title { font-family: var(--font-display); font-size: 14.5px; font-weight: 700; color: var(--text); }
 .learn-module-tag { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }

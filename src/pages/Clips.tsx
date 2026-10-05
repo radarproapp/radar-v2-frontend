@@ -1,179 +1,168 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ApiError, getTodaysClips, logEvent, saveClip } from "../lib/api";
 import type { Clip } from "../lib/types";
 
+// A different wash per clip so scrolling reads as a sequence of distinct cards, the way a
+// social feed does, instead of one static panel.
+const GRADIENTS = [
+  "radial-gradient(120% 90% at 80% 0%, #12343b 0%, #0b1418 55%, #080b0e 100%)",
+  "radial-gradient(120% 90% at 15% 10%, #241a34 0%, #120e1c 55%, #08070c 100%)",
+  "radial-gradient(120% 90% at 85% 5%, #332312 0%, #1a130a 55%, #0b0906 100%)",
+  "radial-gradient(120% 90% at 20% 0%, #12304f 0%, #0a1725 55%, #070b10 100%)",
+  "radial-gradient(120% 90% at 80% 10%, #341322 0%, #1b0c14 55%, #0b0608 100%)",
+];
+
 export function Clips() {
   const clipsQuery = useQuery({ queryKey: ["clips", "today"], queryFn: getTodaysClips });
-  const [currentIndex, setCurrentIndex] = useState(0);
   const clips = clipsQuery.data ?? [];
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [savedIds, setSavedIds] = useState<Record<string, boolean>>({});
+  const feedRef = useRef<HTMLDivElement | null>(null);
 
-  const next = () => setCurrentIndex((i) => (i < clips.length - 1 ? i + 1 : 0));
-  const prev = () => setCurrentIndex((i) => (i > 0 ? i - 1 : clips.length - 1));
+  // Which slide is in view, so the progress segments and counter follow the scroll.
+  useEffect(() => {
+    const root = feedRef.current;
+    if (!root || clips.length === 0) return;
+    const slides = Array.from(root.querySelectorAll<HTMLElement>("[data-clip-index]"));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const index = Number((entry.target as HTMLElement).dataset.clipIndex);
+          if (!Number.isNaN(index)) setActiveIndex(index);
+        });
+      },
+      { root, threshold: 0.6 },
+    );
+    slides.forEach((slide) => observer.observe(slide));
+    return () => observer.disconnect();
+  }, [clips.length]);
 
-  const saveCurrent = async (clip: Clip) => {
+  const scrollToIndex = useCallback((index: number) => {
+    const root = feedRef.current;
+    if (!root) return;
+    root.querySelector<HTMLElement>(`[data-clip-index="${index}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "ArrowDown" || event.key === "PageDown") {
+        event.preventDefault();
+        scrollToIndex(Math.min(activeIndex + 1, clips.length - 1));
+      } else if (event.key === "ArrowUp" || event.key === "PageUp") {
+        event.preventDefault();
+        scrollToIndex(Math.max(activeIndex - 1, 0));
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [activeIndex, clips.length, scrollToIndex]);
+
+  const save = async (clip: Clip) => {
+    if (savedIds[clip.id]) return;
+    setSavedIds((prev) => ({ ...prev, [clip.id]: true }));
     logEvent("ClipSaved", { clipId: clip.id, contentItemId: clip.contentItemId ?? undefined });
-    await saveClip(clip.id);
+    try {
+      await saveClip(clip.id);
+    } catch {
+      setSavedIds((prev) => {
+        const next = { ...prev };
+        delete next[clip.id];
+        return next;
+      });
+    }
   };
 
   const errorMessage = clipsQuery.error instanceof ApiError ? clipsQuery.error.message : "Could not load clips.";
 
-  return (
-    <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", background: "var(--navy)" }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 14,
-          padding: "14px clamp(18px,4vw,40px)",
-          flex: "none",
-          position: "sticky",
-          top: 0,
-          zIndex: 5,
-          background: "var(--navy)",
-        }}
-      >
-        <Link to="/" style={{ fontSize: 18, color: "#fff" }}>
+  const shell = (content: React.ReactNode) => (
+    <div className="r-clips">
+      <header className="r-clips__top">
+        <Link to="/" className="r-clips__back" aria-label="Back">
           ←
         </Link>
-        <span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15, flex: 1, color: "#fff" }}>Clips</span>
+        <span className="r-clips__title">Clips</span>
+        {clips.length > 0 && <span className="r-clips__counter">{activeIndex + 1} / {clips.length}</span>}
         {clips.length > 0 && (
-          <span style={{ fontSize: 11.5, fontWeight: 600, color: "rgba(255,255,255,.5)" }}>
-            {currentIndex + 1} / {clips.length}
-          </span>
+          <div className="r-clips__progress">
+            {clips.map((_, index) => (
+              <button
+                key={index}
+                className={index <= activeIndex ? "done" : ""}
+                aria-label={`Go to clip ${index + 1}`}
+                onClick={() => scrollToIndex(index)}
+              />
+            ))}
+          </div>
         )}
-      </div>
-
-      {clipsQuery.isLoading ? (
-        <div style={{ flex: 1, width: "100%", maxWidth: 480, margin: "0 auto", padding: "0 clamp(14px,3vw,20px) 20px", display: "flex", flexDirection: "column" }}>
-          <div
-            style={{
-              position: "relative",
-              flex: 1,
-              minHeight: 520,
-              borderRadius: 20,
-              overflow: "hidden",
-              background: "linear-gradient(160deg,#1e2530 0%,#0d1b1d 100%)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              padding: "0 26px",
-            }}
-          >
-            <div style={{ height: 14, width: 80, background: "rgba(0,194,203,.2)", borderRadius: 4, marginBottom: 20, animation: "r-clip-pulse 1.5s infinite" }} />
-            <div style={{ height: 28, width: "90%", background: "rgba(255,255,255,.1)", borderRadius: 6, marginBottom: 20, animation: "r-clip-pulse 1.5s infinite .2s" }} />
-            <div style={{ height: 14, width: 110, background: "rgba(255,255,255,.06)", borderRadius: 4, marginBottom: 12, animation: "r-clip-pulse 1.5s infinite .4s" }} />
-            <div style={{ height: 16, width: "100%", background: "rgba(255,255,255,.06)", borderRadius: 4, marginBottom: 8, animation: "r-clip-pulse 1.5s infinite .6s" }} />
-            <div style={{ height: 16, width: "75%", background: "rgba(255,255,255,.06)", borderRadius: 4, animation: "r-clip-pulse 1.5s infinite .8s" }} />
-          </div>
-          <style>{"@keyframes r-clip-pulse { 0%,100% { opacity: .4 } 50% { opacity: 1 } }"}</style>
-        </div>
-      ) : clipsQuery.isError ? (
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-          <div style={{ textAlign: "center", maxWidth: 300 }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
-            <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16, color: "#fff", marginBottom: 8 }}>Failed to load clips</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,.5)", marginBottom: 16 }}>{errorMessage}</div>
-            <button
-              className="btn"
-              style={{ background: "var(--cyan-bright)", color: "#0d2b2d", borderColor: "transparent" }}
-              onClick={() => clipsQuery.refetch()}
-            >
-              Try again
-            </button>
-          </div>
-        </div>
-      ) : clips.length === 0 ? (
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-          <div style={{ textAlign: "center", maxWidth: 300 }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>🎬</div>
-            <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16, color: "#fff", marginBottom: 8 }}>No clips today</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,.5)", marginBottom: 16 }}>
-              Radar is preparing your daily signals. Check back tomorrow.
-            </div>
-            <Link
-              to="/"
-              style={{ fontSize: 12.5, fontWeight: 700, background: "var(--cyan-bright)", color: "#0d2b2d", padding: "10px 16px", borderRadius: 8, textDecoration: "none" }}
-            >
-              Go to Today
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <div style={{ flex: 1, width: "100%", maxWidth: 480, margin: "0 auto", padding: "0 clamp(14px,3vw,20px) 20px", display: "flex", flexDirection: "column" }}>
-          <div
-            style={{
-              position: "relative",
-              flex: 1,
-              minHeight: 520,
-              borderRadius: 20,
-              overflow: "hidden",
-              background: "linear-gradient(160deg,#1e2530 0%,#0d1b1d 100%)",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, display: "flex", gap: 3, padding: "11px 13px 0" }}>
-              {clips.map((_, i) => (
-                <div
-                  key={i}
-                  style={{ flex: 1, height: 2.5, borderRadius: 2, background: i <= currentIndex ? "var(--cyan-bright)" : "rgba(255,255,255,.18)" }}
-                />
-              ))}
-            </div>
-
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 26px" }}>
-              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--cyan-bright)", marginBottom: 15 }}>
-                {clips[currentIndex].tag}
-              </div>
-              <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "clamp(1.3rem,4.5vw,1.55rem)", lineHeight: 1.32, marginBottom: 15, color: "#fff" }}>
-                {clips[currentIndex].signal}
-              </div>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: "rgba(255,255,255,.4)", marginBottom: 7 }}>
-                Why it matters
-              </div>
-              <div style={{ fontSize: 14, color: "rgba(255,255,255,.72)", lineHeight: 1.7 }}>{clips[currentIndex].whyItMatters}</div>
-            </div>
-
-            <div style={{ position: "relative", padding: "20px 26px 24px", background: "linear-gradient(180deg,rgba(18,22,29,0),rgba(18,22,29,.85))" }}>
-              <div style={{ fontSize: 11.5, color: "rgba(255,255,255,.5)", fontWeight: 600, marginBottom: 15 }}>{clips[currentIndex].source}</div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <Link to="/" style={{ fontSize: 12.5, fontWeight: 700, background: "var(--cyan-bright)", color: "#0d2b2d", padding: "10px 16px", borderRadius: 8 }}>
-                  Understand →
-                </Link>
-                <button
-                  className="btn"
-                  style={{ background: "rgba(255,255,255,.12)", color: "#fff", borderColor: "transparent", fontSize: 12.5, padding: "10px 16px" }}
-                  onClick={() => saveCurrent(clips[currentIndex])}
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-
-            <button style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "32%", background: "none", border: "none", opacity: 0, cursor: "pointer" }} onClick={prev} />
-            <button style={{ position: "absolute", top: 0, bottom: 0, right: 0, width: "32%", background: "none", border: "none", opacity: 0, cursor: "pointer" }} onClick={next} />
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14, flex: "none" }}>
-            <button className="btn" style={{ borderColor: "rgba(255,255,255,.22)", color: "#fff", background: "none", fontSize: 13, padding: "12px 18px" }} onClick={prev}>
-              Back
-            </button>
-            <button
-              className="btn"
-              style={{ flex: 1, background: "rgba(255,255,255,.12)", color: "#fff", borderColor: "transparent", fontSize: 13.5, padding: 12 }}
-              onClick={next}
-            >
-              {currentIndex >= clips.length - 1 ? "Start over" : "Next clip →"}
-            </button>
-          </div>
-
-          <div style={{ textAlign: "center", fontSize: 11.5, color: "rgba(255,255,255,.32)", marginTop: 12 }}>
-            {currentIndex >= clips.length - 1 ? "That's all five. You're caught up." : "Five clips a day, each under a minute. Tap either side to move."}
-          </div>
-        </div>
-      )}
+      </header>
+      {content}
     </div>
+  );
+
+  if (clipsQuery.isLoading) {
+    return shell(
+      <div className="r-clips__state">
+        <div className="r-clips__spinner" />
+      </div>,
+    );
+  }
+
+  if (clipsQuery.isError) {
+    return shell(
+      <div className="r-clips__state">
+        <div className="r-clips__state-title">Failed to load clips</div>
+        <div className="r-clips__state-desc">{errorMessage}</div>
+        <button className="btn btn--primary btn--sm" onClick={() => clipsQuery.refetch()}>Try again</button>
+      </div>,
+    );
+  }
+
+  if (clips.length === 0) {
+    return shell(
+      <div className="r-clips__state">
+        <div className="r-clips__state-title">No clips today</div>
+        <div className="r-clips__state-desc">Radar is preparing your daily signals. Check back tomorrow.</div>
+        <Link className="btn btn--primary btn--sm" to="/">Go to Today</Link>
+      </div>,
+    );
+  }
+
+  return shell(
+    <div className="r-clips__feed" ref={feedRef}>
+      {clips.map((clip, index) => {
+        const saved = !!savedIds[clip.id] || clip.isSaved;
+        return (
+          <section key={clip.id} className="r-clips__slide" data-clip-index={index} style={{ background: GRADIENTS[index % GRADIENTS.length] }}>
+            <div className="r-clips__actions">
+              <button className={`r-clips__action ${saved ? "saved" : ""}`} onClick={() => save(clip)} aria-label={saved ? "Saved" : "Save clip"}>
+                <span className="r-clips__action-icon">{saved ? "✓" : "🔖"}</span>
+                <span className="r-clips__action-label">{saved ? "Saved" : "Save"}</span>
+              </button>
+              {clip.contentItemId && (
+                <Link className="r-clips__action" to={`/feed/${clip.contentItemId}`} aria-label="Read the brief">
+                  <span className="r-clips__action-icon">↗</span>
+                  <span className="r-clips__action-label">Read</span>
+                </Link>
+              )}
+            </div>
+
+            <div className="r-clips__body">
+              <span className="r-clips__tag">{clip.tag}</span>
+              <h2 className="r-clips__signal">{clip.signal}</h2>
+              <div className="r-clips__why-label">Why it matters</div>
+              <p className="r-clips__why">{clip.whyItMatters}</p>
+              <div className="r-clips__source">{clip.source}</div>
+            </div>
+
+            <div className="r-clips__hint">
+              {index < clips.length - 1 ? "Scroll for the next clip ↓" : "That's all for today"}
+            </div>
+          </section>
+        );
+      })}
+    </div>,
   );
 }

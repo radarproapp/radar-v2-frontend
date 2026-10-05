@@ -5,6 +5,7 @@ import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { ApiError, FEED_CARD_FIELDS, getFeed } from "../lib/api";
+import { VideoEmbed } from "../components/VideoEmbed";
 import type { ContentType } from "../lib/types";
 
 const SECTIONS: { id: string; label: string; type: ContentType }[] = [
@@ -52,6 +53,7 @@ export function LearnHub() {
       ) : (
         items.map((item) => (
           <div className="feed-item" style={{ cursor: "pointer" }} key={item.id} onClick={() => navigate(`/feed/${item.id}`)}>
+            {section.type === "Video" && <VideoEmbed url={item.url} title={item.title} />}
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
               <span className="item-detail-source">{item.source}</span>
               <span style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 600 }}>{item.estimatedReadTime ?? item.estimatedWatchTime ?? ""}</span>
@@ -73,7 +75,7 @@ export function LearnHub() {
             )}
 
             <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginTop: 12 }}>
-              {item.tags.slice(0, 4).map((tag) => (
+              {(item.tags ?? []).slice(0, 4).map((tag) => (
                 <span key={tag} style={{ fontSize: 11, fontWeight: 600, background: "#f0f2f4", borderRadius: 99, padding: "4px 10px" }}>
                   {tag}
                 </span>
