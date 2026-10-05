@@ -174,9 +174,9 @@ export function Feed() {
                   <span style={{ fontSize: 10.5, color: "var(--text-muted)", marginLeft: "auto" }}>{humanize(item.publishedAt)}</span>
                 </div>
 
-                {item.tags.length > 0 && (
+                {(item.tags ?? []).length > 0 && (
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-                    {item.tags.slice(0, 4).map((tag) => <span key={tag} className="r-chip" style={{ fontSize: 10.5, padding: "3px 7px" }}>{tag}</span>)}
+                    {(item.tags ?? []).slice(0, 4).map((tag) => <span key={tag} className="r-chip" style={{ fontSize: 10.5, padding: "3px 7px" }}>{tag}</span>)}
                     <span className="r-chip" style={{ fontSize: 10.5, padding: "3px 7px", color: "var(--cyan)" }}>{item.type}</span>
                   </div>
                 )}
@@ -184,10 +184,10 @@ export function Feed() {
                 {/* Topic line, in the review's requested shape: "Climate · Finance · Policy — Premium Times · Article".
                     Primary topic first, then the curated secondary topics, so the category reflects the
                     subject rather than only the source's coarse layer. */}
-                {(item.topic || item.tags.length > 0) && (
+                {(item.topic || (item.tags ?? []).length > 0) && (
                   <div style={{ fontSize: 11.5, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8 }}>
-                    <span style={{ color: "var(--cyan)" }}>{item.topic || item.tags[0]}</span>
-                    {(item.secondaryTopics.length > 0 ? item.secondaryTopics : item.tags.slice(1)).map((topic) => (
+                    <span style={{ color: "var(--cyan)" }}>{item.topic || (item.tags ?? [])[0]}</span>
+                    {((item.secondaryTopics ?? []).length > 0 ? item.secondaryTopics ?? [] : (item.tags ?? []).slice(1)).map((topic) => (
                       <span key={topic}> · {topic}</span>
                     ))}
                     <span style={{ opacity: 0.6 }}> — {item.source} · {item.type}</span>
@@ -212,7 +212,7 @@ export function Feed() {
 
                 <div style={{ marginTop: 10, padding: "10px 13px", background: "#f6f8f9", borderRadius: 9, borderLeft: "3px solid var(--cyan)" }}>
                   <div className="feed-section-label" style={{ marginBottom: 5 }}>YOUR NEXT MOVE</div>
-                  <div style={{ fontSize: 13, color: "#14181f", lineHeight: 1.55 }}>{item.nextMove || item.recommendedActions[0] || `Read the brief and decide whether ${item.topic || "this signal"} belongs on your roadmap.`}</div>
+                  <div style={{ fontSize: 13, color: "#14181f", lineHeight: 1.55 }}>{item.nextMove || item.recommendedActions?.[0] || `Read the brief and decide whether ${item.topic || "this signal"} belongs on your roadmap.`}</div>
                 </div>
 
                 {item.opportunities && item.opportunities.length > 0 && (

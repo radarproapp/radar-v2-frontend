@@ -229,7 +229,7 @@ export function FeedDetail() {
 
       <div className="item-detail-section" style={{ borderLeft: "3px solid var(--cyan)", paddingLeft: 16 }}>
         <div className="item-detail-section-label">YOUR NEXT MOVE</div>
-        <p>{whyQuery.data?.nextMove ?? item.nextMove ?? item.recommendedActions[0] ?? `Read the brief and decide whether ${item.topic || "this signal"} belongs on your roadmap.`}</p>
+        <p>{whyQuery.data?.nextMove ?? item.nextMove ?? item.recommendedActions?.[0] ?? `Read the brief and decide whether ${item.topic || "this signal"} belongs on your roadmap.`}</p>
         <button className="btn btn--primary btn--sm" onClick={addToRoadmap} disabled={addedToRoadmap}>
           {addedToRoadmap ? "Added to roadmap ✓" : "Add this to my roadmap"}
         </button>
@@ -242,10 +242,10 @@ export function FeedDetail() {
         </div>
       )}
 
-      {item.keyInsights.length > 0 && (
+      {(item.keyInsights ?? []).length > 0 && (
         <div className="item-detail-section">
           <div className="item-detail-section-label">KEY INSIGHTS</div>
-          {item.keyInsights.map((insight, i) => (
+          {(item.keyInsights ?? []).map((insight, i) => (
             <div className="item-detail-insight" key={i}>
               <div className="item-detail-insight-dot" />
               <div className="item-detail-insight-text">{insight}</div>
@@ -254,11 +254,11 @@ export function FeedDetail() {
         </div>
       )}
 
-      {Object.keys(item.personaImpact).length > 0 && (
+      {Object.keys(item.personaImpact ?? {}).length > 0 && (
         <div className="item-detail-section">
           <div className="item-detail-section-label">WHAT IT MEANS FOR YOU</div>
           <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 12 }}>
-            {Object.keys(item.personaImpact).map((persona) => (
+            {Object.keys(item.personaImpact ?? {}).map((persona) => (
               <button
                 key={persona}
                 style={{
@@ -277,16 +277,16 @@ export function FeedDetail() {
               </button>
             ))}
           </div>
-          {activePersona && item.personaImpact[activePersona] && (
+          {activePersona && item.personaImpact?.[activePersona] && (
             <p style={{ fontSize: 14, lineHeight: 1.7, color: "#374151" }}>{item.personaImpact[activePersona]}</p>
           )}
         </div>
       )}
 
-      {item.opportunities.length > 0 && (
+      {(item.opportunities ?? []).length > 0 && (
         <div className="item-detail-section">
           <div className="item-detail-section-label">OPPORTUNITIES</div>
-          {item.opportunities.map((opp, i) => (
+          {(item.opportunities ?? []).map((opp, i) => (
             <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
               <div style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--cyan)", flex: "none", marginTop: 6 }} />
               <div style={{ fontSize: 13.5, lineHeight: 1.6, color: "#14181f" }}>{opp}</div>
@@ -295,15 +295,15 @@ export function FeedDetail() {
         </div>
       )}
 
-      {item.recommendedActions.length > 0 && (
+      {(item.recommendedActions ?? []).length > 0 && (
         <div style={{ background: "#f6f8f9", borderRadius: 13, padding: "17px 19px", marginBottom: 20 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--cyan)", marginBottom: 12 }}>
             RECOMMENDED ACTIONS
           </div>
-          {item.recommendedActions.map((action, i) => (
+          {(item.recommendedActions ?? []).map((action, i) => (
             <div
               key={i}
-              style={{ display: "flex", gap: 11, alignItems: "flex-start", marginBottom: i < item.recommendedActions.length - 1 ? 10 : 0 }}
+              style={{ display: "flex", gap: 11, alignItems: "flex-start", marginBottom: i < (item.recommendedActions ?? []).length - 1 ? 10 : 0 }}
             >
               <div
                 style={{

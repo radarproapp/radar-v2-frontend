@@ -234,6 +234,7 @@ export const FEED_CARD_FIELDS = [
   "publishedAt",
   "whyItMatters",
   "personalizedWhy",
+  "nextMove",
   "aiSummary",
   "isSaved",
   "tags",
