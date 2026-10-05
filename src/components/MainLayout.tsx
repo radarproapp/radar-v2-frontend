@@ -177,7 +177,10 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
         {children ?? <Outlet />}
       </div>
 
-      {openPanel && <div style={{ position: "fixed", inset: 0, zIndex: 199 }} onClick={() => setOpenPanel(null)} />}
+      {/* Outside-click catcher. Must stay below the rail/tabbar (z-index 50): those
+          are fixed with their own stacking context, so a higher overlay here would
+          sit on top of the dropout panels and swallow every click on them. */}
+      {openPanel && <div style={{ position: "fixed", inset: 0, zIndex: 40 }} onClick={() => setOpenPanel(null)} />}
     </div>
   );
 }
