@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { FEED_CARD_FIELDS, getFeed, getOpportunities, getToday } from "../lib/api";
 import { isWeeklyBriefUnlocked } from "../lib/schedule";
+import { FollowUps } from "../components/FollowUps";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ContentType } from "../lib/types";
@@ -51,6 +52,8 @@ export function Today() {
         <div className="nav-tagline">Here are the things worth your attention today,</div>
         <div className="nav-tagline">These stories, conversations and ideas are relevant to what you care about and will help you move closer to your goals.</div>
       </div>
+
+      <FollowUps />
 
       {isWeeklyBriefUnlocked() && (
         <button className="nav-brief-banner" onClick={() => navigate("/weekly")}>

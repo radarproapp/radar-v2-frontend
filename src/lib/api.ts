@@ -200,6 +200,20 @@ export function getSignals() {
   return request<SignalsSummary>("/api/me/signals");
 }
 
+export interface FollowUpSuggestion {
+  id: string;
+  kind: string;
+  prompt: string;
+  detail: string | null;
+  action: "addInterest" | "setFocus" | "editProfile" | string;
+  actionLabel: string;
+  value: string | null;
+}
+
+export function getFollowUps() {
+  return request<FollowUpSuggestion[]>("/api/me/follow-ups");
+}
+
 /** Explicitly suppresses a topic — recorded against every source that already holds that term. */
 export function removeSignalTerm(term: string) {
   return request<void>(`/api/me/signals?term=${encodeURIComponent(term)}`, { method: "DELETE" });

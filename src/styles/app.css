@@ -2389,3 +2389,11 @@ a:hover { color: var(--cyan-deep); }
 .admin-queue-detail__actions { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 18px; }
 .admin-queue-detail__actions .btn { flex: 1; min-width: 110px; }
 @media (max-width: 820px) { .r-admin-side--open { display: block; } .r-admin-content { padding-bottom: 80px; } }
+
+/* --- Radar noticed: progressive follow-up card --- */
+.radar-noticed { background: linear-gradient(135deg, #0d2b2d 0%, #123a3d 100%); color: #fff; border-radius: 16px; padding: 16px 18px; margin-bottom: 20px; border: 1px solid rgba(0,194,203,.25); }
+.radar-noticed__label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--cyan-bright); margin-bottom: 8px; }
+.radar-noticed__prompt { font-family: var(--font-display); font-weight: 600; font-size: 14.5px; line-height: 1.45; margin-bottom: 6px; }
+.radar-noticed__detail { font-size: 12.5px; color: rgba(255,255,255,.62); line-height: 1.55; margin-bottom: 12px; }
+.radar-noticed__actions { display: flex; gap: 8px; }
+.radar-noticed .btn--text { color: rgba(255,255,255,.7); }
