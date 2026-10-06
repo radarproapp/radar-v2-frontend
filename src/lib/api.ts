@@ -214,6 +214,31 @@ export function getFollowUps() {
   return request<FollowUpSuggestion[]>("/api/me/follow-ups");
 }
 
+// Server-side fetch + extract for "Summarize link" — the page is retrieved on the backend, not
+// trusted from the client.
+export function summarizeLink(url: string) {
+  return request<{ summary: string }>("/api/ask/summarize-link", {
+    method: "POST",
+    body: JSON.stringify({ url }),
+  });
+}
+
+// Multipart upload — cannot go through request() (which forces a JSON content type).
+export async function summarizeFile(file: File): Promise<{ summary: string }> {
+  const token = getToken();
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${API_BASE}/api/ask/summarize-file`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: form,
+  });
+  const isJson = res.headers.get("content-type")?.includes("application/json");
+  const body = isJson ? await res.json() : null;
+  if (!res.ok) throw new ApiError(res.status, body?.error ?? body?.title ?? res.statusText);
+  return body as { summary: string };
+}
+
 /** Explicitly suppresses a topic — recorded against every source that already holds that term. */
 export function removeSignalTerm(term: string) {
   return request<void>(`/api/me/signals?term=${encodeURIComponent(term)}`, { method: "DELETE" });
