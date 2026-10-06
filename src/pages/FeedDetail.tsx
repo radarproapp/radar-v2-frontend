@@ -5,6 +5,8 @@ import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { ErrorState } from "../components/ErrorState";
 import { useAuth } from "../auth/AuthContext";
 import { addTopicToActiveRoadmap, ApiError, getFeedItem, getPersonalizedWhy, logEvent, rateWhy, reportFeedItem, saveFeedItem, unsaveFeedItem } from "../lib/api";
+import { VideoEmbed } from "../components/VideoEmbed";
+import { AudioEmbed } from "../components/AudioEmbed";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ReportReason } from "../lib/types";
@@ -207,6 +209,9 @@ export function FeedDetail() {
           ))}
         </div>
       )}
+
+      {item.type === "Video" && <VideoEmbed url={item.url} title={item.title} />}
+      {item.type === "Podcast" && <AudioEmbed url={item.audioUrl} title={item.title} />}
 
       <div className="item-detail-section">
         <div className="item-detail-section-label">WHAT HAPPENED</div>

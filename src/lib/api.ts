@@ -248,6 +248,7 @@ export const FEED_CARD_FIELDS = [
   "isSaved",
   "tags",
   "opportunities",
+  "audioUrl",
   "estimatedReadTime",
   "estimatedWatchTime",
   "url",

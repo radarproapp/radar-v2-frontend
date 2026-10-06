@@ -1104,6 +1104,11 @@ a:hover { color: var(--cyan-deep); }
   color: var(--cyan-deep); background: var(--cyan-light); border-radius: 10px;
 }
 
+/* --- Inline podcast player --- */
+.audio-embed { margin-bottom: 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; }
+.audio-embed__label { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.audio-embed__player { width: 100%; height: 36px; display: block; }
+
 /* --- Clips: vertical social feed --- */
 .r-clips { height: 100dvh; display: flex; flex-direction: column; background: #080b0e; overflow: hidden; }
 @media (max-width: 859px) { .r-clips { height: calc(100dvh - var(--tabbar-h)); } }
