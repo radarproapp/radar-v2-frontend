@@ -10,6 +10,7 @@ export function plainText(input: string): string {
     .replace(/__([^_]+)__/g, "$1") // __bold__ -> bold
     .replace(/`{1,3}([^`]*?)`{1,3}/g, "$1") // `code` -> code
     .replace(/^[ \t]{0,3}#{1,6}[ \t]*/gm, "") // ### Heading -> Heading
+    .replace(/^[ \t]*([-*_]){3,}[ \t]*$/gm, "") // --- horizontal rule
     .replace(/^[ \t]*[-*+][ \t]+/gm, "• ") // - item -> • item
     .replace(/[*#_`]/g, "") // any remaining markdown symbols
     .replace(/^\s*\n/gm, "") // blank lines left by removed headings
