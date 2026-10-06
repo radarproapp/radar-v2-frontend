@@ -161,6 +161,14 @@ export interface UpdateProfileRequest {
   interests?: string[];
   interestContexts?: UserInterestContext[];
   dominantInterests?: string[];
+  problems?: string[];
+  currentIntent?: string;
+  targetRole?: string;
+  targetIndustry?: string;
+  capabilities?: string[];
+  opportunityPreferences?: string[];
+  geography?: string[];
+  decisionNeeds?: string[];
   personaDetails?: Record<string, string>;
   notifications?: {
     weeklyBrief: boolean;
@@ -235,6 +243,7 @@ export const FEED_CARD_FIELDS = [
   "whyItMatters",
   "personalizedWhy",
   "nextMove",
+  "matchedSignals",
   "aiSummary",
   "isSaved",
   "tags",

@@ -216,6 +216,14 @@ export function FeedDetail() {
       <div className="item-detail-section">
         <div className="item-detail-section-label">WHY IT MATTERS TO YOU</div>
         <p>{whyQuery.data?.text ?? item.personalizedWhy ?? item.whyItMatters}</p>
+        {whyQuery.data?.matchedSignals && whyQuery.data.matchedSignals.length > 0 && (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 9 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--text-faint)" }}>WHY YOU'RE SEEING THIS</span>
+            {whyQuery.data.matchedSignals.slice(0, 3).map((signal) => (
+              <span key={signal} className="r-chip" style={{ fontSize: 10.5, padding: "3px 8px" }}>{signal}</span>
+            ))}
+          </div>
+        )}
         {whyQuery.data?.isPersonalized && <div style={{ fontSize: 11.5, color: "var(--cyan)", fontWeight: 700, marginTop: 7 }}>Calibrated to your goal, path and current context</div>}
         {whyQuery.data && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>

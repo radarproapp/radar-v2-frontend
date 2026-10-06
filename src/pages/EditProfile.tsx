@@ -13,6 +13,8 @@ const PERSONAS: [PersonaType, string][] = [
 ];
 const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 
+const labelStyle = { fontSize: 12.5, fontWeight: 600, color: "var(--text-dim)", display: "block", marginBottom: 6 } as const;
+
 export function EditProfile() {
   const navigate = useNavigate();
   const { profile, refetchProfile } = useAuth();
@@ -24,6 +26,14 @@ export function EditProfile() {
   const [interests, setInterests] = useState<string[]>([]);
   const [interestContexts, setInterestContexts] = useState<UserInterestContext[]>([]);
   const [dominantInterests, setDominantInterests] = useState<string[]>([]);
+  const [problems, setProblems] = useState("");
+  const [currentIntent, setCurrentIntent] = useState("");
+  const [targetRole, setTargetRole] = useState("");
+  const [targetIndustry, setTargetIndustry] = useState("");
+  const [capabilities, setCapabilities] = useState("");
+  const [opportunityPreferences, setOpportunityPreferences] = useState("");
+  const [geography, setGeography] = useState("");
+  const [decisionNeeds, setDecisionNeeds] = useState("");
   const [suggestedInterests, setSuggestedInterests] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
@@ -57,7 +67,18 @@ export function EditProfile() {
     setInterests(profile.interests);
     setInterestContexts(profile.interestContexts ?? []);
     setDominantInterests(profile.dominantInterests ?? []);
+    setProblems((profile.problems ?? []).join(", "));
+    setCurrentIntent(profile.currentIntent ?? "");
+    setTargetRole(profile.targetRole ?? "");
+    setTargetIndustry(profile.targetIndustry ?? "");
+    setCapabilities((profile.capabilities ?? []).join(", "));
+    setOpportunityPreferences((profile.opportunityPreferences ?? []).join(", "));
+    setGeography((profile.geography ?? []).join(", "));
+    setDecisionNeeds((profile.decisionNeeds ?? []).join(", "));
   }, [profile]);
+
+  const splitList = (value: string) =>
+    value.split(",").map((v) => v.trim()).filter(Boolean);
 
   useEffect(() => {
     getFocus().then((focus) => setSuggestedInterests(focus.suggestedDominantInterests)).catch(() => undefined);
@@ -74,7 +95,17 @@ export function EditProfile() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updateMe({ name, persona, primaryGoal, region, city, interests, interestContexts, dominantInterests });
+      await updateMe({
+        name, persona, primaryGoal, region, city, interests, interestContexts, dominantInterests,
+        problems: splitList(problems),
+        currentIntent,
+        targetRole,
+        targetIndustry,
+        capabilities: splitList(capabilities),
+        opportunityPreferences: splitList(opportunityPreferences),
+        geography: splitList(geography),
+        decisionNeeds: splitList(decisionNeeds),
+      });
       await refetchProfile();
       navigate("/");
     } finally {
@@ -123,6 +154,46 @@ export function EditProfile() {
       <div style={{ marginBottom: 18 }}>
         <label style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-dim)", display: "block", marginBottom: 6 }}>Primary Goal</label>
         <input type="text" className="r-input" value={primaryGoal} onChange={(e) => setPrimaryGoal(e.target.value)} />
+      </div>
+
+      <div style={{ marginBottom: 18 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 10 }}>YOUR SITUATION</div>
+        <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
+          <div>
+            <label style={labelStyle}>What's making this difficult?</label>
+            <input className="r-input" placeholder="e.g. no practical experience, information overload" value={problems} onChange={(e) => setProblems(e.target.value)} />
+          </div>
+          <div>
+            <label style={labelStyle}>What are you trying to do right now?</label>
+            <input className="r-input" placeholder="e.g. find a finance internship" value={currentIntent} onChange={(e) => setCurrentIntent(e.target.value)} />
+          </div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 180px" }}>
+              <label style={labelStyle}>Target role</label>
+              <input className="r-input" placeholder="e.g. Financial Analyst" value={targetRole} onChange={(e) => setTargetRole(e.target.value)} />
+            </div>
+            <div style={{ flex: "1 1 180px" }}>
+              <label style={labelStyle}>Target industry</label>
+              <input className="r-input" placeholder="e.g. Financial Services" value={targetIndustry} onChange={(e) => setTargetIndustry(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <label style={labelStyle}>What do you want to become better at?</label>
+            <input className="r-input" placeholder="e.g. financial analysis, data analysis (comma-separated)" value={capabilities} onChange={(e) => setCapabilities(e.target.value)} />
+          </div>
+          <div>
+            <label style={labelStyle}>Opportunities to prioritise</label>
+            <input className="r-input" placeholder="e.g. Internship, Scholarship, Fellowship" value={opportunityPreferences} onChange={(e) => setOpportunityPreferences(e.target.value)} />
+          </div>
+          <div>
+            <label style={labelStyle}>Where are you open to opportunities?</label>
+            <input className="r-input" placeholder="e.g. Nigeria, Ghana, remote" value={geography} onChange={(e) => setGeography(e.target.value)} />
+          </div>
+          <div>
+            <label style={labelStyle}>Decisions you want Radar's help with</label>
+            <input className="r-input" placeholder="e.g. career, investment, market entry" value={decisionNeeds} onChange={(e) => setDecisionNeeds(e.target.value)} />
+          </div>
+        </div>
       </div>
 
       <div style={{ marginBottom: 18 }}>

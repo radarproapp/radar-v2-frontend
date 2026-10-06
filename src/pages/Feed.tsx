@@ -5,7 +5,7 @@ import { Deferred } from "../components/Deferred";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, dismissFeedItem, FEED_CARD_FIELDS, getFeed, logEvent, saveFeedItem, unsaveFeedItem } from "../lib/api";
+import { ApiError, addTopicToActiveRoadmap, dismissFeedItem, FEED_CARD_FIELDS, getFeed, logEvent, saveFeedItem, unsaveFeedItem } from "../lib/api";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ContentItem, ContentType, Page } from "../lib/types";
@@ -90,6 +90,24 @@ export function Feed() {
       // couldn't persist the dismissal server-side — restore truth from the API
       queryClient.invalidateQueries({ queryKey: feedQueryKey });
     });
+  };
+
+  const [feedback, setFeedback] = useState<Record<string, "MoreLikeThis" | "LessLikeThis">>({});
+
+  const sendFeedback = (item: ContentItem, kind: "MoreLikeThis" | "LessLikeThis") => {
+    logEvent(kind, { contentItemId: item.id });
+    setFeedback((prev) => ({ ...prev, [item.id]: kind }));
+    if (kind === "LessLikeThis") {
+      // softer than "Not relevant": fade it out now, and let the signal do the longer-term work
+      dropItem(item.id);
+    }
+  };
+
+  const addToRoadmap = (item: ContentItem) => {
+    const topic = (item.topic || item.title || "").trim();
+    if (!topic) return;
+    logEvent("AddToRoadmap", { contentItemId: item.id });
+    addTopicToActiveRoadmap(topic).catch(() => {});
   };
 
   const items = feedQuery.data?.pages.flatMap((page) => page.items) ?? [];
@@ -210,9 +228,23 @@ export function Feed() {
                   </>
                 )}
 
+                {item.matchedSignals && item.matchedSignals.length > 0 && (
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 8 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--text-faint)" }}>WHY YOU'RE SEEING THIS</span>
+                    {item.matchedSignals.slice(0, 3).map((signal) => (
+                      <span key={signal} className="r-chip" style={{ fontSize: 10.5, padding: "3px 8px" }}>{signal}</span>
+                    ))}
+                  </div>
+                )}
+
                 <div style={{ marginTop: 10, padding: "10px 13px", background: "#f6f8f9", borderRadius: 9, borderLeft: "3px solid var(--cyan)" }}>
                   <div className="feed-section-label" style={{ marginBottom: 5 }}>YOUR NEXT MOVE</div>
                   <div style={{ fontSize: 13, color: "#14181f", lineHeight: 1.55 }}>{item.nextMove || item.recommendedActions?.[0] || `Read the brief and decide whether ${item.topic || "this signal"} belongs on your roadmap.`}</div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+                    <button className="btn btn--sm" onClick={() => addToRoadmap(item)}>Add to roadmap</button>
+                    <button className="btn btn--sm" onClick={() => navigate("/opportunities")}>Explore opportunities</button>
+                    <button className="btn btn--sm" onClick={() => navigate("/ask")}>Ask Radar</button>
+                  </div>
                 </div>
 
                 {item.opportunities && item.opportunities.length > 0 && (
@@ -241,6 +273,20 @@ export function Feed() {
                     <button className="btn btn--text btn--sm" onClick={() => dismissItem(item, position)}>
                       Not relevant
                     </button>
+                    {feedback[item.id] ? (
+                      <span className="btn btn--text btn--sm" style={{ color: "var(--cyan)" }}>
+                        {feedback[item.id] === "MoreLikeThis" ? "More like this ✓" : "Less like this ✓"}
+                      </span>
+                    ) : (
+                      <>
+                        <button className="btn btn--text btn--sm" onClick={() => sendFeedback(item, "MoreLikeThis")} title="Show me more like this">
+                          More like this
+                        </button>
+                        <button className="btn btn--text btn--sm" onClick={() => sendFeedback(item, "LessLikeThis")} title="Show me less like this">
+                          Less like this
+                        </button>
+                      </>
+                    )}
                   </div>
                   <div className="feed-actions-right">{item.estimatedReadTime ?? item.estimatedWatchTime ?? ""}</div>
                 </div>

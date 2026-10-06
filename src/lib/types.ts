@@ -132,6 +132,14 @@ export interface UserProfile {
   interests: string[];
   region: string;
   city: string;
+  problems: string[];
+  currentIntent: string;
+  targetRole: string;
+  targetIndustry: string;
+  capabilities: string[];
+  opportunityPreferences: string[];
+  geography: string[];
+  decisionNeeds: string[];
   personaDetails: Record<string, string>;
   interestContexts: UserInterestContext[];
   dominantInterests: string[];
