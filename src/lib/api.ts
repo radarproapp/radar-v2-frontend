@@ -214,6 +214,15 @@ export function getFollowUps() {
   return request<FollowUpSuggestion[]>("/api/me/follow-ups");
 }
 
+// Ask Radar conversation persistence — saved on the account so it survives reloads and devices.
+export function getAskHistory() {
+  return request<ChatMessage[]>("/api/ask/history");
+}
+
+export function clearAskHistory() {
+  return request<void>("/api/ask/history", { method: "DELETE" });
+}
+
 // Server-side fetch + extract for "Summarize link" — the page is retrieved on the backend, not
 // trusted from the client.
 export function summarizeLink(url: string) {

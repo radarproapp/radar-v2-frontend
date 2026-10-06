@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { ApiError, streamAskRadarChat, summarizeFile, summarizeLink } from "../lib/api";
+import { useEffect, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ApiError, clearAskHistory, getAskHistory, streamAskRadarChat, summarizeFile, summarizeLink } from "../lib/api";
+import { plainText } from "../lib/text";
 import type { ChatMessage } from "../lib/types";
 
 const SUGGESTIONS = [
@@ -18,6 +20,23 @@ export function AskRadar() {
   const [thinking, setThinking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+
+  // Load the saved conversation once, so history survives reloads and devices.
+  const queryClient = useQueryClient();
+  const historyQuery = useQuery({ queryKey: ["ask", "history"], queryFn: getAskHistory });
+  const seeded = useRef(false);
+  useEffect(() => {
+    if (seeded.current || !historyQuery.isSuccess) return;
+    seeded.current = true;
+    if (historyQuery.data && historyQuery.data.length > 0) setMessages(historyQuery.data);
+  }, [historyQuery.isSuccess, historyQuery.data]);
+
+  const startNewChat = async () => {
+    setMessages([]);
+    seeded.current = true;
+    await clearAskHistory().catch(() => {});
+    queryClient.invalidateQueries({ queryKey: ["ask", "history"] });
+  };
 
   const send = async (text: string) => {
     const trimmed = text.trim();
@@ -90,7 +109,12 @@ export function AskRadar() {
   return (
     <div className="r-page">
       <div className="r-page-head">
-        <h1 className="r-page-title">Ask Radar</h1>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+          <h1 className="r-page-title">Ask Radar</h1>
+          {messages.length > 0 && (
+            <button className="btn btn--sm" onClick={startNewChat}>New chat</button>
+          )}
+        </div>
         <p className="r-page-sub">Explains, summarises, compares, recommends and finds resources — grounded in your profile.</p>
       </div>
 
@@ -106,8 +130,12 @@ export function AskRadar() {
       ) : (
         <div className="ask-messages">
           {messages.map((msg) => (
-            <div className={`ask-msg ${msg.role === "user" ? "ask-msg--user" : "ask-msg--assistant"}`} key={msg.id}>
-              {msg.content}
+            <div
+              className={`ask-msg ${msg.role === "user" ? "ask-msg--user" : "ask-msg--assistant"}`}
+              key={msg.id}
+              style={msg.role === "assistant" ? { whiteSpace: "pre-wrap" } : undefined}
+            >
+              {msg.role === "assistant" ? plainText(msg.content) : msg.content}
             </div>
           ))}
           {thinking && (
