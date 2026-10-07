@@ -15,6 +15,23 @@ const PERSONAS: [PersonaType, string][] = [
 ];
 
 const REGIONS = ["Africa", "Middle East", "Asia-Pacific", "Europe", "Americas", "Global"];
+
+// Layer-1 prompts: what's blocking them, and which opportunities Radar should surface.
+const PROBLEMS = [
+  "I don't know what opportunities exist",
+  "I don't know which skills to learn",
+  "I lack practical experience",
+  "I don't have a portfolio",
+  "I lack useful connections",
+  "There's too much information",
+  "I don't have enough time",
+];
+
+const OPPORTUNITY_TYPES = [
+  "Internships", "Scholarships", "Fellowships", "Competitions", "Grants",
+  "Research", "Events", "Volunteering", "Jobs", "Exchange programmes",
+  "Certifications", "Business opportunities",
+];
 const INDUSTRIES = [
   "Technology & Software", "Finance & Banking", "Healthcare & Medicine", "Education & EdTech",
   "Government & Public Policy", "Consulting", "Retail & E-commerce", "Media & Entertainment",
@@ -114,6 +131,11 @@ export function Onboarding() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [interestContexts, setInterestContexts] = useState<Record<string, { level: typeof LEVELS[number]; lens: string }>>({});
   const [dominantInterests, setDominantInterests] = useState<string[]>([]);
+  const [problems, setProblems] = useState<string[]>([]);
+  const [opportunityPreferences, setOpportunityPreferences] = useState<string[]>([]);
+
+  const toggleIn = (value: string, setList: React.Dispatch<React.SetStateAction<string[]>>) =>
+    setList((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
   const [notifWeekly, setNotifWeekly] = useState(true);
   const [notifDeadlines, setNotifDeadlines] = useState(true);
   const [notifRoadmap, setNotifRoadmap] = useState(false);
@@ -165,6 +187,8 @@ export function Onboarding() {
             lens: interestContexts[interest]?.lens ?? "",
           })),
           dominantInterests,
+          problems,
+          opportunityPreferences,
         region: selectedRegion ?? "Global",
         city,
         personaDetails,
@@ -334,25 +358,49 @@ export function Onboarding() {
               <p className="ob-sub" style={{ marginBottom: 20 }}>
                 Everything Radar shows you — reading, learning, opportunities — is prioritised against this one thing.
               </p>
-              <div className="ob-options">
-                {goalsFor(selectedPersona).map((goal) => (
-                  <button key={goal} className={`ob-option ${selectedGoal === goal ? "active" : ""}`} onClick={() => selectGoal(goal)}>
-                    <span>{goal}</span>
-                    <span className="ob-option__check">✓</span>
-                  </button>
-                ))}
+              <div style={{ overflowY: "auto", flex: 1, paddingRight: 2 }}>
+                <div className="ob-options">
+                  {goalsFor(selectedPersona).map((goal) => (
+                    <button key={goal} className={`ob-option ${selectedGoal === goal ? "active" : ""}`} onClick={() => selectGoal(goal)}>
+                      <span>{goal}</span>
+                      <span className="ob-option__check">✓</span>
+                    </button>
+                  ))}
+                </div>
+                <label style={{ fontSize: 12.5, fontWeight: 600, color: "#535c6b", display: "block", marginBottom: 6, marginTop: 14 }}>
+                  Or describe your own goal
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Launch my own consultancy"
+                  value={customGoal}
+                  onChange={(e) => setCustomGoal(e.target.value)}
+                  onFocus={() => setSelectedGoal(null)}
+                  className="r-input"
+                />
+
+                <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(20,24,31,.08)" }}>
+                  <label style={{ fontSize: 12.5, fontWeight: 600, color: "#535c6b", display: "block", marginBottom: 8 }}>
+                    What's making this difficult? (optional)
+                  </label>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                    {PROBLEMS.map((p) => (
+                      <button key={p} className={`r-chip ${problems.includes(p) ? "active" : ""}`} onClick={() => toggleIn(p, setProblems)}>{p}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 18, paddingTop: 16, borderBottom: "1px solid rgba(20,24,31,.08)", borderTop: "1px solid rgba(20,24,31,.08)", paddingBottom: 4 }}>
+                  <label style={{ fontSize: 12.5, fontWeight: 600, color: "#535c6b", display: "block", marginBottom: 8 }}>
+                    What should Radar find for you? (optional)
+                  </label>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                    {OPPORTUNITY_TYPES.map((o) => (
+                      <button key={o} className={`r-chip ${opportunityPreferences.includes(o) ? "active" : ""}`} onClick={() => toggleIn(o, setOpportunityPreferences)}>{o}</button>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <label style={{ fontSize: 12.5, fontWeight: 600, color: "#535c6b", display: "block", marginBottom: 6, marginTop: 14 }}>
-                Or describe your own goal
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Launch my own consultancy"
-                value={customGoal}
-                onChange={(e) => setCustomGoal(e.target.value)}
-                onFocus={() => setSelectedGoal(null)}
-                className="r-input"
-              />
               <div className="ob-actions">
                 <button className="btn" onClick={back}>Back</button>
                 <button className="btn btn--primary" style={{ flex: 1 }} onClick={next} disabled={!goalReady}>Continue</button>
