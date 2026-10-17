@@ -22,6 +22,9 @@ const OnboardingSelection = lazy(() => import("./pages/OnboardingSelection").the
 const StudentOnboarding = lazy(() => import("./pages/StudentOnboarding").then((m) => ({ default: m.StudentOnboarding })));
 const GraduateOnboarding = lazy(() => import("./pages/GraduateOnboarding").then((m) => ({ default: m.GraduateOnboarding })));
 const ProfessionalOnboarding = lazy(() => import("./pages/ProfessionalOnboarding").then((m) => ({ default: m.ProfessionalOnboarding })));
+const CareerHub = lazy(() => import("./pages/CareerHub").then((m) => ({ default: m.CareerHub })));
+const GraduateCareerDashboard = lazy(() => import("./pages/GraduateCareerDashboard").then((m) => ({ default: m.GraduateCareerDashboard })));
+const ProfessionalCareerDashboard = lazy(() => import("./pages/ProfessionalCareerDashboard").then((m) => ({ default: m.ProfessionalCareerDashboard })));
 const Feed = lazy(() => import("./pages/Feed").then((m) => ({ default: m.Feed })));
 const FeedDetail = lazy(() => import("./pages/FeedDetail").then((m) => ({ default: m.FeedDetail })));
 const Saved = lazy(() => import("./pages/Saved").then((m) => ({ default: m.Saved })));
@@ -109,6 +112,9 @@ export default function App() {
               </Route>
 
               <Route element={<MainLayout />}>
+                <Route path="/career" element={<RequireAuth><CareerHub /></RequireAuth>} />
+                <Route path="/career/graduate" element={<RequireAuth><GraduateCareerDashboard /></RequireAuth>} />
+                <Route path="/career/professional" element={<RequireAuth><ProfessionalCareerDashboard /></RequireAuth>} />
                 <Route path="/feed" element={<RequireAuth><Feed /></RequireAuth>} />
                 <Route path="/feed/:itemId" element={<RequireAuth><FeedDetail /></RequireAuth>} />
                 <Route path="/saved" element={<RequireAuth><Saved /></RequireAuth>} />

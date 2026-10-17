@@ -4366,3 +4366,330 @@ a:hover { color: var(--cyan-deep); }
   flex: none;
   margin-top: 1px;
 }
+
+/* ═══════════════════════════════════════════════
+   RADAR CAREER — GRADUATE & PROFESSIONAL STYLES
+   ═══════════════════════════════════════════════ */
+
+.career-hero {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl, 16px);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.career-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--cyan-light, #f0faf9);
+  color: var(--cyan, #008c93);
+  margin-bottom: 12px;
+}
+
+.career-hero__title {
+  font-family: var(--font-display, "Space Grotesk", sans-serif);
+  font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+  font-weight: 700;
+  color: var(--text, #14181f);
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+
+.career-hero__meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+  color: var(--text-dim, #535c6b);
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(20, 24, 31, 0.07);
+}
+
+.career-hero__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Six-Part Recommendation Standard Card */
+.rec-six-part {
+  background: linear-gradient(135deg, #0e1e25 0%, #162a34 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 24px 26px;
+  margin-bottom: 24px;
+  box-shadow: 0 12px 28px -6px rgba(14, 30, 37, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.rec-six-part::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--cyan, #008c93), #38bdf8);
+}
+
+.rec-six-part__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.rec-six-part__label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rec-six-part__time-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+}
+
+.rec-six-part__heading {
+  font-family: var(--font-display, "Space Grotesk", sans-serif);
+  font-size: 19px;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.35;
+  margin-bottom: 16px;
+}
+
+.rec-six-part__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rec-part {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rec-part__title {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.rec-part__desc {
+  font-size: 13px;
+  color: #e2e8f0;
+  line-height: 1.45;
+}
+
+.rec-six-part__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Skills & Evidence Classification */
+.skills-evidence-board {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin-bottom: 24px;
+}
+
+.skills-evidence-board__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skills-category {
+  margin-bottom: 14px;
+}
+
+.skills-category:last-child {
+  margin-bottom: 0;
+}
+
+.skills-category__title {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.skill-tag--demonstrated {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.skill-tag--claimed {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.skill-tag--gap {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+}
+
+/* Career Options / Pathways Grid */
+.career-path-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.career-path-card {
+  background: var(--bg-card, #fff);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  transition: all var(--t-fast);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.career-path-card:hover {
+  border-color: var(--cyan, #008c93);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.career-path-card.active {
+  border-color: var(--cyan, #008c93);
+  background: var(--cyan-light, #f0faf9);
+  box-shadow: 0 4px 16px rgba(0, 140, 147, 0.12);
+}
+
+.career-path-card__title {
+  font-family: var(--font-display, "Space Grotesk", sans-serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text, #14181f);
+  margin-bottom: 4px;
+}
+
+.career-path-card__why {
+  font-size: 13px;
+  color: var(--text-dim, #535c6b);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.career-path-card__section {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.career-path-card__list {
+  font-size: 12.5px;
+  color: var(--text-body);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+/* Interactive Project Studio Box */
+.project-studio-card {
+  background: var(--bg-card, #fff);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  margin-bottom: 24px;
+}
+
+.rubric-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 14px 0;
+}
+
+.rubric-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+/* Professional Impact Tracker Entry */
+.impact-entry-card {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+}
+
+.impact-metric-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  font-size: 12px;
+  font-weight: 700;
+}

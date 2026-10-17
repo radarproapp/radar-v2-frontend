@@ -12,6 +12,7 @@ const PRIMARY_LINKS = [
 ];
 
 const MORE_LINKS: { label: string; path: string }[] = [
+  { label: "Career", path: "/career" },
   { label: "Clips", path: "/clips" },
   { label: "Capture", path: "/capture" },
   { label: "Opportunities", path: "/opportunities" },
@@ -21,7 +22,7 @@ const MORE_LINKS: { label: string; path: string }[] = [
   { label: "Mentor", path: "/mentor" },
 ];
 
-const MORE_PATH_HINTS = ["/clips", "/capture", "/opportunities", "/notebook", "/projects", "/research", "/library", "/mentor", "/weekly", "/source", "/topic", "/compare"];
+const MORE_PATH_HINTS = ["/career", "/clips", "/capture", "/opportunities", "/notebook", "/projects", "/research", "/library", "/mentor", "/weekly", "/source", "/topic", "/compare"];
 
 function isMoreActive(pathname: string): boolean {
   const p = pathname.toLowerCase();

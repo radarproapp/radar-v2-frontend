@@ -5,8 +5,16 @@ import { FEED_CARD_FIELDS, getFeed, getOpportunities, getToday } from "../lib/ap
 import { isWeeklyBriefUnlocked } from "../lib/schedule";
 import { FollowUps } from "../components/FollowUps";
 import { humanize } from "../lib/date";
+import { lazy, Suspense } from "react";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ContentType } from "../lib/types";
+
+const GraduateCareerDashboard = lazy(() =>
+  import("./GraduateCareerDashboard").then((m) => ({ default: m.GraduateCareerDashboard })),
+);
+const ProfessionalCareerDashboard = lazy(() =>
+  import("./ProfessionalCareerDashboard").then((m) => ({ default: m.ProfessionalCareerDashboard })),
+);
 
 const BRIEF_TYPES: ContentType[] = ["Article", "Podcast", "Video", "Essay"];
 
@@ -20,6 +28,23 @@ function timeOfDay(): string {
 export function Today() {
   const navigate = useNavigate();
   const { profile } = useAuth();
+
+  if (profile?.persona === "Graduate") {
+    return (
+      <Suspense fallback={<div className="r-page"><div className="r-empty"><div className="r-spinner" /></div></div>}>
+        <GraduateCareerDashboard />
+      </Suspense>
+    );
+  }
+
+  if (profile?.persona === "YoungProfessional") {
+    return (
+      <Suspense fallback={<div className="r-page"><div className="r-empty"><div className="r-spinner" /></div></div>}>
+        <ProfessionalCareerDashboard />
+      </Suspense>
+    );
+  }
+
   const focusQuery = useQuery({ queryKey: ["today"], queryFn: getToday });
   const briefQuery = useQuery({
     queryKey: ["feed", null],

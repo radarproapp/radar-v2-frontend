@@ -3,122 +3,114 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { OnboardingShell } from "../components/OnboardingShell";
 import { ApiError, completeOnboarding, register } from "../lib/api";
-import { INTEREST_GROUPS } from "../lib/interests";
-
-const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 
 const INDUSTRIES = [
   "Technology & Software",
-  "Finance & Banking",
-  "Healthcare & Medicine",
-  "Education & EdTech",
-  "Government & Public Policy",
-  "Consulting & Advisory",
-  "Retail & E-commerce",
-  "Media & Entertainment",
-  "Energy & Climate",
-  "Manufacturing & Engineering",
-  "Logistics & Supply Chain",
-  "Legal & Compliance",
+  "Fintech, Banking & Financial Services",
+  "Healthcare, Pharma & Biotech",
+  "Telecoms & Digital Infrastructure",
+  "Energy, Utilities & Climate Tech",
+  "Management Consulting & Advisory",
+  "E-Commerce & Retail",
+  "Media, Entertainment & Creative",
+  "Manufacturing & Supply Chain",
+  "Government & Public Sector",
   "Other",
 ];
 
-const PROFESSIONAL_GOALS = [
-  "Get Promotion & Accelerate Career",
-  "Transition to New Industry / Role",
-  "Become Team Lead or Engineering Manager",
-  "Master AI & Emerging Technologies",
-  "Earn Executive or Professional Certification",
+const EXPERIENCE_LEVELS = [
+  "1 - 3 years (Early Professional)",
+  "4 - 7 years (Mid-level / Senior)",
+  "8 - 12 years (Lead / Staff / Principal)",
+  "12+ years (Director / Executive)",
 ];
 
-const PROFESSIONAL_PROBLEMS = [
-  "I don't have enough time for deep learning",
-  "There's too much information to filter signal from noise",
-  "I lack senior leadership & strategic exposure",
-  "My company moves slower than industry tech",
-  "I want to transition into high-growth sectors",
+const LEADERSHIP_SCOPES = [
+  "Individual Contributor (Senior / Specialist)",
+  "Technical Lead / Project Lead",
+  "People Manager (Team of 3 - 8)",
+  "Department Head (Team of 10+)",
+  "P&L / Budget Decision Maker",
 ];
 
-const PROFESSIONAL_OPPORTUNITIES = [
-  "Executive Jobs",
-  "Fellowships & Residencies",
-  "Conferences & Seminars",
-  "Certifications",
-  "Consulting & Advisory Roles",
-  "Grants & Founder Programmes",
+const CAREER_GOALS = [
+  "Earn more & increase total compensation",
+  "Seek promotion in my current organisation",
+  "Move into strategic leadership or executive role",
+  "Change employers for faster growth",
+  "Change career direction / industry pivot",
+  "Increase professional influence & authority",
+  "Develop independent consulting / advisory income",
+  "Improve job security & career sustainability",
 ];
 
-const REGIONS = ["Africa", "Middle East", "Asia-Pacific", "Europe", "Americas", "Global"];
+const RISK_TOLERANCES = [
+  "Low risk: Prefer to improve and advance within my current organisation",
+  "Moderate risk: Open to selective high-growth external opportunities",
+  "High risk: Actively pursuing career pivot or independent consulting",
+];
+
+const TIME_AVAILABILITY = [
+  "2 - 4 hours / week (high-efficiency focus)",
+  "5 - 8 hours / week (dedicated development)",
+  "10+ hours / week (accelerated transition)",
+];
 
 export function ProfessionalOnboarding() {
   const navigate = useNavigate();
   const { isAuthenticated, signIn, refetchProfile } = useAuth();
 
   const [step, setStep] = useState(isAuthenticated ? 1 : 0);
-  const totalSteps = isAuthenticated ? 6 : 7;
+  const totalSteps = isAuthenticated ? 5 : 6;
 
-  // Account
+  // Account (if unauth)
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Professional details
-  const [industry, setIndustry] = useState("Technology & Software");
+  // Step 1: Current Position
   const [role, setRole] = useState("");
-  const [experience, setExperience] = useState("3-5 years");
+  const [industry, setIndustry] = useState("Technology & Software");
+  const [experienceLevel, setExperienceLevel] = useState("4 - 7 years (Mid-level / Senior)");
+  const [mainResponsibilities, setMainResponsibilities] = useState("");
+  const [leadershipScope, setLeadershipScope] = useState("Individual Contributor (Senior / Specialist)");
 
-  // Location
-  const [region, setRegion] = useState("Africa");
-  const [city, setCity] = useState("");
+  // Step 2: Existing Strengths & Capabilities (Claimed vs Demonstrated)
+  const [claimedStrengths, setClaimedStrengths] = useState<string[]>([
+    "System Architecture & Design",
+    "Product Strategy & Roadmap",
+    "Cross-Functional Team Leadership",
+  ]);
+  const [significantProjects, setSignificantProjects] = useState("");
+  const [certifications, setCertifications] = useState("");
 
-  // Goal & Focus
-  const [selectedGoal, setSelectedGoal] = useState("Get Promotion & Accelerate Career");
-  const [customGoal, setCustomGoal] = useState("");
-  const [problems, setProblems] = useState<string[]>([
-    "I don't have enough time for deep learning",
-    "There's too much information to filter signal from noise",
-  ]);
-  const [opportunityPrefs, setOpportunityPrefs] = useState<string[]>([
-    "Executive Jobs",
-    "Conferences & Seminars",
-    "Certifications",
-  ]);
-
-  // Interests
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([
-    "Artificial Intelligence",
-    "Leadership & Management",
-    "Strategy & Operations",
-  ]);
-  const [interestContexts] = useState<
-    Record<string, { level: typeof LEVELS[number]; lens: string }>
-  >({});
-  const [dominantInterests] = useState<string[]>([
-    "Artificial Intelligence",
-    "Leadership & Management",
+  // Step 3: Career Goals
+  const [selectedGoals, setSelectedGoals] = useState<string[]>([
+    "Seek promotion in my current organisation",
+    "Earn more & increase total compensation",
   ]);
 
-  // Notifications
-  const [notifWeekly, setNotifWeekly] = useState(true);
-  const [notifDeadlines, setNotifDeadlines] = useState(true);
-  const [notifRoadmap, setNotifRoadmap] = useState(false);
+  // Step 4: Constraints & Risk Tolerance
+  const [riskTolerance, setRiskTolerance] = useState(
+    "Low risk: Prefer to improve and advance within my current organisation",
+  );
+  const [availableTime, setAvailableTime] = useState("2 - 4 hours / week (high-efficiency focus)");
+  const [maintainIncomePriority, setMaintainIncomePriority] = useState(true);
+  const [targetLocation, setTargetLocation] = useState("Lagos, Nigeria (or Remote)");
+
+  // Step 5: Evidence of Professional Impact
+  const [initialImpactExample] = useState(
+    "Led cross-team redesign of payments checkout flow, reducing latency by 35% and recovering ~$180k in annual abandoned transactions.",
+  );
 
   // Submission
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const effectiveGoal = customGoal.trim() || selectedGoal;
-
-  const toggleItem = (list: string[], item: string) => {
-    return list.includes(item) ? list.filter((i) => i !== item) : [...list, item];
-  };
-
-  const toggleInterest = (interest: string) => {
-    setSelectedInterests((prev) => {
-      if (prev.includes(interest)) return prev.filter((i) => i !== interest);
-      if (prev.length >= 8) return prev;
-      return [...prev, interest];
-    });
+  const toggleItem = (list: string[], item: string, maxItems = 4) => {
+    if (list.includes(item)) return list.filter((i) => i !== item);
+    if (list.length >= maxItems) return list;
+    return [...list, item];
   };
 
   const handleBack = () => {
@@ -140,37 +132,54 @@ export function ProfessionalOnboarding() {
         signIn(authRes.token);
       }
 
+      const primaryGoal = selectedGoals[0] || "Seek promotion in my current organisation";
+      const allInterests = Array.from(
+        new Set([industry, ...claimedStrengths, "Leadership & Management"]),
+      ).slice(0, 6);
+
       await completeOnboarding({
         persona: "YoungProfessional",
-        primaryGoal: effectiveGoal,
-        region,
-        city: city.trim() || "Headquarters",
-        interests: selectedInterests,
-        dominantInterests,
-        interestContexts: selectedInterests.map((interest) => ({
+        primaryGoal,
+        region: "Africa",
+        city: targetLocation,
+        interests: allInterests,
+        dominantInterests: [industry, claimedStrengths[0] || "Strategy"],
+        interestContexts: allInterests.map((interest) => ({
           interest,
-          goal: effectiveGoal,
-          level: interestContexts[interest]?.level ?? "Intermediate",
-          lens: interestContexts[interest]?.lens ?? `Professional focus in ${industry}`,
+          goal: primaryGoal,
+          level: "Intermediate",
+          lens: `Professional advance in ${industry} (${role})`,
         })),
-        problems,
-        opportunityPreferences: opportunityPrefs,
+        problems: ["Time constraint", "Need executive visibility & promotion case"],
+        opportunityPreferences: ["Executive Jobs", "Consulting & Advisory", "Leadership Programmes"],
         personaDetails: {
-          industry,
           role,
-          experience,
+          industry,
+          experience: experienceLevel,
+          responsibilities: mainResponsibilities,
+          leadershipScope,
+          claimedStrengths: claimedStrengths.join(", "),
+          significantProjects,
+          certifications,
+          careerGoals: selectedGoals.join(", "),
+          riskTolerance,
+          availableTime,
+          maintainIncomePriority: maintainIncomePriority ? "true" : "false",
+          targetLocation,
+          initialImpactExample,
+          activeCareerDecision: "Internal Promotion to Senior/Director",
         },
         notifications: {
-          weeklyBrief: notifWeekly,
-          opportunityDeadlines: notifDeadlines,
-          roadmapReminders: notifRoadmap,
+          weeklyBrief: true,
+          opportunityDeadlines: true,
+          roadmapReminders: true,
         },
       });
 
       await refetchProfile();
       navigate("/");
     } catch (err) {
-      setErrorMsg(err instanceof ApiError ? err.message : "Failed to save your professional profile.");
+      setErrorMsg(err instanceof ApiError ? err.message : "Failed to save your professional career profile.");
       setSaving(false);
     }
   };
@@ -179,8 +188,8 @@ export function ProfessionalOnboarding() {
 
   return (
     <OnboardingShell
-      badge="Radar Professional"
-      stepNumber={step === (isAuthenticated ? 6 : 6) ? undefined : displayStepNumber}
+      badge="Radar Career: Professional"
+      stepNumber={step === (isAuthenticated ? 5 : 5) ? undefined : displayStepNumber}
       totalSteps={totalSteps}
       sideImage={
         step === 0
@@ -188,15 +197,13 @@ export function ProfessionalOnboarding() {
           : step === 1
           ? "/images/marketing/leader.jpg"
           : step === 2
-          ? "/images/marketing/region.jpg"
+          ? "/images/marketing/intelligence.jpg"
           : step === 3
           ? "/images/marketing/goal.jpg"
-          : step === 4
-          ? "/images/marketing/interests.jpg"
           : "/images/marketing/complete.jpg"
       }
-      sideEyebrow="Radar Professional"
-      sideCaption="Strategic insights, high-value opportunities, and domain mastery for ambitious leaders."
+      sideEyebrow="Radar Career for Professionals"
+      sideCaption="Turn your experience into your next advantage without taking unnecessary risks."
       footerNotice={
         step === 0 && !isAuthenticated ? (
           <div>
@@ -208,13 +215,13 @@ export function ProfessionalOnboarding() {
         ) : null
       }
     >
-      {/* Account step */}
+      {/* STEP 0: Account */}
       {!isAuthenticated && step === 0 && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div className="ob-step-label">Step 1 of {totalSteps} · Account</div>
           <h1 className="ob-title">Create your professional account.</h1>
           <p className="ob-sub" style={{ marginBottom: 20 }}>
-            Unlock daily executive briefs, industry research summaries, and career milestones.
+            Save your career position assessment, decision comparisons, and professional impact log.
           </p>
 
           <input
@@ -262,53 +269,88 @@ export function ProfessionalOnboarding() {
         </div>
       )}
 
-      {/* Step 1: Professional Details */}
+      {/* STEP 1: Current Position */}
       {step === (isAuthenticated ? 1 : 1) && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div className="ob-step-label">
-            Step {displayStepNumber} of {totalSteps} · Role & Industry
+            Step {displayStepNumber} of {totalSteps} · Current Position
           </div>
-          <h1 className="ob-title">Tell Radar about your current work.</h1>
-          <p className="ob-sub" style={{ marginBottom: 20 }}>
-            We calibrate technical depth and market intelligence to your current seniority.
+          <h1 className="ob-title">Your current career baseline.</h1>
+          <p className="ob-sub" style={{ marginBottom: 16 }}>
+            Radar must understand your current baseline before recommending your next move.
           </p>
-
-          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
-            Current Industry
-          </label>
-          <select
-            className="r-input"
-            value={industry}
-            onChange={(e) => setIndustry(e.target.value)}
-            style={{ marginBottom: 14 }}
-          >
-            {INDUSTRIES.map((ind) => (
-              <option key={ind} value={ind}>
-                {ind}
-              </option>
-            ))}
-          </select>
 
           <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
             Current Job Title / Role
           </label>
           <input
             type="text"
-            placeholder="e.g. Senior Product Manager, Lead Analyst, Founder"
+            placeholder="e.g. Senior Product Manager, Technical Lead, Financial Controller"
             value={role}
             onChange={(e) => setRole(e.target.value)}
             className="r-input"
             style={{ marginBottom: 14 }}
           />
 
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+            <div>
+              <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+                Industry
+              </label>
+              <select
+                className="r-input"
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+              >
+                {INDUSTRIES.map((ind) => (
+                  <option key={ind} value={ind}>
+                    {ind}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+                Experience Level
+              </label>
+              <select
+                className="r-input"
+                value={experienceLevel}
+                onChange={(e) => setExperienceLevel(e.target.value)}
+              >
+                {EXPERIENCE_LEVELS.map((exp) => (
+                  <option key={exp} value={exp}>
+                    {exp}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
-            Years of Experience
+            Leadership & Decision-Making Scope
+          </label>
+          <select
+            className="r-input"
+            value={leadershipScope}
+            onChange={(e) => setLeadershipScope(e.target.value)}
+            style={{ marginBottom: 14 }}
+          >
+            {LEADERSHIP_SCOPES.map((scope) => (
+              <option key={scope} value={scope}>
+                {scope}
+              </option>
+            ))}
+          </select>
+
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            Core Responsibilities (Brief summary)
           </label>
           <input
             type="text"
-            placeholder="e.g. 2 years, 5-8 years, 10+ years"
-            value={experience}
-            onChange={(e) => setExperience(e.target.value)}
+            placeholder="e.g. Owning core API platform, managing 4 engineers, roadmap prioritisation"
+            value={mainResponsibilities}
+            onChange={(e) => setMainResponsibilities(e.target.value)}
             className="r-input"
           />
 
@@ -328,40 +370,105 @@ export function ProfessionalOnboarding() {
         </div>
       )}
 
-      {/* Step 2: Location */}
+      {/* STEP 2: Strengths & Capabilities */}
       {step === (isAuthenticated ? 2 : 2) && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div className="ob-step-label">
-            Step {displayStepNumber} of {totalSteps} · Location
+            Step {displayStepNumber} of {totalSteps} · Strengths & Projects
           </div>
-          <h1 className="ob-title">Where are you operating?</h1>
-          <p className="ob-sub" style={{ marginBottom: 20 }}>
-            Radar connects local market regulatory context and regional opportunities.
+          <h1 className="ob-title">Existing strengths & expertise.</h1>
+          <p className="ob-sub" style={{ marginBottom: 16 }}>
+            Radar distinguishes claimed capabilities from demonstrated workplace results.
           </p>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9, marginBottom: 14 }}>
-            {REGIONS.map((r) => (
-              <button
-                key={r}
-                className={`ob-option ${region === r ? "active" : ""}`}
-                style={{ textAlign: "left" }}
-                onClick={() => setRegion(r)}
-              >
-                {r}
-              </button>
-            ))}
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            Core Areas of Expertise (Select or add)
+          </label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 16 }}>
+            {[
+              "System Architecture & Design",
+              "Product Strategy & Roadmap",
+              "Cross-Functional Team Leadership",
+              "Financial Modelling & Budgeting",
+              "Stakeholder Management",
+              "Revenue Operations & Growth",
+              "Data Engineering & Analytics",
+              "Process Optimization & Lean",
+            ].map((skill) => {
+              const active = claimedStrengths.includes(skill);
+              return (
+                <button
+                  key={skill}
+                  className={`ob-tag-btn ${active ? "active" : ""}`}
+                  onClick={() => setClaimedStrengths((prev) => toggleItem(prev, skill, 4))}
+                >
+                  {skill} {active ? "✓" : "+"}
+                </button>
+              );
+            })}
           </div>
 
           <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
-            Primary City / Country
+            Major Projects Handled Successfully
+          </label>
+          <textarea
+            placeholder="e.g. Migrated monolith to microservices; launched mobile app to 100k users; reduced AWS cloud spend by 22%"
+            value={significantProjects}
+            onChange={(e) => setSignificantProjects(e.target.value)}
+            className="r-input"
+            rows={2}
+            style={{ marginBottom: 14, resize: "vertical" }}
+          />
+
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            Key Certifications or Qualifications (Optional)
           </label>
           <input
             type="text"
-            placeholder="e.g. Nairobi, Kenya or London, UK"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
+            placeholder="e.g. AWS Solutions Architect, PMP, CFA Level II"
+            value={certifications}
+            onChange={(e) => setCertifications(e.target.value)}
             className="r-input"
           />
+
+          <div className="ob-actions">
+            <button className="btn" onClick={handleBack}>
+              Back
+            </button>
+            <button className="btn btn--primary" style={{ flex: 1 }} onClick={handleNext}>
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 3: Career Goals */}
+      {step === (isAuthenticated ? 3 : 3) && (
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          <div className="ob-step-label">
+            Step {displayStepNumber} of {totalSteps} · Objectives
+          </div>
+          <h1 className="ob-title">What outcome do you want to unlock?</h1>
+          <p className="ob-sub" style={{ marginBottom: 16 }}>
+            Select your top objectives. Radar will benchmark and evaluate your options against these goals.
+          </p>
+
+          <div className="ob-options" style={{ marginBottom: 16 }}>
+            {CAREER_GOALS.map((goal) => {
+              const active = selectedGoals.includes(goal);
+              return (
+                <button
+                  key={goal}
+                  className={`ob-option ${active ? "active" : ""}`}
+                  style={{ padding: "11px 14px", fontSize: 13.5 }}
+                  onClick={() => setSelectedGoals((prev) => toggleItem(prev, goal, 3))}
+                >
+                  <span>{goal}</span>
+                  <span className="ob-option__check">✓</span>
+                </button>
+              );
+            })}
+          </div>
 
           <div className="ob-actions">
             <button className="btn" onClick={handleBack}>
@@ -371,7 +478,7 @@ export function ProfessionalOnboarding() {
               className="btn btn--primary"
               style={{ flex: 1 }}
               onClick={handleNext}
-              disabled={!city.trim()}
+              disabled={selectedGoals.length === 0}
             >
               Continue
             </button>
@@ -379,228 +486,133 @@ export function ProfessionalOnboarding() {
         </div>
       )}
 
-      {/* Step 3: Primary Career Goal */}
-      {step === (isAuthenticated ? 3 : 3) && (
+      {/* STEP 4: Constraints & Risk Tolerance */}
+      {step === (isAuthenticated ? 4 : 4) && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div className="ob-step-label">
-            Step {displayStepNumber} of {totalSteps} · Strategic Goal
+            Step {displayStepNumber} of {totalSteps} · Constraints & Risk
           </div>
-          <h1 className="ob-title">What is your next career frontier?</h1>
+          <h1 className="ob-title">Risk tolerance & availability.</h1>
           <p className="ob-sub" style={{ marginBottom: 16 }}>
-            Every morning recommendation, article analysis, and mentor scenario focuses here.
+            Sometimes the best recommendation is to improve your current position rather than leave it.
           </p>
 
-          <div className="ob-options" style={{ marginBottom: 12 }}>
-            {PROFESSIONAL_GOALS.map((goal) => (
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            Appetite for Career Risk
+          </label>
+          <div className="ob-options" style={{ marginBottom: 16 }}>
+            {RISK_TOLERANCES.map((risk) => (
               <button
-                key={goal}
-                className={`ob-option ${selectedGoal === goal && !customGoal ? "active" : ""}`}
-                onClick={() => {
-                  setSelectedGoal(goal);
-                  setCustomGoal("");
-                }}
+                key={risk}
+                className={`ob-option ${riskTolerance === risk ? "active" : ""}`}
+                style={{ padding: "10px 14px", fontSize: 13 }}
+                onClick={() => setRiskTolerance(risk)}
               >
-                <span>{goal}</span>
+                <span>{risk}</span>
                 <span className="ob-option__check">✓</span>
               </button>
             ))}
           </div>
 
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            Available Time for Upskilling & Decision Prep
+          </label>
+          <div className="ob-options" style={{ marginBottom: 14 }}>
+            {TIME_AVAILABILITY.map((time) => (
+              <button
+                key={time}
+                className={`ob-option ${availableTime === time ? "active" : ""}`}
+                style={{ padding: "10px 14px", fontSize: 13 }}
+                onClick={() => setAvailableTime(time)}
+              >
+                <span>{time}</span>
+                <span className="ob-option__check">✓</span>
+              </button>
+            ))}
+          </div>
+
+          <label style={{ display: "flex", alignItems: "center", gap: 10, background: "#f8fafc", padding: "11px 14px", borderRadius: 10, cursor: "pointer", marginBottom: 14 }}>
+            <input
+              type="checkbox"
+              checked={maintainIncomePriority}
+              onChange={(e) => setMaintainIncomePriority(e.target.checked)}
+              style={{ width: 17, height: 17, accentColor: "#008c93" }}
+            />
+            <span style={{ fontSize: 13, color: "#334155" }}>
+              Maintaining current income without disruption is a strict priority.
+            </span>
+          </label>
+
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            Preferred Location / Market
+          </label>
           <input
             type="text"
-            placeholder="Or describe your strategic milestone"
-            value={customGoal}
-            onChange={(e) => setCustomGoal(e.target.value)}
+            placeholder="e.g. Lagos, Nigeria or London, UK or Global Remote"
+            value={targetLocation}
+            onChange={(e) => setTargetLocation(e.target.value)}
             className="r-input"
-            style={{ marginBottom: 16 }}
           />
 
-          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
-            What is your main constraint?
-          </label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 14 }}>
-            {PROFESSIONAL_PROBLEMS.map((prob) => (
-              <button
-                key={prob}
-                className={`ob-tag-btn ${problems.includes(prob) ? "active" : ""}`}
-                onClick={() => setProblems((prev) => toggleItem(prev, prob))}
-              >
-                {prob}
-              </button>
-            ))}
-          </div>
-
-          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
-            High-value opportunities to surface:
-          </label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-            {PROFESSIONAL_OPPORTUNITIES.map((op) => (
-              <button
-                key={op}
-                className={`ob-tag-btn ${opportunityPrefs.includes(op) ? "active" : ""}`}
-                onClick={() => setOpportunityPrefs((prev) => toggleItem(prev, op))}
-              >
-                {op}
-              </button>
-            ))}
-          </div>
-
           <div className="ob-actions">
             <button className="btn" onClick={handleBack}>
               Back
             </button>
             <button className="btn btn--primary" style={{ flex: 1 }} onClick={handleNext}>
-              Continue
+              Review Career Strategy →
             </button>
           </div>
         </div>
       )}
 
-      {/* Step 4: Interests */}
-      {step === (isAuthenticated ? 4 : 4) && (
-        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div className="ob-step-label">
-            Step {displayStepNumber} of {totalSteps} · Knowledge Domains
-          </div>
-          <h1 className="ob-title">Curate your intelligence domains.</h1>
-          <p className="ob-sub" style={{ marginBottom: 6 }}>
-            Select 3 to 8 domains. Radar reads global journals, papers, and industry feeds for you.
-          </p>
-          <div className="ob-interests-meta">{selectedInterests.length} of 8 selected</div>
-
-          <div style={{ overflowY: "auto", flex: 1, maxHeight: 300, marginBottom: 12, paddingRight: 4 }}>
-            {INTEREST_GROUPS.map(([group, items]) => (
-              <div key={group} style={{ marginBottom: 14 }}>
-                <div className="ob-interests-group-label">{group}</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {items.map((it) => {
-                    const active = selectedInterests.includes(it);
-                    return (
-                      <button
-                        key={it}
-                        className={`r-interest-pill ${active ? "active" : ""}`}
-                        onClick={() => toggleInterest(it)}
-                      >
-                        {it}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="ob-actions">
-            <button className="btn" onClick={handleBack}>
-              Back
-            </button>
-            <button
-              className="btn btn--primary"
-              style={{ flex: 1 }}
-              onClick={handleNext}
-              disabled={selectedInterests.length < 3}
-            >
-              Continue
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 5: Notifications */}
+      {/* STEP 5: Personalised Professional Starter Plan */}
       {step === (isAuthenticated ? 5 : 5) && (
-        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div className="ob-step-label">
-            Step {displayStepNumber} of {totalSteps} · Cadence
-          </div>
-          <h1 className="ob-title">Executive delivery schedule.</h1>
-          <p className="ob-sub" style={{ marginBottom: 20 }}>
-            Curated intelligence distilled to respect your busy calendar.
-          </p>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f8fafc", padding: "14px 16px", borderRadius: 12, cursor: "pointer" }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Weekly Executive Brief</div>
-                <div style={{ fontSize: 12.5, color: "#64748b" }}>Monday morning briefing covering macro trends and strategic opportunities</div>
-              </div>
-              <input
-                type="checkbox"
-                checked={notifWeekly}
-                onChange={(e) => setNotifWeekly(e.target.checked)}
-                style={{ width: 18, height: 18, accentColor: "#008c93" }}
-              />
-            </label>
-
-            <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f8fafc", padding: "14px 16px", borderRadius: 12, cursor: "pointer" }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Leadership Deadlines</div>
-                <div style={{ fontSize: 12.5, color: "#64748b" }}>Closing dates for grants, board opportunities, and fellowships</div>
-              </div>
-              <input
-                type="checkbox"
-                checked={notifDeadlines}
-                onChange={(e) => setNotifDeadlines(e.target.checked)}
-                style={{ width: 18, height: 18, accentColor: "#008c93" }}
-              />
-            </label>
-
-            <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f8fafc", padding: "14px 16px", borderRadius: 12, cursor: "pointer" }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Skill Roadmap Alerts</div>
-                <div style={{ fontSize: 12.5, color: "#64748b" }}>Smart micro-learning prompts during your focus blocks</div>
-              </div>
-              <input
-                type="checkbox"
-                checked={notifRoadmap}
-                onChange={(e) => setNotifRoadmap(e.target.checked)}
-                style={{ width: 18, height: 18, accentColor: "#008c93" }}
-              />
-            </label>
-          </div>
-
-          <div className="ob-actions">
-            <button className="btn" onClick={handleBack}>
-              Back
-            </button>
-            <button className="btn btn--primary" style={{ flex: 1 }} onClick={handleNext}>
-              Review Profile →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 6: Confirmation */}
-      {step === (isAuthenticated ? 6 : 6) && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div className="ob-step-label">Ready to begin</div>
           <h1 className="ob-title" style={{ fontSize: "clamp(1.45rem, 3.8vw, 1.85rem)", marginBottom: 8 }}>
-            Your Radar Professional Engine is ready.
+            Your Professional Decision Engine is ready.
           </h1>
           <p className="ob-sub" style={{ marginBottom: 16 }}>
-            Radar opens on Today's Focus — strategic reading, practical application, and senior opportunities.
+            Radar opens on your highest-leverage career move: comparing realistic pathways, tracking demonstrated impact, and positioning your value for advancement.
           </p>
 
-          <div className="ob-profile-summary">
-            <div className="ob-profile-summary-label">Professional Profile</div>
-            <div className="ob-profile-row">
-              <span className="ob-profile-row-key">Track</span>
-              <span className="ob-profile-row-val">Radar Professional</span>
+          <div className="ob-plan-card">
+            <div className="ob-plan-badge">🚀 Radar Career: Professional Track</div>
+            <div className="ob-plan-hero">
+              {role} · {industry}
             </div>
-            <div className="ob-profile-row">
-              <span className="ob-profile-row-key">Role & Industry</span>
-              <span className="ob-profile-row-val">{role} · {industry}</span>
+
+            <div className="ob-plan-item">
+              <span className="ob-plan-item-icon">⚖️</span>
+              <div>
+                <strong style={{ color: "#f8fafc" }}>Decision Framework: </strong>
+                Comparing Internal Promotion vs Lateral Move vs Advisory
+              </div>
             </div>
-            <div className="ob-profile-row">
-              <span className="ob-profile-row-key">Strategic Goal</span>
-              <span className="ob-profile-row-val">{effectiveGoal}</span>
+
+            <div className="ob-plan-item">
+              <span className="ob-plan-item-icon">💼</span>
+              <div>
+                <strong style={{ color: "#f8fafc" }}>Core Objectives: </strong>
+                {selectedGoals.join(" · ")}
+              </div>
             </div>
-            <div className="ob-profile-row">
-              <span className="ob-profile-row-key">Location</span>
-              <span className="ob-profile-row-val">{region} · {city}</span>
+
+            <div className="ob-plan-item">
+              <span className="ob-plan-item-icon">⏱️</span>
+              <div>
+                <strong style={{ color: "#f8fafc" }}>Strategy: </strong>
+                {availableTime} ({maintainIncomePriority ? "Income preserved" : "Open risk"})
+              </div>
             </div>
-            <div className="ob-profile-row">
-              <span className="ob-profile-row-key">Domains</span>
-              <span className="ob-profile-row-val">{selectedInterests.slice(0, 3).join(", ")}</span>
+          </div>
+
+          <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px 14px", marginBottom: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#166534", marginBottom: 2 }}>
+              ✓ Career Decision Intelligence & Impact Tracker Primed
+            </div>
+            <div style={{ fontSize: 12.5, color: "#15803d", lineHeight: 1.45 }}>
+              Your dashboard answers: <em>"What move would most improve my career position, and what should I do next?"</em> without generic courses or motivational fluff.
             </div>
           </div>
 
@@ -617,7 +629,7 @@ export function ProfessionalOnboarding() {
               onClick={handleFinish}
               disabled={saving}
             >
-              {saving ? "Calibrating Radar Professional…" : "Enter Radar Professional →"}
+              {saving ? "Calibrating Professional Engine…" : "Enter Radar Career →"}
             </button>
           </div>
         </div>

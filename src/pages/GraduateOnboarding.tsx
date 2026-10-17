@@ -3,36 +3,82 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { OnboardingShell } from "../components/OnboardingShell";
 import { ApiError, completeOnboarding, register } from "../lib/api";
-import { INTEREST_GROUPS } from "../lib/interests";
 
-const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
-
-const GRADUATE_GOALS = [
-  "Get First Job",
-  "Build Professional Portfolio",
-  "Prepare for NYSC Opportunities",
-  "Switch Career to Tech / Data",
-  "Learn AI & Emerging Tools",
+const QUALIFICATIONS = [
+  "BSc / Bachelor of Science",
+  "BA / Bachelor of Arts",
+  "BEng / Engineering Degree",
+  "HND / Higher National Diploma",
+  "MSc / Masters Degree",
+  "Other / Diploma",
 ];
 
-const GRADUATE_PROBLEMS = [
-  "I don't know what entry-level roles exist",
-  "I lack practical work experience",
-  "I don't have a verified portfolio",
-  "I lack industry connections",
-  "I don't know which tech skills to learn first",
+const FIELDS_OF_STUDY = [
+  "Economics & Finance",
+  "Computer Science & Software",
+  "Business & Management",
+  "Electrical / Mechanical Engineering",
+  "Mass Communication & Media",
+  "Biological & Chemical Sciences",
+  "Social Sciences & Policy",
+  "Arts & Humanities",
 ];
 
-const GRADUATE_OPPORTUNITY_TYPES = [
-  "Jobs",
-  "Internships",
+const TARGET_ROLES = [
+  "Junior Data Analyst",
+  "Junior Software Engineer",
+  "Business Operations Associate",
+  "Junior Product Specialist",
+  "Digital Marketing Analyst",
+  "Financial / Investment Analyst",
+  "Research Assistant",
+  "Customer Success & Support Specialist",
+];
+
+const WORK_TYPES_ENJOYED = [
+  "Analyzing data & spotting trends",
+  "Building apps & writing code",
+  "Solving operational bottlenecks",
+  "Writing, communication & storytelling",
+  "Project management & coordination",
+  "User research & design",
+];
+
+const COMMON_SKILLS = [
+  "Microsoft Excel & Spreadsheets",
+  "SQL & Database Queries",
+  "Python Programming",
+  "Technical Writing & Research",
+  "Data Visualization (Power BI / Tableau)",
+  "Problem Solving & Critical Thinking",
+  "Public Speaking & Presentation",
+  "HTML / CSS / JavaScript",
+];
+
+const WORK_ARRANGEMENTS = ["Remote", "Hybrid", "On-site", "Any arrangement"];
+
+const OPPORTUNITY_TYPES = [
+  "Entry-level Full-time Roles",
   "Graduate Trainee Programmes",
-  "Fellowships",
-  "Certifications",
-  "Hackathons",
+  "Paid Internships",
+  "Fellowships & Residencies",
+  "Competitions & Hackathons",
 ];
 
-const REGIONS = ["Africa", "Middle East", "Asia-Pacific", "Europe", "Americas", "Global"];
+const IMMEDIATE_PRIORITIES = [
+  "Finding my first job",
+  "Choosing a clear career direction",
+  "Building practical, demonstrable skills",
+  "Creating a verified portfolio / improving CV",
+  "Preparing for technical & behavioural interviews",
+  "Securing a competitive graduate trainee programme",
+];
+
+const AVAILABILITY_OPTIONS = [
+  "5 - 10 hours / week (part-time)",
+  "10 - 20 hours / week (dedicated)",
+  "25+ hours / week (full-time job seeking)",
+];
 
 export function GraduateOnboarding() {
   const navigate = useNavigate();
@@ -41,65 +87,59 @@ export function GraduateOnboarding() {
   const [step, setStep] = useState(isAuthenticated ? 1 : 0);
   const totalSteps = isAuthenticated ? 6 : 7;
 
-  // Account
+  // Account (if unauth)
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Graduate profile details
+  // Step 1: Education
+  const [qualification, setQualification] = useState("BSc / Bachelor of Science");
+  const [fieldOfStudy, setFieldOfStudy] = useState("Economics & Finance");
+  const [customField, setCustomField] = useState("");
+  const [relevantSubjects, setRelevantSubjects] = useState("Statistics, Econometrics, Microeconomics");
+  const [graduationStatus, setGraduationStatus] = useState("Graduated 2025");
   const [university, setUniversity] = useState("");
-  const [discipline, setDiscipline] = useState("");
-  const [yearGraduated, setYearGraduated] = useState(new Date().getFullYear().toString());
 
-  // Location
-  const [region, setRegion] = useState("Africa");
-  const [city, setCity] = useState("");
+  // Step 2: Career Interests
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(["Junior Data Analyst"]);
+  const [workEnjoyed, setWorkEnjoyed] = useState<string[]>(["Analyzing data & spotting trends"]);
+  const [isDecidingDirection, setIsDecidingDirection] = useState(false);
 
-  // Goal
-  const [selectedGoal, setSelectedGoal] = useState("Get First Job");
-  const [customGoal, setCustomGoal] = useState("");
-  const [problems, setProblems] = useState<string[]>([
-    "I lack practical work experience",
-    "I don't have a verified portfolio",
+  // Step 3: Existing Skills & Evidence (Separating self-reported from demonstrated)
+  const [selfReportedSkills, setSelfReportedSkills] = useState<string[]>([
+    "Microsoft Excel & Spreadsheets",
+    "SQL & Database Queries",
   ]);
+  const [pastWorkEvidence, setPastWorkEvidence] = useState(
+    "Final year research project analyzing consumer inflation data using Excel and survey results.",
+  );
+  const [existingPortfolio, setExistingPortfolio] = useState("");
+  const [confidenceGaps, setConfidenceGaps] = useState("Technical interview coding tests and lack of commercial experience");
+
+  // Step 4: Employment Preferences
+  const [preferredLocation, setPreferredLocation] = useState("Lagos, Nigeria (or Remote)");
+  const [workArrangement, setWorkArrangement] = useState("Hybrid");
   const [opportunityPrefs, setOpportunityPrefs] = useState<string[]>([
-    "Jobs",
+    "Entry-level Full-time Roles",
     "Graduate Trainee Programmes",
-    "Internships",
   ]);
 
-  // Interests
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([
-    "Artificial Intelligence",
-    "Software Engineering",
-    "Product Management",
-  ]);
-  const [interestContexts] = useState<
-    Record<string, { level: typeof LEVELS[number]; lens: string }>
-  >({});
-  const [dominantInterests] = useState<string[]>(["Artificial Intelligence"]);
+  // Step 5: Immediate Priorities
+  const [primaryPriority, setPrimaryPriority] = useState("Finding my first job");
 
-  // Notifications
-  const [notifWeekly, setNotifWeekly] = useState(true);
-  const [notifDeadlines, setNotifDeadlines] = useState(true);
-  const [notifRoadmap, setNotifRoadmap] = useState(false);
+  // Step 6: Availability
+  const [availability, setAvailability] = useState("10 - 20 hours / week (dedicated)");
 
   // Submission
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const effectiveGoal = customGoal.trim() || selectedGoal;
+  const effectiveField = customField.trim() || fieldOfStudy;
 
-  const toggleItem = (list: string[], item: string) => {
-    return list.includes(item) ? list.filter((i) => i !== item) : [...list, item];
-  };
-
-  const toggleInterest = (interest: string) => {
-    setSelectedInterests((prev) => {
-      if (prev.includes(interest)) return prev.filter((i) => i !== interest);
-      if (prev.length >= 8) return prev;
-      return [...prev, interest];
-    });
+  const toggleItem = (list: string[], item: string, maxItems = 4) => {
+    if (list.includes(item)) return list.filter((i) => i !== item);
+    if (list.length >= maxItems) return list;
+    return [...list, item];
   };
 
   const handleBack = () => {
@@ -121,37 +161,58 @@ export function GraduateOnboarding() {
         signIn(authRes.token);
       }
 
+      const primaryTargetRole = selectedRoles[0] || "Junior Data Analyst";
+      const allInterests = Array.from(
+        new Set([...selectedRoles, effectiveField, ...selfReportedSkills.map((s) => s.split(" ")[0])]),
+      ).slice(0, 6);
+
       await completeOnboarding({
         persona: "Graduate",
-        primaryGoal: effectiveGoal,
-        region,
-        city: city.trim() || "National",
-        interests: selectedInterests,
-        dominantInterests,
-        interestContexts: selectedInterests.map((interest) => ({
+        primaryGoal: primaryPriority,
+        region: "Africa",
+        city: preferredLocation,
+        interests: allInterests,
+        dominantInterests: selectedRoles.slice(0, 2),
+        interestContexts: allInterests.map((interest) => ({
           interest,
-          goal: effectiveGoal,
-          level: interestContexts[interest]?.level ?? "Beginner",
-          lens: interestContexts[interest]?.lens ?? "Career transition and employment",
+          goal: primaryPriority,
+          level: "Beginner",
+          lens: `Graduate career pathway towards ${primaryTargetRole}`,
         })),
-        problems,
+        problems: [confidenceGaps],
         opportunityPreferences: opportunityPrefs,
         personaDetails: {
-          university,
-          discipline,
-          year: yearGraduated,
+          qualification,
+          fieldOfStudy: effectiveField,
+          university: university.trim() || "University",
+          relevantSubjects,
+          graduationStatus,
+          targetRoles: selectedRoles.join(", "),
+          primaryTargetRole,
+          workEnjoyed: workEnjoyed.join(", "),
+          isDecidingDirection: isDecidingDirection ? "true" : "false",
+          selfReportedSkills: selfReportedSkills.join(", "),
+          demonstratedSkills: "", // Initially empty until practical project is completed!
+          pastWorkEvidence,
+          existingPortfolio,
+          confidenceGaps,
+          preferredLocation,
+          workArrangement,
+          opportunityTypes: opportunityPrefs.join(", "),
+          primaryPriority,
+          availability,
         },
         notifications: {
-          weeklyBrief: notifWeekly,
-          opportunityDeadlines: notifDeadlines,
-          roadmapReminders: notifRoadmap,
+          weeklyBrief: true,
+          opportunityDeadlines: true,
+          roadmapReminders: true,
         },
       });
 
       await refetchProfile();
       navigate("/");
     } catch (err) {
-      setErrorMsg(err instanceof ApiError ? err.message : "Failed to save your graduate profile.");
+      setErrorMsg(err instanceof ApiError ? err.message : "Failed to save your graduate career profile.");
       setSaving(false);
     }
   };
@@ -160,24 +221,24 @@ export function GraduateOnboarding() {
 
   return (
     <OnboardingShell
-      badge="Radar Graduate"
+      badge="Radar Career: Graduate"
       stepNumber={step === (isAuthenticated ? 6 : 6) ? undefined : displayStepNumber}
       totalSteps={totalSteps}
       sideImage={
         step === 0
           ? "/images/marketing/account.jpg"
           : step === 1
-          ? "/images/marketing/career.jpg"
+          ? "/images/marketing/university.jpg"
           : step === 2
-          ? "/images/marketing/region.jpg"
+          ? "/images/marketing/career.jpg"
           : step === 3
-          ? "/images/marketing/goal.jpg"
+          ? "/images/marketing/learn.jpg"
           : step === 4
-          ? "/images/marketing/interests.jpg"
+          ? "/images/marketing/region.jpg"
           : "/images/marketing/complete.jpg"
       }
-      sideEyebrow="Radar Graduate"
-      sideCaption="Translate your degree into hireable skills, portfolio projects, and early-career traction."
+      sideEyebrow="Radar Career for Graduates"
+      sideCaption="Move from uncertainty into an evidence-based path towards employment."
       footerNotice={
         step === 0 && !isAuthenticated ? (
           <div>
@@ -189,13 +250,13 @@ export function GraduateOnboarding() {
         ) : null
       }
     >
-      {/* Account step */}
+      {/* STEP 0: Account */}
       {!isAuthenticated && step === 0 && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div className="ob-step-label">Step 1 of {totalSteps} · Account</div>
           <h1 className="ob-title">Create your graduate account.</h1>
           <p className="ob-sub" style={{ marginBottom: 20 }}>
-            Start building your career trajectory and tracking early career opportunities.
+            Save your career pathways, practical project evidence, and verified opportunity applications.
           </p>
 
           <input
@@ -243,49 +304,94 @@ export function GraduateOnboarding() {
         </div>
       )}
 
-      {/* Step 1: Academic Background */}
+      {/* STEP 1: Education */}
       {step === (isAuthenticated ? 1 : 1) && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div className="ob-step-label">
-            Step {displayStepNumber} of {totalSteps} · Background
+            Step {displayStepNumber} of {totalSteps} · Education
           </div>
-          <h1 className="ob-title">Tell Radar about your degree.</h1>
-          <p className="ob-sub" style={{ marginBottom: 20 }}>
-            Radar maps career transition pathways based on your degree background.
+          <h1 className="ob-title">Your educational background.</h1>
+          <p className="ob-sub" style={{ marginBottom: 16 }}>
+            Radar links your academic discipline to realistic entry requirements and transferable skills.
           </p>
 
           <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
-            University Attended
+            Qualification Level
           </label>
+          <select
+            className="r-input"
+            value={qualification}
+            onChange={(e) => setQualification(e.target.value)}
+            style={{ marginBottom: 14 }}
+          >
+            {QUALIFICATIONS.map((q) => (
+              <option key={q} value={q}>
+                {q}
+              </option>
+            ))}
+          </select>
+
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            Field of Study
+          </label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 10 }}>
+            {FIELDS_OF_STUDY.map((f) => (
+              <button
+                key={f}
+                className={`ob-tag-btn ${fieldOfStudy === f && !customField ? "active" : ""}`}
+                onClick={() => {
+                  setFieldOfStudy(f);
+                  setCustomField("");
+                }}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
           <input
             type="text"
-            placeholder="e.g. Obafemi Awolowo University"
-            value={university}
-            onChange={(e) => setUniversity(e.target.value)}
+            placeholder="Or type specific discipline (e.g. Agricultural Economics)"
+            value={customField}
+            onChange={(e) => setCustomField(e.target.value)}
             className="r-input"
             style={{ marginBottom: 14 }}
           />
 
-          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
-            Discipline / Course of Study
-          </label>
-          <input
-            type="text"
-            placeholder="e.g. Economics, Electrical Engineering"
-            value={discipline}
-            onChange={(e) => setDiscipline(e.target.value)}
-            className="r-input"
-            style={{ marginBottom: 14 }}
-          />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+            <div>
+              <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+                Graduation Status
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Graduated 2024 / NYSC"
+                value={graduationStatus}
+                onChange={(e) => setGraduationStatus(e.target.value)}
+                className="r-input"
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+                University / Institution
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. University of Ibadan"
+                value={university}
+                onChange={(e) => setUniversity(e.target.value)}
+                className="r-input"
+              />
+            </div>
+          </div>
 
           <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
-            Graduation Year
+            Key Subjects or Academic Interests
           </label>
           <input
             type="text"
-            placeholder="e.g. 2024, 2025"
-            value={yearGraduated}
-            onChange={(e) => setYearGraduated(e.target.value)}
+            placeholder="e.g. Econometrics, Applied Statistics, Research Methods"
+            value={relevantSubjects}
+            onChange={(e) => setRelevantSubjects(e.target.value)}
             className="r-input"
           />
 
@@ -293,52 +399,71 @@ export function GraduateOnboarding() {
             <button className="btn" onClick={handleBack}>
               Back
             </button>
-            <button
-              className="btn btn--primary"
-              style={{ flex: 1 }}
-              onClick={handleNext}
-              disabled={!discipline.trim()}
-            >
+            <button className="btn btn--primary" style={{ flex: 1 }} onClick={handleNext}>
               Continue
             </button>
           </div>
         </div>
       )}
 
-      {/* Step 2: Location */}
+      {/* STEP 2: Career Interests */}
       {step === (isAuthenticated ? 2 : 2) && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div className="ob-step-label">
-            Step {displayStepNumber} of {totalSteps} · Location
+            Step {displayStepNumber} of {totalSteps} · Career Interests
           </div>
-          <h1 className="ob-title">Where are you based?</h1>
-          <p className="ob-sub" style={{ marginBottom: 20 }}>
-            We prioritize entry-level jobs and graduate roles hiring in your region.
+          <h1 className="ob-title">What career directions interest you?</h1>
+          <p className="ob-sub" style={{ marginBottom: 16 }}>
+            Choose roles you are considering. You don't have to be completely certain yet.
           </p>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9, marginBottom: 14 }}>
-            {REGIONS.map((r) => (
-              <button
-                key={r}
-                className={`ob-option ${region === r ? "active" : ""}`}
-                style={{ textAlign: "left" }}
-                onClick={() => setRegion(r)}
-              >
-                {r}
-              </button>
-            ))}
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            Roles or Industries Considering (Pick 1-3)
+          </label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 16 }}>
+            {TARGET_ROLES.map((role) => {
+              const active = selectedRoles.includes(role);
+              return (
+                <button
+                  key={role}
+                  className={`ob-tag-btn ${active ? "active" : ""}`}
+                  onClick={() => setSelectedRoles((prev) => toggleItem(prev, role, 3))}
+                >
+                  {role} {active ? "✓" : "+"}
+                </button>
+              );
+            })}
           </div>
 
           <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
-            City / Country
+            What types of work do you actually enjoy?
           </label>
-          <input
-            type="text"
-            placeholder="e.g. Lagos, Nigeria"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="r-input"
-          />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 16 }}>
+            {WORK_TYPES_ENJOYED.map((w) => {
+              const active = workEnjoyed.includes(w);
+              return (
+                <button
+                  key={w}
+                  className={`ob-tag-btn ${active ? "active" : ""}`}
+                  onClick={() => setWorkEnjoyed((prev) => toggleItem(prev, w, 3))}
+                >
+                  {w} {active ? "✓" : "+"}
+                </button>
+              );
+            })}
+          </div>
+
+          <label style={{ display: "flex", alignItems: "center", gap: 10, background: "#f8fafc", padding: "12px 14px", borderRadius: 10, cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={isDecidingDirection}
+              onChange={(e) => setIsDecidingDirection(e.target.checked)}
+              style={{ width: 17, height: 17, accentColor: "#008c93" }}
+            />
+            <span style={{ fontSize: 13, color: "#334155" }}>
+              I am still exploring and want Radar to recommend 3-5 plausible paths based on my background.
+            </span>
+          </label>
 
           <div className="ob-actions">
             <button className="btn" onClick={handleBack}>
@@ -348,7 +473,7 @@ export function GraduateOnboarding() {
               className="btn btn--primary"
               style={{ flex: 1 }}
               onClick={handleNext}
-              disabled={!city.trim()}
+              disabled={selectedRoles.length === 0 && !isDecidingDirection}
             >
               Continue
             </button>
@@ -356,68 +481,191 @@ export function GraduateOnboarding() {
         </div>
       )}
 
-      {/* Step 3: Primary Goal & Barriers */}
+      {/* STEP 3: Existing Skills & Evidence */}
       {step === (isAuthenticated ? 3 : 3) && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div className="ob-step-label">
-            Step {displayStepNumber} of {totalSteps} · Career Goal
+            Step {displayStepNumber} of {totalSteps} · Skills & Evidence
           </div>
-          <h1 className="ob-title">What is your primary milestone?</h1>
+          <h1 className="ob-title">Existing skills & evidence.</h1>
           <p className="ob-sub" style={{ marginBottom: 16 }}>
-            Radar designs your daily roadmap and projects toward this single milestone.
+            Radar distinguishes self-reported skills from skills demonstrated through actual projects.
           </p>
 
-          <div className="ob-options" style={{ marginBottom: 12 }}>
-            {GRADUATE_GOALS.map((goal) => (
-              <button
-                key={goal}
-                className={`ob-option ${selectedGoal === goal && !customGoal ? "active" : ""}`}
-                onClick={() => {
-                  setSelectedGoal(goal);
-                  setCustomGoal("");
-                }}
-              >
-                <span>{goal}</span>
-                <span className="ob-option__check">✓</span>
-              </button>
-            ))}
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            Self-Reported Skills (Skills you believe you have)
+          </label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 16 }}>
+            {COMMON_SKILLS.map((skill) => {
+              const active = selfReportedSkills.includes(skill);
+              return (
+                <button
+                  key={skill}
+                  className={`ob-tag-btn ${active ? "active" : ""}`}
+                  onClick={() => setSelfReportedSkills((prev) => toggleItem(prev, skill, 5))}
+                >
+                  {skill} {active ? "✓" : "+"}
+                </button>
+              );
+            })}
           </div>
 
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            Prior Work, Projects, or Coursework Evidence
+          </label>
+          <textarea
+            placeholder="e.g. Final year research project on sales elasticity, student association treasurer, freelance writing"
+            value={pastWorkEvidence}
+            onChange={(e) => setPastWorkEvidence(e.target.value)}
+            className="r-input"
+            rows={2}
+            style={{ marginBottom: 14, resize: "vertical" }}
+          />
+
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            Existing Portfolio or GitHub Link (Optional)
+          </label>
           <input
             type="text"
-            placeholder="Or describe your target goal"
-            value={customGoal}
-            onChange={(e) => setCustomGoal(e.target.value)}
+            placeholder="e.g. github.com/username or behance.net/username"
+            value={existingPortfolio}
+            onChange={(e) => setExistingPortfolio(e.target.value)}
+            className="r-input"
+            style={{ marginBottom: 14 }}
+          />
+
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            Where do you currently lack confidence?
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. Technical interview tests, lack of commercial experience"
+            value={confidenceGaps}
+            onChange={(e) => setConfidenceGaps(e.target.value)}
+            className="r-input"
+          />
+
+          <div className="ob-actions">
+            <button className="btn" onClick={handleBack}>
+              Back
+            </button>
+            <button className="btn btn--primary" style={{ flex: 1 }} onClick={handleNext}>
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 4: Employment Preferences */}
+      {step === (isAuthenticated ? 4 : 4) && (
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          <div className="ob-step-label">
+            Step {displayStepNumber} of {totalSteps} · Preferences
+          </div>
+          <h1 className="ob-title">Employment preferences.</h1>
+          <p className="ob-sub" style={{ marginBottom: 16 }}>
+            Set location and work arrangement constraints so Radar filters genuine opportunities.
+          </p>
+
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            Preferred Location / City
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. Lagos, Nigeria or London, UK"
+            value={preferredLocation}
+            onChange={(e) => setPreferredLocation(e.target.value)}
             className="r-input"
             style={{ marginBottom: 16 }}
           />
 
           <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
-            What is currently your biggest barrier?
+            Work Arrangement
           </label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 14 }}>
-            {GRADUATE_PROBLEMS.map((prob) => (
+          <div className="ob-options" style={{ marginBottom: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {WORK_ARRANGEMENTS.map((arr) => (
               <button
-                key={prob}
-                className={`ob-tag-btn ${problems.includes(prob) ? "active" : ""}`}
-                onClick={() => setProblems((prev) => toggleItem(prev, prob))}
+                key={arr}
+                className={`ob-option ${workArrangement === arr ? "active" : ""}`}
+                style={{ padding: "10px 12px", fontSize: 13 }}
+                onClick={() => setWorkArrangement(arr)}
               >
-                {prob}
+                <span>{arr}</span>
+                <span className="ob-option__check">✓</span>
               </button>
             ))}
           </div>
 
           <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
-            What opportunities should Radar monitor for you?
+            Types of Opportunities Sought
           </label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-            {GRADUATE_OPPORTUNITY_TYPES.map((op) => (
+            {OPPORTUNITY_TYPES.map((op) => {
+              const active = opportunityPrefs.includes(op);
+              return (
+                <button
+                  key={op}
+                  className={`ob-tag-btn ${active ? "active" : ""}`}
+                  onClick={() => setOpportunityPrefs((prev) => toggleItem(prev, op, 3))}
+                >
+                  {op} {active ? "✓" : "+"}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="ob-actions">
+            <button className="btn" onClick={handleBack}>
+              Back
+            </button>
+            <button className="btn btn--primary" style={{ flex: 1 }} onClick={handleNext}>
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 5: Priorities & Availability */}
+      {step === (isAuthenticated ? 5 : 5) && (
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          <div className="ob-step-label">
+            Step {displayStepNumber} of {totalSteps} · Priorities & Time
+          </div>
+          <h1 className="ob-title">Immediate priorities & availability.</h1>
+          <p className="ob-sub" style={{ marginBottom: 16 }}>
+            We calibrate the daily workload and urgency to your current timeline.
+          </p>
+
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            What is your most urgent priority right now?
+          </label>
+          <div className="ob-options" style={{ marginBottom: 16 }}>
+            {IMMEDIATE_PRIORITIES.map((p) => (
               <button
-                key={op}
-                className={`ob-tag-btn ${opportunityPrefs.includes(op) ? "active" : ""}`}
-                onClick={() => setOpportunityPrefs((prev) => toggleItem(prev, op))}
+                key={p}
+                className={`ob-option ${primaryPriority === p ? "active" : ""}`}
+                style={{ padding: "10px 14px", fontSize: 13.5 }}
+                onClick={() => setPrimaryPriority(p)}
               >
-                {op}
+                <span>{p}</span>
+                <span className="ob-option__check">✓</span>
+              </button>
+            ))}
+          </div>
+
+          <label style={{ fontSize: 12.5, fontWeight: 700, color: "#475569", marginBottom: 6, display: "block" }}>
+            How much time can you realistically spend each week?
+          </label>
+          <div className="ob-options">
+            {AVAILABILITY_OPTIONS.map((a) => (
+              <button
+                key={a}
+                className={`ob-option ${availability === a ? "active" : ""}`}
+                style={{ padding: "11px 14px", fontSize: 13.5 }}
+                onClick={() => setAvailability(a)}
+              >
+                <span>{a}</span>
+                <span className="ob-option__check">✓</span>
               </button>
             ))}
           </div>
@@ -427,157 +675,60 @@ export function GraduateOnboarding() {
               Back
             </button>
             <button className="btn btn--primary" style={{ flex: 1 }} onClick={handleNext}>
-              Continue
+              Review Career Plan →
             </button>
           </div>
         </div>
       )}
 
-      {/* Step 4: Interests */}
-      {step === (isAuthenticated ? 4 : 4) && (
-        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div className="ob-step-label">
-            Step {displayStepNumber} of {totalSteps} · Interests
-          </div>
-          <h1 className="ob-title">Select your industry interests.</h1>
-          <p className="ob-sub" style={{ marginBottom: 6 }}>
-            Pick 3 to 8 subjects to calibrate your feed, skills roadmap, and mentor questions.
-          </p>
-          <div className="ob-interests-meta">{selectedInterests.length} of 8 selected</div>
-
-          <div style={{ overflowY: "auto", flex: 1, maxHeight: 300, marginBottom: 12, paddingRight: 4 }}>
-            {INTEREST_GROUPS.map(([group, items]) => (
-              <div key={group} style={{ marginBottom: 14 }}>
-                <div className="ob-interests-group-label">{group}</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {items.map((it) => {
-                    const active = selectedInterests.includes(it);
-                    return (
-                      <button
-                        key={it}
-                        className={`r-interest-pill ${active ? "active" : ""}`}
-                        onClick={() => toggleInterest(it)}
-                      >
-                        {it}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="ob-actions">
-            <button className="btn" onClick={handleBack}>
-              Back
-            </button>
-            <button
-              className="btn btn--primary"
-              style={{ flex: 1 }}
-              onClick={handleNext}
-              disabled={selectedInterests.length < 3}
-            >
-              Continue
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 5: Notifications */}
-      {step === (isAuthenticated ? 5 : 5) && (
-        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div className="ob-step-label">
-            Step {displayStepNumber} of {totalSteps} · Notifications
-          </div>
-          <h1 className="ob-title">Stay on your schedule.</h1>
-          <p className="ob-sub" style={{ marginBottom: 20 }}>
-            Choose how Radar keeps you accountable. You can update these at any time.
-          </p>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f8fafc", padding: "14px 16px", borderRadius: 12, cursor: "pointer" }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Weekly Career Brief</div>
-                <div style={{ fontSize: 12.5, color: "#64748b" }}>Monday morning summary of entry-level jobs and portfolio challenges</div>
-              </div>
-              <input
-                type="checkbox"
-                checked={notifWeekly}
-                onChange={(e) => setNotifWeekly(e.target.checked)}
-                style={{ width: 18, height: 18, accentColor: "#008c93" }}
-              />
-            </label>
-
-            <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f8fafc", padding: "14px 16px", borderRadius: 12, cursor: "pointer" }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Application Deadlines</div>
-                <div style={{ fontSize: 12.5, color: "#64748b" }}>Closing alerts for graduate trainee schemes and internships</div>
-              </div>
-              <input
-                type="checkbox"
-                checked={notifDeadlines}
-                onChange={(e) => setNotifDeadlines(e.target.checked)}
-                style={{ width: 18, height: 18, accentColor: "#008c93" }}
-              />
-            </label>
-
-            <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f8fafc", padding: "14px 16px", borderRadius: 12, cursor: "pointer" }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Roadmap Nudges</div>
-                <div style={{ fontSize: 12.5, color: "#64748b" }}>Helpful reminders when you pause your project studio</div>
-              </div>
-              <input
-                type="checkbox"
-                checked={notifRoadmap}
-                onChange={(e) => setNotifRoadmap(e.target.checked)}
-                style={{ width: 18, height: 18, accentColor: "#008c93" }}
-              />
-            </label>
-          </div>
-
-          <div className="ob-actions">
-            <button className="btn" onClick={handleBack}>
-              Back
-            </button>
-            <button className="btn btn--primary" style={{ flex: 1 }} onClick={handleNext}>
-              Review Profile →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 6: Confirmation & Personalised Starter Plan */}
+      {/* STEP 6: Personalised Graduate Starter Plan */}
       {step === (isAuthenticated ? 6 : 6) && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div className="ob-step-label">Ready to begin</div>
           <h1 className="ob-title" style={{ fontSize: "clamp(1.45rem, 3.8vw, 1.85rem)", marginBottom: 8 }}>
-            Your Radar Graduate Profile is ready.
+            Your Graduate Career Engine is configured.
           </h1>
           <p className="ob-sub" style={{ marginBottom: 16 }}>
-            Radar opens on Today's Focus — connecting daily learning to portfolio proof and verified opportunities.
+            Radar opens on your daily career priority: choosing a target pathway, closing skill gaps with practical projects, and tracking verified opportunities.
           </p>
 
-          <div className="ob-profile-summary">
-            <div className="ob-profile-summary-label">Graduate Profile</div>
-            <div className="ob-profile-row">
-              <span className="ob-profile-row-key">Track</span>
-              <span className="ob-profile-row-val">Radar Graduate</span>
+          <div className="ob-plan-card">
+            <div className="ob-plan-badge">💼 Radar Career: Graduate Track</div>
+            <div className="ob-plan-hero">
+              {qualification.split(" ")[0]} in {effectiveField}
             </div>
-            <div className="ob-profile-row">
-              <span className="ob-profile-row-key">Discipline</span>
-              <span className="ob-profile-row-val">{discipline} ({yearGraduated})</span>
+
+            <div className="ob-plan-item">
+              <span className="ob-plan-item-icon">🎯</span>
+              <div>
+                <strong style={{ color: "#f8fafc" }}>Target Role: </strong>
+                {selectedRoles.join(", ")}
+              </div>
             </div>
-            <div className="ob-profile-row">
-              <span className="ob-profile-row-key">Target Goal</span>
-              <span className="ob-profile-row-val">{effectiveGoal}</span>
+
+            <div className="ob-plan-item">
+              <span className="ob-plan-item-icon">🛠️</span>
+              <div>
+                <strong style={{ color: "#f8fafc" }}>Self-Reported Skills: </strong>
+                {selfReportedSkills.join(", ")} (ready for project verification)
+              </div>
             </div>
-            <div className="ob-profile-row">
-              <span className="ob-profile-row-key">Location</span>
-              <span className="ob-profile-row-val">{region} · {city}</span>
+
+            <div className="ob-plan-item">
+              <span className="ob-plan-item-icon">⏱️</span>
+              <div>
+                <strong style={{ color: "#f8fafc" }}>Weekly Commitment: </strong>
+                {availability}
+              </div>
             </div>
-            <div className="ob-profile-row">
-              <span className="ob-profile-row-key">Core Focus</span>
-              <span className="ob-profile-row-val">{selectedInterests.slice(0, 3).join(", ")}</span>
+          </div>
+
+          <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px 14px", marginBottom: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#166534", marginBottom: 2 }}>
+              ✓ Six-Part Action Plan Primed
+            </div>
+            <div style={{ fontSize: 12.5, color: "#15803d", lineHeight: 1.45 }}>
+              Your dashboard answers: <em>"What is the most useful thing I can do for my career today?"</em> with guided project rubrics and verified role listings.
             </div>
           </div>
 
@@ -594,7 +745,7 @@ export function GraduateOnboarding() {
               onClick={handleFinish}
               disabled={saving}
             >
-              {saving ? "Setting up Radar Graduate…" : "Enter Radar Graduate →"}
+              {saving ? "Calibrating Graduate Dashboard…" : "Enter Radar Career →"}
             </button>
           </div>
         </div>
