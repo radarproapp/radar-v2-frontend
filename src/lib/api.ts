@@ -10,6 +10,7 @@ import type {
   ContentType,
   EventsSummary,
   GrowthRoadmap,
+  LearnHubPayload,
   LibraryDocument,
   MentorQuiz,
   MentorStudyPlan,
@@ -535,6 +536,31 @@ export function getRoadmapProgress(roadmapId: string) {
 /// Replaces the active roadmap with an AI-built pathway tailored to the profile.
 export function generateLearningPathway() {
   return request<GrowthRoadmap>("/api/roadmaps/generate", { method: "POST" });
+}
+
+// ── Learn Hub ─────────────────────────────────────────────────────────────
+
+export function getLearnHub(subInterest?: string, stage?: string) {
+  const params = new URLSearchParams();
+  if (subInterest && subInterest !== "All Sub-Interests") params.set("subInterest", subInterest);
+  if (stage) params.set("stage", stage);
+  const q = params.toString();
+  return request<LearnHubPayload>(`/api/learn-hub${q ? `?${q}` : ""}`);
+}
+
+export function completeHubResource(resourceId: string) {
+  return request<void>(`/api/learn-hub/resources/${resourceId}/complete`, { method: "POST" });
+}
+
+export function toggleSaveHubResource(resourceId: string) {
+  return request<void>(`/api/learn-hub/resources/${resourceId}/save`, { method: "POST" });
+}
+
+export function recordNodeActivity(nodeId: string, activityType: string, scorePercent: number) {
+  return request<void>("/api/learn-hub/nodes/activity", {
+    method: "POST",
+    body: JSON.stringify({ nodeId, activityType, scorePercent }),
+  });
 }
 
 // ── Mentor ───────────────────────────────────────────────────────────────

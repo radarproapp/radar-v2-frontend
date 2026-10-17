@@ -460,6 +460,104 @@ export interface GrowthRoadmap {
   isActive: boolean;
 }
 
+// ── Learn Hub & Knowledge Graph ──────────────────────────────────────────
+
+export type HubResourceCategory = "Learn" | "Understand" | "Research" | "Apply" | "StayCurrent";
+export type HubMediaFormat = "Video" | "AudioPodcast" | "Article" | "AcademicPaper" | "Documentation" | "ProjectGuide";
+
+export interface AcademicPaperBreakdown {
+  introduction: string;
+  problem: string;
+  aimAndObjectives: string;
+  methodology: string;
+  keyArguments: string;
+  findings: string;
+  contribution: string;
+  whyItMatters: string;
+}
+
+export interface PodcastBreakdown {
+  keyIdeas: string[];
+  importantPoints: string[];
+  whyItMatters: string;
+  takeaways: string[];
+  nextMove: string;
+}
+
+export interface HubResourceItem {
+  id: string;
+  title: string;
+  primarySkill: string;
+  subInterest: string;
+  level: "Beginner" | "Intermediate" | "Advanced" | "Application";
+  category: HubResourceCategory;
+  format: HubMediaFormat;
+  url: string;
+  mediaUrl?: string | null;
+  thumbnailUrl?: string | null;
+  source: string;
+  authorOrChannel?: string | null;
+  durationOrReadTime?: string | null;
+  rankingScore: number;
+  whyThisResource: string;
+  whatYouWillLearn?: string | null;
+  stepByStepBreakdown?: TutorialStep[];
+  practiceExerciseTitle?: string | null;
+  practiceExercise?: string | null;
+  whatHappened?: string;
+  whyItMatters?: string;
+  yourEdge?: string;
+  nextMove?: string;
+  paperBreakdown?: AcademicPaperBreakdown | null;
+  podcastBreakdown?: PodcastBreakdown | null;
+  connectedNodeIds?: string[];
+  isCompleted: boolean;
+  isSaved?: boolean;
+}
+
+export interface KnowledgeGraphNode {
+  id: string;
+  label: string;
+  category: "Goal" | "Skill" | "SubInterest" | "Topic" | "Concept" | "Project" | "Opportunity";
+  status: "Mastered" | "Learning" | "WeakArea" | "NextUp" | "Planned";
+  confidencePercent: number;
+  summary: string;
+  linkedSubInterest?: string | null;
+  stage?: string | null;
+  connectedNodeIds: string[];
+}
+
+export interface KnowledgeGraphEdge {
+  fromId: string;
+  toId: string;
+  relationship: "leads_to" | "requires" | "subskill_of" | "applies_to" | "unlocks" | "contains";
+}
+
+export interface NextBestAction {
+  title: string;
+  description: string;
+  whyNowReason: string;
+  estimatedTime: string;
+  resourceId: string;
+  stage: string;
+  subInterest: string;
+}
+
+export interface LearnHubPayload {
+  primarySkill: string;
+  goal: string;
+  currentStage: string;
+  subInterests: string[];
+  activeSubInterest: string;
+  nextAction: NextBestAction;
+  graphNodes: KnowledgeGraphNode[];
+  graphEdges: KnowledgeGraphEdge[];
+  resources: HubResourceItem[];
+  totalMasteredNodes: number;
+  totalLearningNodes: number;
+  totalWeakNodes: number;
+}
+
 // ── Mentor ───────────────────────────────────────────────────────────────
 
 export interface ChatMessage {
