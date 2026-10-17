@@ -5,7 +5,8 @@ import { Deferred } from "../components/Deferred";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, addTopicToActiveRoadmap, dismissFeedItem, FEED_CARD_FIELDS, getFeed, logEvent, saveFeedItem, unsaveFeedItem } from "../lib/api";
+import { useAuth } from "../auth/AuthContext";
+import { ApiError, dismissFeedItem, FEED_CARD_FIELDS, getFeed, logEvent, saveFeedItem, unsaveFeedItem } from "../lib/api";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ContentItem, ContentType, Page } from "../lib/types";
@@ -25,9 +26,48 @@ const PAGE_SIZE = 20;
 /// Shape react-query stores for an infinite query — needed to patch the cache optimistically.
 type FeedCache = { pages: Page<ContentItem>[]; pageParams: unknown[] };
 
+function layerIcon(layer: string): string {
+  switch (layer) {
+    case "Policy": return "⚖️";
+    case "Science": return "🔬";
+    case "Capital": return "📈";
+    case "Ideas": return "💡";
+    case "Enterprise": return "🏢";
+    default: return "⚡";
+  }
+}
+
+function layerGradient(layer: string): string {
+  switch (layer) {
+    case "Policy": return "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)";
+    case "Science": return "linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%)";
+    case "Capital": return "linear-gradient(135deg, #143538 0%, #005f66 50%, #008c93 100%)";
+    case "Ideas": return "linear-gradient(135deg, #451a03 0%, #78350f 50%, #b45309 100%)";
+    default: return "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)";
+  }
+}
+
+function formatWhySeeing(item: ContentItem, primaryGoal?: string | null): string {
+  if (item.matchedSignals && item.matchedSignals.length > 0) {
+    const signals = item.matchedSignals.slice(0, 2).join(" & ");
+    return `Surfaced for you based on your interest in ${signals}.`;
+  }
+  if (item.topic) {
+    if (primaryGoal) {
+      return `Relevant to your goal of "${primaryGoal}" in ${item.topic}.`;
+    }
+    return `Matches your active interest and skill track in ${item.topic}.`;
+  }
+  if (primaryGoal) {
+    return `Curated for your trajectory toward ${primaryGoal}.`;
+  }
+  return `Key industry signal in ${layerLabel(item.layer)}.`;
+}
+
 export function Feed() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
   const [activeFilter, setActiveFilter] = useState<ContentType | null>(null);
   const feedQueryKey = ["feed", activeFilter] as const;
 
@@ -92,23 +132,7 @@ export function Feed() {
     });
   };
 
-  const [feedback, setFeedback] = useState<Record<string, "MoreLikeThis" | "LessLikeThis">>({});
 
-  const sendFeedback = (item: ContentItem, kind: "MoreLikeThis" | "LessLikeThis") => {
-    logEvent(kind, { contentItemId: item.id });
-    setFeedback((prev) => ({ ...prev, [item.id]: kind }));
-    if (kind === "LessLikeThis") {
-      // softer than "Not relevant": fade it out now, and let the signal do the longer-term work
-      dropItem(item.id);
-    }
-  };
-
-  const addToRoadmap = (item: ContentItem) => {
-    const topic = (item.topic || item.title || "").trim();
-    if (!topic) return;
-    logEvent("AddToRoadmap", { contentItemId: item.id });
-    addTopicToActiveRoadmap(topic).catch(() => {});
-  };
 
   const items = feedQuery.data?.pages.flatMap((page) => page.items) ?? [];
   const errorMessage = feedQuery.error instanceof ApiError ? feedQuery.error.message : "Could not load the feed.";
@@ -166,100 +190,78 @@ export function Feed() {
             // Rows are mounted on approach, not all at once: the first screen paints immediately and
             // the rest of the loaded pages cost nothing until they are scrolled towards.
             <Deferred key={item.id}>
-              <div className="feed-item">
-                <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8, flexWrap: "wrap" }}>
-                  <span
+              <div className="feed-card">
+                {/* 1. BIG IMAGE */}
+                <div
+                  className="feed-card__media"
+                  onClick={() => {
+                    logEvent("Open", { contentItemId: item.id, position });
+                    navigate(`/feed/${item.id}`);
+                  }}
+                >
+                  {item.thumbnailUrl ? (
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.title}
+                      className="feed-card__img"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = "none";
+                        const placeholder = e.currentTarget.parentElement?.querySelector(".feed-card__placeholder") as HTMLElement;
+                        if (placeholder) placeholder.style.display = "flex";
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className="feed-card__placeholder"
                     style={{
-                      fontSize: 10.5,
-                      fontWeight: 700,
-                      letterSpacing: ".06em",
-                      textTransform: "uppercase",
-                      color: layerColor(item.layer),
-                      background: layerBg(item.layer),
-                      borderRadius: 5,
-                      padding: "3px 8px",
+                      display: item.thumbnailUrl ? "none" : "flex",
+                      background: layerGradient(item.layer),
                     }}
                   >
-                    {layerLabel(item.layer)}
-                  </span>
-                  {item.credibilityTier === 1 || item.credibilityTier === 2 ? (
-                    <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".05em", textTransform: "uppercase", color: "#535c6b", opacity: 0.75 }}>
-                      Tier {item.credibilityTier} · {item.source}
+                    <span className="feed-card__placeholder-icon">{layerIcon(item.layer)}</span>
+                    <span className="feed-card__placeholder-tag">{item.topic || layerLabel(item.layer)}</span>
+                  </div>
+                </div>
+
+                <div className="feed-card__content">
+                  <div className="feed-card__meta">
+                    <span
+                      className="feed-card__badge"
+                      style={{
+                        color: layerColor(item.layer),
+                        background: layerBg(item.layer),
+                      }}
+                    >
+                      {layerLabel(item.layer)}
                     </span>
-                  ) : (
-                    <span style={{ fontSize: 10.5, fontWeight: 600, color: "var(--text-muted)" }}>{item.source}</span>
-                  )}
-                  <span style={{ fontSize: 10.5, color: "var(--text-muted)", marginLeft: "auto" }}>{humanize(item.publishedAt)}</span>
-                </div>
-
-                {(item.tags ?? []).length > 0 && (
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-                    {(item.tags ?? []).slice(0, 4).map((tag) => <span key={tag} className="r-chip" style={{ fontSize: 10.5, padding: "3px 7px" }}>{tag}</span>)}
-                    <span className="r-chip" style={{ fontSize: 10.5, padding: "3px 7px", color: "var(--cyan)" }}>{item.type}</span>
+                    <span className="feed-card__source">{item.source}</span>
+                    <span className="feed-card__time">{humanize(item.publishedAt)}</span>
                   </div>
-                )}
 
-                {/* Topic line, in the review's requested shape: "Climate · Finance · Policy — Premium Times · Article".
-                    Primary topic first, then the curated secondary topics, so the category reflects the
-                    subject rather than only the source's coarse layer. */}
-                {(item.topic || (item.tags ?? []).length > 0) && (
-                  <div style={{ fontSize: 11.5, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8 }}>
-                    <span style={{ color: "var(--cyan)" }}>{item.topic || (item.tags ?? [])[0]}</span>
-                    {((item.secondaryTopics ?? []).length > 0 ? item.secondaryTopics ?? [] : (item.tags ?? []).slice(1)).map((topic) => (
-                      <span key={topic}> · {topic}</span>
-                    ))}
-                    <span style={{ opacity: 0.6 }}> — {item.source} · {item.type}</span>
+                  {/* 2. TITLE OF THE FEED */}
+                  <h2
+                    className="feed-card__title"
+                    onClick={() => {
+                      logEvent("Open", { contentItemId: item.id, position });
+                      navigate(`/feed/${item.id}`);
+                    }}
+                  >
+                    {item.title || item.signal}
+                  </h2>
+
+                  {/* 3. A SHORT SENTENCE ON WHY THE USER IS SEEING IT */}
+                  <div className="feed-card__why-seeing">
+                    <span className="feed-card__why-icon">🎯</span>
+                    <span className="feed-card__why-text">
+                      {formatWhySeeing(item, profile?.primaryGoal)}
+                    </span>
                   </div>
-                )}
 
-                <div className="feed-item-signal">{item.signal}</div>
-
-                {item.whatHappened && (
-                  <>
-                    <div className="feed-section-label">WHAT HAPPENED</div>
-                    <div className="feed-why">{item.whatHappened}</div>
-                  </>
-                )}
-
-                {(item.personalizedWhy || item.whyItMatters) && (
-                  <>
-                    <div className="feed-section-label">WHY IT MATTERS TO YOU</div>
-                    <div className="feed-why">{item.personalizedWhy || item.whyItMatters}</div>
-                  </>
-                )}
-
-                {item.matchedSignals && item.matchedSignals.length > 0 && (
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 8 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--text-faint)" }}>WHY YOU'RE SEEING THIS</span>
-                    {item.matchedSignals.slice(0, 3).map((signal) => (
-                      <span key={signal} className="r-chip" style={{ fontSize: 10.5, padding: "3px 8px" }}>{signal}</span>
-                    ))}
-                  </div>
-                )}
-
-                <div style={{ marginTop: 10, padding: "10px 13px", background: "#f6f8f9", borderRadius: 9, borderLeft: "3px solid var(--cyan)" }}>
-                  <div className="feed-section-label" style={{ marginBottom: 5 }}>YOUR NEXT MOVE</div>
-                  <div style={{ fontSize: 13, color: "#14181f", lineHeight: 1.55 }}>{item.nextMove || item.recommendedActions?.[0] || `Read the brief and decide whether ${item.topic || "this signal"} belongs on your roadmap.`}</div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
-                    <button className="btn btn--sm" onClick={() => addToRoadmap(item)}>Add to roadmap</button>
-                    <button className="btn btn--sm" onClick={() => navigate("/opportunities")}>Explore opportunities</button>
-                    <button className="btn btn--sm" onClick={() => navigate("/ask")}>Ask Radar</button>
-                  </div>
-                </div>
-
-                {item.opportunities && item.opportunities.length > 0 && (
-                  <div style={{ marginTop: 10, padding: "10px 13px", background: "#f0fafa", borderRadius: 9, borderLeft: "3px solid var(--cyan)" }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--cyan)", marginBottom: 5 }}>
-                      OPPORTUNITY
-                    </div>
-                    <div style={{ fontSize: 13, color: "#14181f", lineHeight: 1.55 }}>{item.opportunities[0]}</div>
-                  </div>
-                )}
-
-                <div className="feed-actions">
-                  <div className="feed-actions-left">
+                  {/* 4. READ BRIEF ACTION */}
+                  <div className="feed-card__footer">
                     <button
-                      className="btn btn--primary btn--sm"
+                      className="btn btn--primary btn--sm feed-card__read-btn"
                       onClick={() => {
                         logEvent("Open", { contentItemId: item.id, position });
                         navigate(`/feed/${item.id}`);
@@ -267,28 +269,27 @@ export function Feed() {
                     >
                       Read brief →
                     </button>
-                    <button className="btn btn--sm" onClick={() => toggleSave(item, position)}>
-                      {item.isSaved ? "Saved ✓" : "Save"}
-                    </button>
-                    <button className="btn btn--text btn--sm" onClick={() => dismissItem(item, position)}>
-                      Not relevant
-                    </button>
-                    {feedback[item.id] ? (
-                      <span className="btn btn--text btn--sm" style={{ color: "var(--cyan)" }}>
-                        {feedback[item.id] === "MoreLikeThis" ? "More like this ✓" : "Less like this ✓"}
+
+                    <div className="feed-card__sub-actions">
+                      <button
+                        className="btn btn--text btn--sm"
+                        onClick={() => toggleSave(item, position)}
+                        title={item.isSaved ? "Saved" : "Save for later"}
+                      >
+                        {item.isSaved ? "Saved ✓" : "Save"}
+                      </button>
+                      <button
+                        className="btn btn--text btn--sm"
+                        onClick={() => dismissItem(item, position)}
+                        title="Dismiss from feed"
+                      >
+                        Not relevant
+                      </button>
+                      <span className="feed-card__read-time">
+                        {item.estimatedReadTime ?? item.estimatedWatchTime ?? "3 min read"}
                       </span>
-                    ) : (
-                      <>
-                        <button className="btn btn--text btn--sm" onClick={() => sendFeedback(item, "MoreLikeThis")} title="Show me more like this">
-                          More like this
-                        </button>
-                        <button className="btn btn--text btn--sm" onClick={() => sendFeedback(item, "LessLikeThis")} title="Show me less like this">
-                          Less like this
-                        </button>
-                      </>
-                    )}
+                    </div>
                   </div>
-                  <div className="feed-actions-right">{item.estimatedReadTime ?? item.estimatedWatchTime ?? ""}</div>
                 </div>
               </div>
             </Deferred>

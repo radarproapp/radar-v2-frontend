@@ -154,6 +154,12 @@ export function FeedDetail() {
         ← {item.type}
       </button>
 
+      {item.thumbnailUrl && (
+        <div className="feed-detail__hero">
+          <img src={item.thumbnailUrl} alt={item.title} />
+        </div>
+      )}
+
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 13, flexWrap: "wrap" }}>
         <span
           style={{
@@ -240,12 +246,19 @@ export function FeedDetail() {
         )}
       </div>
 
-      <div className="item-detail-section" style={{ borderLeft: "3px solid var(--cyan)", paddingLeft: 16 }}>
+      <div className="item-detail-edge" style={{ marginBottom: 20 }}>
+        <div className="item-detail-edge-label">YOUR EDGE</div>
+        <p>{item.aiSummary || "Radar's analytical edge: Gives you strategic foresight, domain depth, and competitive leverage in this market."}</p>
+      </div>
+
+      <div className="item-detail-section" style={{ borderLeft: "3px solid var(--cyan)", paddingLeft: 16, marginBottom: 20 }}>
         <div className="item-detail-section-label">YOUR NEXT MOVE</div>
-        <p>{whyQuery.data?.nextMove ?? item.nextMove ?? item.recommendedActions?.[0] ?? `Read the brief and decide whether ${item.topic || "this signal"} belongs on your roadmap.`}</p>
-        <button className="btn btn--primary btn--sm" onClick={addToRoadmap} disabled={addedToRoadmap}>
-          {addedToRoadmap ? "Added to roadmap ✓" : "Add this to my roadmap"}
-        </button>
+        <p>{whyQuery.data?.nextMove ?? item.nextMove ?? item.recommendedActions?.[0] ?? `Apply this insight to a project or explore opportunities in ${item.topic || "this domain"}.`}</p>
+        <div style={{ marginTop: 12 }}>
+          <button className="btn btn--primary btn--sm" onClick={addToRoadmap} disabled={addedToRoadmap}>
+            {addedToRoadmap ? "Added to roadmap ✓" : "+ Add to roadmap"}
+          </button>
+        </div>
       </div>
 
       {whyQuery.data?.whatToKnow && whyQuery.data.whatToKnow !== item.whatHappened && (
@@ -359,15 +372,8 @@ export function FeedDetail() {
         </div>
       )}
 
-      {item.aiSummary && (
-        <div className="item-detail-edge">
-          <div className="item-detail-edge-label">YOUR EDGE</div>
-          <p>{item.aiSummary}</p>
-        </div>
-      )}
-
       <div className="item-detail-learn-loop">
-        <div className="item-detail-learn-loop-label">WANT TO UNDERSTAND THIS PROPERLY?</div>
+        <div className="item-detail-learn-loop-label">ADD TO YOUR ROADMAP</div>
         <div className="item-detail-learn-loop-title">Add {item.topic || item.title} to your Growth Roadmap.</div>
         <div className="item-detail-learn-loop-tags">
           <span className="item-detail-learn-loop-tag">6 articles</span>

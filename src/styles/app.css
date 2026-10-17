@@ -913,6 +913,187 @@ a:hover { color: var(--cyan-deep); }
 .feed-item-meta { font-size: var(--step--2); color: var(--text-faint); margin-bottom: 0.75rem; }
 .feed-item-title { font-family: var(--font-display); font-size: var(--step-1); font-weight: 700; color: var(--text); line-height: 1.25; margin-bottom: 0.75rem; }
 
+/* ── 4-Part Feed Card (Image, Title, Why Seeing, Read Brief) ─────────────── */
+.feed-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 22px;
+  padding: 0;
+  transition: transform var(--t-fast), border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.feed-card:hover {
+  border-color: rgba(0, 140, 147, 0.35);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07);
+  transform: translateY(-2px);
+}
+
+/* 1. Big Image */
+.feed-card__media {
+  width: 100%;
+  height: 220px;
+  position: relative;
+  overflow: hidden;
+  background: #0d1e24;
+  cursor: pointer;
+}
+.feed-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+.feed-card:hover .feed-card__img {
+  transform: scale(1.03);
+}
+.feed-card__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: linear-gradient(135deg, #091f24 0%, #083c44 50%, #008c93 100%);
+  color: #ffffff;
+  padding: 20px;
+  text-align: center;
+}
+.feed-card__placeholder-icon {
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+}
+.feed-card__placeholder-tag {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px 14px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+}
+
+/* Content Area */
+.feed-card__content {
+  padding: 20px 24px 22px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Meta Bar */
+.feed-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 11px;
+  flex-wrap: wrap;
+}
+.feed-card__badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 6px;
+  padding: 3px 9px;
+}
+.feed-card__source {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.feed-card__time {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* 2. Title of the Feed */
+.feed-card__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2.2vw, 1.45rem);
+  font-weight: 700;
+  line-height: 1.32;
+  color: var(--text);
+  margin: 0 0 14px 0;
+  cursor: pointer;
+  transition: color var(--t-fast);
+}
+.feed-card__title:hover {
+  color: var(--cyan);
+}
+
+/* 3. Short Sentence on Why the User is Seeing It */
+.feed-card__why-seeing {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--bg-hover);
+  border-left: 3px solid var(--cyan);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #374151;
+}
+.feed-card__why-icon {
+  flex: none;
+  font-size: 15px;
+  margin-top: 1px;
+}
+.feed-card__why-text {
+  flex: 1;
+}
+
+/* 4. Read Brief Action Footer */
+.feed-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.feed-card__read-btn {
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 20px;
+}
+.feed-card__sub-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.feed-card__read-time {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Full Brief Hero Image */
+.feed-detail__hero {
+  width: 100%;
+  height: 290px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 22px;
+  background: #0f172a;
+}
+.feed-detail__hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* ═══════════════════════════════════════════════
    OPPORTUNITY HUB
    ═══════════════════════════════════════════════ */
