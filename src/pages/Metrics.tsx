@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, getEventsSummary } from "../lib/api";
+import { ApiError, getEventsSummary, getAiEngineStatus } from "../lib/api";
 
 const DAY_OPTIONS = [7, 30, 90];
 
@@ -22,7 +22,9 @@ const EVENT_LABELS: Record<string, string> = {
 export function Metrics() {
   const [days, setDays] = useState(7);
   const query = useQuery({ queryKey: ["events-summary", days], queryFn: () => getEventsSummary(days) });
+  const aiQuery = useQuery({ queryKey: ["ai-engine-status"], queryFn: getAiEngineStatus });
   const summary = query.data;
+  const aiStats = aiQuery.data;
   const errorMessage = query.error instanceof ApiError ? query.error.message : "Could not load metrics.";
 
   const counts = summary
@@ -34,10 +36,39 @@ export function Metrics() {
   return (
     <div className="r-page" style={{ maxWidth: 640 }}>
       <div className="r-page-head">
-        <h1 className="r-page-title">Quality Metrics</h1>
+        <h1 className="r-page-title">Quality & AI Engine Metrics</h1>
         <p className="r-page-sub">
-          Measure before optimizing — raw counts of what people actually do, and how often the "why" text lands.
+          Monitor the Central AI Engine activities, feedback scores, and operational performance.
         </p>
+      </div>
+
+      {/* Central AI Engine Card */}
+      <div style={{ background: "var(--navy)", borderRadius: 16, padding: "20px 22px", color: "#fff", marginBottom: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--cyan-bright)" }}>
+            CENTRAL AI ENGINE · CORE PROCESSOR
+          </div>
+          <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 10, background: aiStats?.isCloudLlmActive ? "rgba(0,210,180,0.2)" : "rgba(255,200,0,0.2)", color: aiStats?.isCloudLlmActive ? "var(--cyan-bright)" : "var(--amber)" }}>
+            {aiStats?.isCloudLlmActive ? "● Cloud LLM Active" : "● Resilient Deterministic Brain"}
+          </span>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 14 }}>
+          <div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Activities Processed</div>
+            <div style={{ fontSize: 22, fontWeight: 700, fontFamily: "var(--font-display)" }}>{aiStats?.totalActivitiesProcessed ?? "—"}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Monthly Spend</div>
+            <div style={{ fontSize: 22, fontWeight: 700, fontFamily: "var(--font-display)" }}>${(aiStats?.monthlySpendUsd ?? 0).toFixed(2)}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Spend Cap</div>
+            <div style={{ fontSize: 22, fontWeight: 700, fontFamily: "var(--font-display)" }}>${(aiStats?.monthlySpendCapUsd ?? 25).toFixed(0)}</div>
+          </div>
+        </div>
+        <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.8)", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 10 }}>
+          Central Processor: <strong>Feed Intelligence, Learning Paths, Learn Hub, Clips, Opportunities, Academic Research, AI Mentor</strong>
+        </div>
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>

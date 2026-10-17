@@ -898,3 +898,27 @@ export interface SubscriptionPlan {
   badge: string | null;
   note: string | null;
 }
+
+// ── Central AI Engine Telemetry ──────────────────────────────────────────
+
+export interface AiActivityLog {
+  id: string;
+  feature: string;
+  userId?: string;
+  mode: string;
+  success: boolean;
+  durationMs: number;
+  timestamp: string;
+  summary?: string;
+}
+
+export interface AiEngineStats {
+  engineName: string;
+  model: string;
+  isCloudLlmActive: boolean;
+  monthlySpendUsd: number;
+  monthlySpendCapUsd: number;
+  totalActivitiesProcessed: number;
+  activityCounts: Record<string, number>;
+  recentActivities: AiActivityLog[];
+}

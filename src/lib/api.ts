@@ -20,6 +20,7 @@ import type {
   DailyLearningCard,
   ChallengeResult,
   SpacedRevisionItem,
+  AiEngineStats,
   NavigatorFocus,
   Note,
   DailyOpportunityFeed,
@@ -654,6 +655,10 @@ export function completeSpacedRevision(revisionId: string, wasRemembered: boolea
     method: "POST",
     body: JSON.stringify({ wasRemembered }),
   });
+}
+
+export function getAiEngineStatus() {
+  return request<AiEngineStats>("/api/ai/status");
 }
 
 // ── Ask Radar ────────────────────────────────────────────────────────────
