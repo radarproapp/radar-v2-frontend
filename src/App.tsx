@@ -18,7 +18,10 @@ import { HomeGate } from "./pages/HomeGate";
 // export React.lazy expects. Mapping them explicitly keeps the whole thing type-checked — a renamed
 // or deleted export fails `tsc -b` instead of throwing when the route is first opened.
 const Login = lazy(() => import("./pages/Login").then((m) => ({ default: m.Login })));
-const Onboarding = lazy(() => import("./pages/Onboarding").then((m) => ({ default: m.Onboarding })));
+const OnboardingSelection = lazy(() => import("./pages/OnboardingSelection").then((m) => ({ default: m.OnboardingSelection })));
+const StudentOnboarding = lazy(() => import("./pages/StudentOnboarding").then((m) => ({ default: m.StudentOnboarding })));
+const GraduateOnboarding = lazy(() => import("./pages/GraduateOnboarding").then((m) => ({ default: m.GraduateOnboarding })));
+const ProfessionalOnboarding = lazy(() => import("./pages/ProfessionalOnboarding").then((m) => ({ default: m.ProfessionalOnboarding })));
 const Feed = lazy(() => import("./pages/Feed").then((m) => ({ default: m.Feed })));
 const FeedDetail = lazy(() => import("./pages/FeedDetail").then((m) => ({ default: m.FeedDetail })));
 const Saved = lazy(() => import("./pages/Saved").then((m) => ({ default: m.Saved })));
@@ -87,7 +90,10 @@ export default function App() {
               <Route path="/" element={<HomeGate />} />
               <Route path="/login" element={<Login />} />
               <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/onboarding" element={<OnboardingSelection />} />
+              <Route path="/onboarding/student" element={<StudentOnboarding />} />
+              <Route path="/onboarding/graduate" element={<GraduateOnboarding />} />
+              <Route path="/onboarding/professional" element={<ProfessionalOnboarding />} />
               <Route path="/entry" element={<EntryScreens />} />
               <Route path="/showcase/:projectId" element={<ProjectShowcase />} />
 
