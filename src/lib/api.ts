@@ -317,7 +317,6 @@ export const FEED_CARD_FIELDS = [
   "whyItMatters",
   "personalizedWhy",
   "nextMove",
-  "yourEdge",
   "matchedSignals",
   "aiSummary",
   "isSaved",
