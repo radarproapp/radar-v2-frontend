@@ -759,9 +759,34 @@ export function markOpportunityApplied(id: string) {
 
 // ── Research ─────────────────────────────────────────────────────────────
 
-export function searchResearch(query: string, yearFrom: number) {
-  const params = new URLSearchParams({ q: query, yearFrom: String(yearFrom) });
+export function searchResearch(query: string, yearFrom: number = 0, paperType?: string, page: number = 1, pageSize: number = 25) {
+  const params = new URLSearchParams({ q: query, yearFrom: String(yearFrom), page: String(page), pageSize: String(pageSize) });
+  if (paperType && paperType !== "all") params.set("paperType", paperType);
   return request<ContentItem[]>(`/api/research/search?${params.toString()}`);
+}
+
+export function getPaperById(id: string) {
+  return request<ContentItem>(`/api/research/${encodeURIComponent(id)}`);
+}
+
+export function getPaperCitation(id: string, style: string = "APA") {
+  return request<{ paperId: string; style: string; citation: string }>(`/api/research/${encodeURIComponent(id)}/citation?style=${encodeURIComponent(style)}`);
+}
+
+export function explainPaperSimply(id: string) {
+  return request<{ paperId: string; explanation: string }>(`/api/research/${encodeURIComponent(id)}/explain`, {
+    method: "POST",
+  });
+}
+
+export function getPaperResearchGaps(id: string) {
+  return request<{ paperId: string; gaps: string }>(`/api/research/${encodeURIComponent(id)}/gaps`, {
+    method: "POST",
+  });
+}
+
+export function getRelatedPapers(id: string) {
+  return request<ContentItem[]>(`/api/research/${encodeURIComponent(id)}/related`);
 }
 
 // ── Library ──────────────────────────────────────────────────────────────

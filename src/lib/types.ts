@@ -234,6 +234,11 @@ export interface ContentItem {
   keyFindings: string | null;
   methodology: string | null;
   relatedPaperIds: string[];
+  paperBreakdown?: AcademicPaperBreakdown | null;
+  documentType?: string | null;
+  wordCount?: number;
+  openAccessPdfUrl?: string | null;
+  databaseSource?: string | null;
   layer: ContentLayer;
   credibilityTier: number;
   ingestionSourceId: string | null;
