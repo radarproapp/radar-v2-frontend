@@ -502,6 +502,12 @@ export function completeLesson(roadmapId: string, moduleId: string, lessonId: st
   });
 }
 
+export function completeLearningResource(roadmapId: string, resourceId: string) {
+  return request<void>(`/api/roadmaps/${roadmapId}/resources/${resourceId}/complete`, {
+    method: "POST",
+  });
+}
+
 export function getRoadmapProgress(roadmapId: string) {
   return request<{ progressPercent: number }>(`/api/roadmaps/${roadmapId}/progress`);
 }

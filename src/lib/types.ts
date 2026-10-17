@@ -375,15 +375,47 @@ export interface RoadmapLesson {
   estimatedTime: string | null;
 }
 
+export type LearningResourceType = "TutorialVideo" | "NewDevelopmentVideo" | "BlogPost";
+
+export interface TutorialStep {
+  stepNumber: number;
+  title: string;
+  instruction: string;
+  codeSnippetOrKeyPoint?: string | null;
+}
+
+export interface LearningResource {
+  id: string;
+  title: string;
+  url: string;
+  embedUrl?: string | null;
+  thumbnailUrl?: string | null;
+  source: string;
+  channelOrAuthor?: string | null;
+  duration?: string | null;
+  level: "Beginner" | "Intermediate" | "Advanced";
+  type: LearningResourceType;
+  isHowToTutorial?: boolean;
+  whatYouWillBuild?: string | null;
+  stepByStepBreakdown: TutorialStep[];
+  whatHappened: string;
+  whyItMatters: string;
+  yourEdge: string;
+  nextMove: string;
+  isCompleted: boolean;
+}
+
 export interface RoadmapModule {
   id: string;
   title: string;
   description: string;
   order: number;
+  level?: string;
   isCompleted: boolean;
   isLocked: boolean;
   lessons: RoadmapLesson[];
   contentItemIds: string[];
+  resources?: LearningResource[];
 }
 
 export interface GrowthRoadmap {
@@ -394,6 +426,7 @@ export interface GrowthRoadmap {
   interest: string;
   level: string;
   modules: RoadmapModule[];
+  resources?: LearningResource[];
   progressPercent: number;
   createdAt: string;
   isActive: boolean;
