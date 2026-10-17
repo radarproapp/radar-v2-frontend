@@ -621,17 +621,29 @@ export interface MentorQuizQuestion {
   options: string[];
   correctIndex: number;
   explanation: string;
+  questionType?: string; // "MCQ" | "ShortAnswer" | "TrueFalse" | "PracticalExercise" | "CaseStudy"
+  cognitiveLevel?: string; // "Recall" | "Understanding" | "Application" | "ProblemSolving"
+  codeSnippet?: string | null;
+  scenarioContext?: string | null;
+  subtopic?: string | null;
   userAnswered: boolean | null;
   userAnswerIndex: number | null;
+  userTextAnswer?: string | null;
+  isCorrect?: boolean | null;
 }
 
 export interface MentorQuiz {
   id: string;
   topic: string;
+  difficulty?: string;
   questions: MentorQuizQuestion[];
   currentQuestionIndex: number;
   score: number;
+  conceptualScore?: number;
+  practicalScore?: number;
   isComplete: boolean;
+  detectedWeakAreas?: string[];
+  nextMove?: string;
   createdAt: string;
 }
 
@@ -641,11 +653,13 @@ export interface MentorStudyTask {
   resourceType: string;
   estimatedTime: string | null;
   isCompleted: boolean;
+  focusArea?: string | null;
 }
 
 export interface MentorStudyWeek {
   weekNumber: number;
   theme: string;
+  milestone?: string;
   tasks: MentorStudyTask[];
   isCompleted: boolean;
 }
@@ -654,7 +668,10 @@ export interface MentorStudyPlan {
   id: string;
   topic: string;
   goal: string;
+  durationWeeks?: number;
   weeks: MentorStudyWeek[];
+  status?: string;
+  lastAdjustedAt?: string | null;
   createdAt: string;
 }
 
@@ -663,11 +680,84 @@ export interface MentorWorkReview {
   workTitle: string;
   workContent: string;
   reviewType: string;
+  score?: number;
   feedback: string;
   strengths: string[];
+  weaknesses: string[];
+  mainIssue?: string;
   improvements: string[];
   suggestions: string[];
+  nextStep?: string;
+  revisionNumber?: number;
+  previousScore?: number | null;
+  revisedFromId?: string | null;
   reviewedAt: string;
+}
+
+export interface SubtopicMasteryItem {
+  name: string;
+  masteryPercent: number;
+  status: string; // "Mastered" | "Strong" | "WeakArea" | "In Progress"
+  totalQuestions: number;
+  correctAnswers: number;
+}
+
+export interface TopicMastery {
+  id: string;
+  topic: string;
+  masteryPercent: number;
+  subtopics: SubtopicMasteryItem[];
+  weakAreas: string[];
+  strongAreas: string[];
+  lastPracticedAt: string;
+}
+
+export interface PersonalLearningMemory {
+  userId: string;
+  primaryGoal: string;
+  activeSkill: string;
+  currentStage: string;
+  weakAreas: string[];
+  strongAreas: string[];
+  recentMistakes: string[];
+  masteries: TopicMastery[];
+  completedProjects: string[];
+  submittedReviewsCount: number;
+  lastActiveAt: string;
+}
+
+export interface SpacedRevisionItem {
+  id: string;
+  topic: string;
+  intervalName: string;
+  dueDate: string;
+  prompt: string;
+  expectedTakeaway: string;
+  isCompleted: boolean;
+  wasRemembered?: boolean;
+}
+
+export interface DailyLearningCard {
+  topic: string;
+  skill: string;
+  estimatedMinutes: number;
+  why: string;
+  learnMinutes: number;
+  practiceMinutes: number;
+  applyMinutes: number;
+  nextMove: string;
+  suggestedPrompt?: string | null;
+}
+
+export interface ChallengeResult {
+  topic: string;
+  scorePercent: number;
+  conceptualScorePercent: number;
+  practicalScorePercent: number;
+  strengths: string[];
+  weaknesses: string[];
+  recommendation: string;
+  nextMove: string;
 }
 
 // ── Project Studio ───────────────────────────────────────────────────────

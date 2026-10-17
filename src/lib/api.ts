@@ -15,6 +15,11 @@ import type {
   MentorQuiz,
   MentorStudyPlan,
   MentorWorkReview,
+  PersonalLearningMemory,
+  TopicMastery,
+  DailyLearningCard,
+  ChallengeResult,
+  SpacedRevisionItem,
   NavigatorFocus,
   Note,
   DailyOpportunityFeed,
@@ -571,24 +576,24 @@ export function streamMentorChat(message: string, history: ChatMessage[], onChun
   return streamChat("/api/mentor/chat/stream", message, history, onChunk, signal);
 }
 
-export function generateQuiz(topic: string, questionCount = 5) {
+export function generateQuiz(topic: string, questionCount: number = 5, difficulty: string = "Adaptive") {
   return request<MentorQuiz>("/api/mentor/quiz", {
     method: "POST",
-    body: JSON.stringify({ topic, questionCount }),
+    body: JSON.stringify({ topic, questionCount, difficulty }),
   });
 }
 
-export function submitQuizAnswer(quizId: string, questionIndex: number, answerIndex: number) {
+export function submitQuizAnswer(quizId: string, questionIndex: number, answerIndex: number, textAnswer?: string) {
   return request<MentorQuiz>(`/api/mentor/quiz/${quizId}/answer`, {
     method: "POST",
-    body: JSON.stringify({ questionIndex, answerIndex }),
+    body: JSON.stringify({ questionIndex, answerIndex, textAnswer }),
   });
 }
 
-export function createStudyPlan(topic: string, goal: string) {
+export function createStudyPlan(topic: string, goal: string, weeks: number = 6) {
   return request<MentorStudyPlan>("/api/mentor/study-plan", {
     method: "POST",
-    body: JSON.stringify({ topic, goal }),
+    body: JSON.stringify({ topic, goal, weeks }),
   });
 }
 
@@ -596,10 +601,58 @@ export function getActiveStudyPlan() {
   return request<MentorStudyPlan | null>("/api/mentor/study-plan/active");
 }
 
-export function reviewWork(workTitle: string, workContent: string, reviewType: string) {
+export function adjustStudyPlan(planId: string, reason: string) {
+  return request<MentorStudyPlan>(`/api/mentor/study-plan/${planId}/adjust`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export function toggleStudyTask(planId: string, weekNumber: number, taskIndex: number) {
+  return request<{ success: boolean }>(`/api/mentor/study-plan/${planId}/toggle-task`, {
+    method: "POST",
+    body: JSON.stringify({ weekNumber, taskIndex }),
+  });
+}
+
+export function reviewWork(workTitle: string, workContent: string, reviewType: string, revisedFromId?: string) {
   return request<MentorWorkReview>("/api/mentor/review", {
     method: "POST",
-    body: JSON.stringify({ workTitle, workContent, reviewType }),
+    body: JSON.stringify({ workTitle, workContent, reviewType, revisedFromId }),
+  });
+}
+
+export function getUserReviews() {
+  return request<MentorWorkReview[]>("/api/mentor/reviews");
+}
+
+export function getLearningMemory() {
+  return request<PersonalLearningMemory>("/api/mentor/memory");
+}
+
+export function getTopicMasteries() {
+  return request<TopicMastery[]>("/api/mentor/mastery");
+}
+
+export function getTodayLearning() {
+  return request<DailyLearningCard>("/api/mentor/today");
+}
+
+export function runMentorChallenge(topic?: string) {
+  return request<ChallengeResult>("/api/mentor/challenge", {
+    method: "POST",
+    body: JSON.stringify({ topic }),
+  });
+}
+
+export function getSpacedRevisions() {
+  return request<SpacedRevisionItem[]>("/api/mentor/spaced-revision");
+}
+
+export function completeSpacedRevision(revisionId: string, wasRemembered: boolean = true) {
+  return request<{ success: boolean }>(`/api/mentor/spaced-revision/${revisionId}/complete`, {
+    method: "POST",
+    body: JSON.stringify({ wasRemembered }),
   });
 }
 
