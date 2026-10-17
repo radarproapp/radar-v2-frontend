@@ -11,15 +11,23 @@ const SUGGESTIONS = [
   "Recommend a resource for Artificial Intelligence.",
 ];
 
+function formatFileSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export function AskRadar() {
   const [inputText, setInputText] = useState("");
   const [summaryMode, setSummaryMode] = useState<"chat" | "file" | "link">("chat");
-  const [fileName, setFileName] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [link, setLink] = useState("");
   const [thinking, setThinking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [availableSections, setAvailableSections] = useState<string[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load the saved conversation once, so history survives reloads and devices.
   const queryClient = useQueryClient();
@@ -33,6 +41,7 @@ export function AskRadar() {
 
   const startNewChat = async () => {
     setMessages([]);
+    setAvailableSections([]);
     seeded.current = true;
     await clearAskHistory().catch(() => {});
     queryClient.invalidateQueries({ queryKey: ["ask", "history"] });
@@ -66,23 +75,70 @@ export function AskRadar() {
     }
   };
 
-  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      send(inputText);
-    }
-  };
-
-  const summarizeFile_ = async () => {
+  const summarizeFile_ = async (specificSection?: string | null) => {
     if (!file || busy) return;
     setBusy(true);
     setThinking(true);
-    setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "user", content: `Summarize file: ${file.name}`, timestamp: new Date().toISOString(), suggestedResources: [] }]);
+    const questionText = inputText.trim();
+    if (questionText) setInputText("");
+
+    const displayMsg = specificSection
+      ? (specificSection.toLowerCase().includes("all")
+          ? `Summarize entire document: ${file.name}`
+          : `Summarize ${specificSection} of ${file.name}`)
+      : `Summarize file: ${file.name}${questionText ? ` (${questionText})` : ""}`;
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: displayMsg,
+        timestamp: new Date().toISOString(),
+        suggestedResources: [],
+      },
+    ]);
+
     try {
-      const { summary } = await summarizeFile(file);
-      setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: summary || "No summary returned.", timestamp: new Date().toISOString(), suggestedResources: [] }]);
+      const res = await summarizeFile(file, specificSection, questionText || null);
+      if (res.requiresSectionSelection && res.sections && res.sections.length > 0) {
+        setAvailableSections(res.sections);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content:
+              res.message ||
+              "This work is divided into multiple chapters or sections. Which section or chapter should be summarised, or should I summarise the entire document?",
+            timestamp: new Date().toISOString(),
+            suggestedResources: [],
+          },
+        ]);
+      } else {
+        setAvailableSections([]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: res.summary || res.message || "No summary returned.",
+            timestamp: new Date().toISOString(),
+            suggestedResources: [],
+          },
+        ]);
+      }
     } catch (err) {
-      setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: err instanceof ApiError ? err.message : "Couldn't summarise that file.", timestamp: new Date().toISOString(), suggestedResources: [] }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: err instanceof ApiError ? err.message : "Couldn't summarise that file.",
+          timestamp: new Date().toISOString(),
+          suggestedResources: [],
+        },
+      ]);
     } finally {
       setThinking(false);
       setBusy(false);
@@ -103,6 +159,23 @@ export function AskRadar() {
     } finally {
       setThinking(false);
       setBusy(false);
+    }
+  };
+
+  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (summaryMode === "file" && file) {
+        if (availableSections.length > 0 && inputText.trim()) {
+          summarizeFile_(inputText.trim());
+        } else {
+          summarizeFile_();
+        }
+      } else if (summaryMode === "link" && link.trim()) {
+        summarizeLink_();
+      } else {
+        send(inputText);
+      }
     }
   };
 
@@ -146,6 +219,26 @@ export function AskRadar() {
         </div>
       )}
 
+      {availableSections.length > 0 && (
+        <div className="ask-section-picker">
+          <div className="ask-section-picker__title">
+            Select a section or chapter to summarise:
+          </div>
+          <div className="ask-section-picker__chips">
+            {availableSections.map((sec, i) => (
+              <button
+                key={sec}
+                className={`ask-section-chip ${i === 0 ? "ask-section-chip--all" : ""}`}
+                onClick={() => summarizeFile_(sec)}
+                disabled={busy}
+              >
+                {i === 0 ? "✨ " : ""}{sec}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div style={{ display: "flex", gap: 7, marginBottom: 10, flexWrap: "wrap" }}>
         {(["chat", "file", "link"] as const).map((mode) => (
           <button key={mode} className={`r-chip ${summaryMode === mode ? "active" : ""}`} onClick={() => setSummaryMode(mode)}>
@@ -155,10 +248,74 @@ export function AskRadar() {
       </div>
 
       {summaryMode === "file" && (
-        <div style={{ marginBottom: 10, padding: 12, background: "var(--bg-hover)", borderRadius: 10 }}>
-          <input type="file" accept=".txt,.md,.markdown,.csv,.json,.html,.htm,.rtf,.xml,.log" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; setFile(f); setFileName(f.name); }} />
-          {fileName && <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 7 }}>{fileName} ready to summarize</div>}
-          <button className="btn btn--primary btn--sm" style={{ marginTop: 9 }} onClick={summarizeFile_} disabled={!file || busy}>Summarize file</button>
+        <div className={`ask-file-upload ${isDragging ? "ask-file-upload--active" : ""}`}>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="ask-file-upload__input"
+            accept=".pdf,.docx,.doc,.txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.rtf,.xml,.log"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (!f) return;
+              setFile(f);
+              setAvailableSections([]);
+            }}
+          />
+          {!file ? (
+            <div
+              className="ask-file-upload__dropzone"
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                const f = e.dataTransfer.files?.[0];
+                if (f) {
+                  setFile(f);
+                  setAvailableSections([]);
+                }
+              }}
+            >
+              <div className="ask-file-upload__icon">📄</div>
+              <div className="ask-file-upload__prompt">Click to browse or drag & drop your document</div>
+              <div className="ask-file-upload__formats">PDF (.pdf), Word (.docx), Markdown (.md), TXT, CSV, JSON, HTML up to 20MB</div>
+            </div>
+          ) : (
+            <div className="ask-file-selected">
+              <div className="ask-file-selected__info">
+                <span className="ask-file-selected__icon">📄</span>
+                <div className="ask-file-selected__meta">
+                  <div className="ask-file-selected__name">{file.name}</div>
+                  <div className="ask-file-selected__size">{formatFileSize(file.size)} · Ready to summarize</div>
+                </div>
+              </div>
+              <div className="ask-file-selected__actions">
+                <button
+                  className="btn btn--primary btn--sm"
+                  onClick={() => summarizeFile_()}
+                  disabled={busy}
+                >
+                  {busy ? "Reading..." : "Summarize file"}
+                </button>
+                <button
+                  className="btn btn--sm"
+                  style={{ padding: "5px 9px", color: "var(--text-muted)" }}
+                  onClick={() => {
+                    setFile(null);
+                    setAvailableSections([]);
+                    if (fileInputRef.current) fileInputRef.current.value = "";
+                  }}
+                  title="Remove file"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -173,12 +330,38 @@ export function AskRadar() {
         <textarea
           className="ask-input-field"
           rows={1}
-          placeholder={summaryMode === "chat" ? "Ask Radar anything…" : "Add a question or context (optional)…"}
+          placeholder={
+            summaryMode === "chat"
+              ? "Ask Radar anything…"
+              : summaryMode === "file" && availableSections.length > 0
+              ? "Type chapter/section or choose from above…"
+              : "Add a question or specific focus (optional)…"
+          }
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={handleKey}
         />
-        <button className="ask-send-btn" onClick={() => send(inputText)} disabled={busy || !inputText.trim()}>
+        <button
+          className="ask-send-btn"
+          onClick={() => {
+            if (summaryMode === "file" && file) {
+              if (availableSections.length > 0 && inputText.trim()) {
+                summarizeFile_(inputText.trim());
+              } else {
+                summarizeFile_();
+              }
+            } else if (summaryMode === "link" && link.trim()) {
+              summarizeLink_();
+            } else {
+              send(inputText);
+            }
+          }}
+          disabled={
+            busy ||
+            (summaryMode === "file" ? !file : summaryMode === "link" ? !link.trim() : !inputText.trim())
+          }
+          title={summaryMode === "file" ? "Summarize uploaded file" : "Send message"}
+        >
           →
         </button>
       </div>

@@ -205,9 +205,10 @@ export interface FollowUpSuggestion {
   kind: string;
   prompt: string;
   detail: string | null;
-  action: "addInterest" | "setFocus" | "editProfile" | string;
+  action: "addInterest" | "setFocus" | "editProfile" | "explore" | string;
   actionLabel: string;
   value: string | null;
+  items?: string[];
 }
 
 export function getFollowUps() {
@@ -232,11 +233,27 @@ export function summarizeLink(url: string) {
   });
 }
 
+export interface SummarizeFileResponse {
+  requiresSectionSelection?: boolean;
+  fileName?: string;
+  sections?: string[];
+  section?: string;
+  message?: string;
+  summary?: string;
+}
+
 // Multipart upload — cannot go through request() (which forces a JSON content type).
-export async function summarizeFile(file: File): Promise<{ summary: string }> {
+export async function summarizeFile(
+  file: File,
+  section?: string | null,
+  question?: string | null
+): Promise<SummarizeFileResponse> {
   const token = getToken();
   const form = new FormData();
   form.append("file", file);
+  if (section) form.append("section", section);
+  if (question) form.append("question", question);
+
   const res = await fetch(`${API_BASE}/api/ask/summarize-file`, {
     method: "POST",
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -245,7 +262,7 @@ export async function summarizeFile(file: File): Promise<{ summary: string }> {
   const isJson = res.headers.get("content-type")?.includes("application/json");
   const body = isJson ? await res.json() : null;
   if (!res.ok) throw new ApiError(res.status, body?.error ?? body?.title ?? res.statusText);
-  return body as { summary: string };
+  return body as SummarizeFileResponse;
 }
 
 /** Explicitly suppresses a topic — recorded against every source that already holds that term. */

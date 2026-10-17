@@ -35,6 +35,10 @@ export function FollowUps() {
       navigate("/profile/edit");
       return;
     }
+    if (suggestion.action === "explore") {
+      navigate("/feed");
+      return;
+    }
     if (!suggestion.value) return;
     setBusy(suggestion.id);
     try {
@@ -54,15 +58,53 @@ export function FollowUps() {
 
   return (
     <div className="radar-noticed">
-      <div className="radar-noticed__label">RADAR NOTICED</div>
+      <div className="radar-noticed__header">
+        <div className="radar-noticed__label">RADAR NOTICED</div>
+        <button
+          className="radar-noticed__close"
+          onClick={() => dismiss(item.id)}
+          aria-label="Dismiss notice"
+          title="Dismiss"
+        >
+          ✕
+        </button>
+      </div>
+
       <div className="radar-noticed__prompt">{item.prompt}</div>
+
+      {item.items && item.items.length > 0 && (
+        <div className="radar-noticed__chips">
+          {item.items.map((term) => (
+            <button
+              key={term}
+              type="button"
+              className="radar-noticed__chip"
+              onClick={() => navigate(`/feed?q=${encodeURIComponent(term)}`)}
+              title={`View ${term} stories and updates`}
+            >
+              <span className="radar-noticed__chip-dot" />
+              <span>{term}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {item.detail && <div className="radar-noticed__detail">{item.detail}</div>}
+
       <div className="radar-noticed__actions">
-        <button className="btn btn--primary btn--sm" onClick={() => apply(item)} disabled={busy === item.id}>
-          {busy === item.id ? "Saving…" : item.actionLabel}
+        {item.action === "addInterest" && (
+          <button className="btn btn--primary btn--sm" onClick={() => apply(item)} disabled={busy === item.id}>
+            {busy === item.id ? "Saving…" : item.actionLabel}
+          </button>
+        )}
+        <button className="btn btn--primary btn--sm" onClick={() => navigate("/feed")}>
+          Explore in Feed
+        </button>
+        <button className="btn btn--text btn--sm" onClick={() => navigate("/profile/edit")}>
+          Tune focus
         </button>
         <button className="btn btn--text btn--sm" onClick={() => dismiss(item.id)}>
-          Not now
+          Got it
         </button>
       </div>
     </div>

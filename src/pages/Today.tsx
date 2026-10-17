@@ -106,8 +106,13 @@ export function Today() {
          <div className="nav-focus-label">TODAY'S FOCUS</div>
          <div className="nav-focus-title">{focus.learn.title}</div>
          <div className="nav-focus-sub">{focus.learn.subtitle}</div>
+         {focus.learn.whyItMatters && (
+           <div style={{ fontSize: 13, color: "var(--text-body)", margin: "8px 0 12px 0", lineHeight: 1.55 }}>
+             {focus.learn.whyItMatters}
+           </div>
+         )}
          <div className="nav-focus-meta">
-           <span className="btn btn--primary btn--sm">Start →</span>
+           <span className="btn btn--primary btn--sm">Start learning →</span>
            {focus.learn.estimatedTime && (
              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{focus.learn.estimatedTime} today</span>
            )}
@@ -143,12 +148,20 @@ export function Today() {
 
       <div className="nav-section-label">YOUR NEXT MOVE</div>
 
-      <button className="nav-next-move" onClick={() => navigate("/learn")}>
+      <button className="nav-next-move" onClick={() => navigate("/projects")}>
+        {focus.build.subtitle && <div className="nav-next-move-label">{focus.build.subtitle}</div>}
         <div className="nav-next-move-title">{focus.build.title}</div>
         <div className="nav-next-move-desc">
-          One practical action that turns what you have learned into something you can show.
+          {focus.build.whyItMatters || "One practical action that turns what you have learned into something you can show."}
         </div>
-        <span className="nav-next-move-link">Open Project Studio →</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span className="nav-next-move-link">Open Project Studio →</span>
+          {focus.build.estimatedTime && (
+            <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>
+              {focus.build.estimatedTime}
+            </span>
+          )}
+        </div>
       </button>
 
       <div className="nav-momentum">
