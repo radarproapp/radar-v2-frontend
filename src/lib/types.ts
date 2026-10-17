@@ -307,8 +307,14 @@ export interface Clip {
   tag: string;
   signal: string;
   whyItMatters: string;
+  yourEdge?: string | null;
+  nextMove?: string | null;
   source: string;
   contentItemId: string | null;
+  mediaUrl?: string | null;
+  mediaType?: "video" | "audio" | null;
+  thumbnailUrl?: string | null;
+  durationSeconds?: number | null;
   isSaved: boolean;
   publishedAt: string;
 }
