@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import { getToday, createStudyPlan, generateQuiz, reviewWork, streamMentorChat, submitQuizAnswer } from "../lib/api";
+import { getToday, createStudyPlan, generateQuiz, recordQuizResult, reviewWork, streamMentorChat, submitQuizAnswer } from "../lib/api";
 import type { ChatMessage, MentorQuiz, MentorStudyPlan, MentorWorkReview } from "../lib/types";
 
 const MODES: { id: string; label: string }[] = [
@@ -62,6 +62,9 @@ export function LearningMentor() {
   const [reviewType, setReviewType] = useState("Note");
   const [reviewRunning, setReviewRunning] = useState(false);
 
+  const [searchParams] = useSearchParams();
+  const paramInitRef = useRef(false);
+
   const prefilledRef = useRef(false);
   useEffect(() => {
     if (prefilledRef.current || !profile) return;
@@ -118,6 +121,46 @@ export function LearningMentor() {
       setQuizGenerating(false);
     }
   };
+
+  useEffect(() => {
+    if (paramInitRef.current) return;
+    const mode = searchParams.get("mode");
+    const topic = searchParams.get("topic");
+    const prompt = searchParams.get("prompt");
+    const title = searchParams.get("title");
+    const content = searchParams.get("content");
+    const type = searchParams.get("type");
+
+    if (mode && MODES.some((m) => m.id === mode)) {
+      setActiveMode(mode);
+    }
+    if (mode === "quiz" && topic) {
+      setQuizTopic(topic);
+      runGenerateQuiz(topic);
+      paramInitRef.current = true;
+    } else if (mode === "chat" && prompt) {
+      setChatInput(prompt);
+      paramInitRef.current = true;
+    } else if (mode === "review" && title) {
+      setReviewTitle(title);
+      if (content) setReviewContent(content);
+      if (type) setReviewType(type);
+      paramInitRef.current = true;
+    }
+  }, [searchParams]);
+
+  const quizRecordedRef = useRef(false);
+  useEffect(() => {
+    if (quiz?.isComplete && !quizRecordedRef.current) {
+      quizRecordedRef.current = true;
+      const roadmapId = searchParams.get("roadmapId");
+      const stage = searchParams.get("stage") || "Beginner";
+      if (roadmapId && quiz.questions.length > 0) {
+        const scorePercent = Math.round((quiz.score / quiz.questions.length) * 100);
+        recordQuizResult(roadmapId, quiz.topic, stage, scorePercent).catch(() => {});
+      }
+    }
+  }, [quiz, searchParams]);
 
   const submitAnswer = async () => {
     if (!quiz || selectedAnswer === null) return;

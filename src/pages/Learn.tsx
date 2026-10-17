@@ -5,54 +5,93 @@ import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { VideoEmbed } from "../components/VideoEmbed";
-import { ApiError, completeLesson, completeLearningResource, generateLearningPathway, getActiveRoadmap } from "../lib/api";
+import {
+  ApiError,
+  completeLesson,
+  completeLearningResource,
+  completeLearningExercise,
+  setRoadmapStage,
+  generateLearningPathway,
+  getActiveRoadmap,
+} from "../lib/api";
 import type { GrowthRoadmap, LearningResource } from "../lib/types";
+
+const STAGE_DEFINITIONS = [
+  {
+    key: "Beginner",
+    label: "Stage 01: Beginner",
+    subtitle: "Foundations & Core Tools",
+    goal: "Excel fundamentals, data cleaning, basic statistics, charts & visualisation",
+  },
+  {
+    key: "Intermediate",
+    label: "Stage 02: Intermediate",
+    subtitle: "Applied Workflows & Modelling",
+    goal: "SQL, advanced Excel, Power BI, relational data modelling",
+  },
+  {
+    key: "Advanced",
+    label: "Stage 03: Advanced",
+    subtitle: "Scale, Prediction & Optimization",
+    goal: "Python, advanced statistics, predictive analytics, enterprise BI",
+  },
+  {
+    key: "Application",
+    label: "Stage 04: Real-World Application",
+    subtitle: "Portfolio, Case Studies & Interview Prep",
+    goal: "Real-world projects, portfolio construction, business case studies, technical interview mastery",
+  },
+] as const;
 
 export function Learn() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [generating, setGenerating] = useState(false);
-  const [expandedStage, setExpandedStage] = useState<number | null>(0);
+  const [selectedStageKey, setSelectedStageKey] = useState<string>("Beginner");
   const [openLessonId, setOpenLessonId] = useState<string | null>(null);
   const [openTutorialId, setOpenTutorialId] = useState<string | null>(null);
   const [resourceFilter, setResourceFilter] = useState<"all" | "tutorials" | "developments">("all");
-  const [levelFilter, setLevelFilter] = useState<"all" | "Beginner" | "Intermediate" | "Advanced">("all");
-  const [activeTab, setActiveTab] = useState<"pathway" | "resources">("pathway");
+  const [activeTab, setActiveTab] = useState<"guided" | "all-stages" | "catalog">("guided");
   const [completing, setCompleting] = useState<Record<string, boolean>>({});
   const [completingResource, setCompletingResource] = useState<Record<string, boolean>>({});
-
-  const handleGeneratePathway = async () => {
-    setGenerating(true);
-    try {
-      const roadmap = await generateLearningPathway();
-      queryClient.setQueryData(["roadmap", "active"], roadmap);
-    } catch {
-      // keep showing the existing roadmap rather than surfacing a dead end
-    } finally {
-      setGenerating(false);
-    }
-  };
+  const [completingExercise, setCompletingExercise] = useState<Record<string, boolean>>({});
 
   const roadmapQuery = useQuery({ queryKey: ["roadmap", "active"], queryFn: getActiveRoadmap, retry: false });
   const roadmap = roadmapQuery.data;
   const errorMessage = roadmapQuery.error instanceof ApiError ? roadmapQuery.error.message : "Failed to load roadmap.";
   const notFound = roadmapQuery.error instanceof ApiError && roadmapQuery.error.status === 404;
 
-  const toggleStage = (index: number) => {
-    setExpandedStage((current) => (current === index ? null : index));
-    setOpenLessonId(null);
+  const handleGeneratePathway = async () => {
+    setGenerating(true);
+    try {
+      const updated = await generateLearningPathway();
+      queryClient.setQueryData(["roadmap", "active"], updated);
+    } catch {
+      // keep showing the existing roadmap rather than surfacing an error
+    } finally {
+      setGenerating(false);
+    }
   };
 
-  const startStage = (index: number) => {
-    setExpandedStage(index);
-    setOpenLessonId(null);
+  const handleSelectStage = async (stageKey: string) => {
+    setSelectedStageKey(stageKey);
+    if (roadmap) {
+      try {
+        await setRoadmapStage(roadmap.id, stageKey);
+        queryClient.setQueryData<GrowthRoadmap>(["roadmap", "active"], (old) =>
+          old ? { ...old, currentStage: stageKey } : old,
+        );
+      } catch {
+        // non-blocking
+      }
+    }
   };
 
   const toggleTutorialSteps = (id: string) => {
     setOpenTutorialId((prev) => (prev === id ? null : id));
   };
 
-  const markComplete = async (moduleId: string, lessonId: string, isCompleted: boolean) => {
+  const markLessonComplete = async (moduleId: string, lessonId: string, isCompleted: boolean) => {
     if (!roadmap || isCompleted) return;
     setCompleting((prev) => ({ ...prev, [lessonId]: true }));
     try {
@@ -63,7 +102,12 @@ export function Learn() {
               ...old,
               modules: old.modules.map((module) =>
                 module.id === moduleId
-                  ? { ...module, lessons: module.lessons.map((lesson) => (lesson.id === lessonId ? { ...lesson, isCompleted: true } : lesson)) }
+                  ? {
+                      ...module,
+                      lessons: module.lessons.map((lesson) =>
+                        lesson.id === lessonId ? { ...lesson, isCompleted: true } : lesson,
+                      ),
+                    }
                   : module,
               ),
             }
@@ -86,18 +130,24 @@ export function Learn() {
       await completeLearningResource(roadmap.id, resourceId);
       queryClient.setQueryData<GrowthRoadmap>(["roadmap", "active"], (old) => {
         if (!old) return old;
-        const updateList = (list: LearningResource[] | undefined) =>
-          (list ?? []).map((r) => (r.id === resourceId ? { ...r, isCompleted: !r.isCompleted } : r));
+        const toggleItem = (r: LearningResource) => (r.id === resourceId ? { ...r, isCompleted: !r.isCompleted } : r);
+        const completedIds = old.completedResourceIds ?? [];
+        const isCurrentlyCompleted = completedIds.includes(resourceId);
+        const updatedIds = isCurrentlyCompleted
+          ? completedIds.filter((id) => id !== resourceId)
+          : [...completedIds, resourceId];
 
         return {
           ...old,
-          resources: updateList(old.resources),
+          completedResourceIds: updatedIds,
+          resources: (old.resources ?? []).map(toggleItem),
           modules: old.modules.map((m) => ({
             ...m,
-            resources: updateList(m.resources),
+            resources: (m.resources ?? []).map(toggleItem),
           })),
         };
       });
+      queryClient.invalidateQueries({ queryKey: ["roadmap", "active"] });
     } finally {
       setCompletingResource((prev) => {
         const next = { ...prev };
@@ -107,51 +157,110 @@ export function Learn() {
     }
   };
 
-  const estimatedWeeks = 12;
-  const stages = [
-    ["01", "Know the Basics", "Build the foundation and prerequisites you need to get started.", "Beginner"],
-    ["02", "Build Your Skills", "Turn knowledge into practical skills through step-by-step building.", "Intermediate"],
-    ["03", "Build Your Depth", "Go deeper. Master system design, advanced patterns, and architecture.", "Advanced"],
-    ["04", "Put It to Work", "Take what you have learned and apply it to real-world production cases.", "Advanced"],
-  ] as const;
+  const handleToggleExercise = async (resourceId: string) => {
+    if (!roadmap) return;
+    setCompletingExercise((prev) => ({ ...prev, [resourceId]: true }));
+    try {
+      await completeLearningExercise(roadmap.id, resourceId);
+      queryClient.setQueryData<GrowthRoadmap>(["roadmap", "active"], (old) => {
+        if (!old) return old;
+        const toggleEx = (r: LearningResource) =>
+          r.id === resourceId ? { ...r, isExerciseCompleted: !r.isExerciseCompleted } : r;
+        const completedExIds = old.completedExerciseIds ?? [];
+        const isDone = completedExIds.includes(resourceId);
+        const updatedExIds = isDone
+          ? completedExIds.filter((id) => id !== resourceId)
+          : [...completedExIds, resourceId];
 
-  // Aggregate all resources across the roadmap
-  const allRoadmapResources: LearningResource[] = roadmap
-    ? (roadmap.resources && roadmap.resources.length > 0
-        ? roadmap.resources
-        : roadmap.modules.flatMap((m) => m.resources ?? []))
+        return {
+          ...old,
+          completedExerciseIds: updatedExIds,
+          resources: (old.resources ?? []).map(toggleEx),
+          modules: old.modules.map((m) => ({
+            ...m,
+            resources: (m.resources ?? []).map(toggleEx),
+          })),
+        };
+      });
+      queryClient.invalidateQueries({ queryKey: ["roadmap", "active"] });
+    } finally {
+      setCompletingExercise((prev) => {
+        const next = { ...prev };
+        delete next[resourceId];
+        return next;
+      });
+    }
+  };
+
+  // Navigations to AI Learning Mentor with full context prefilled
+  const askMentorQuestion = (resource: LearningResource) => {
+    const prompt = `I'm studying "${resource.title}". Can you explain the core concepts in simple, intuitive terms and give a real-world example?`;
+    navigate(`/mentor?mode=chat&prompt=${encodeURIComponent(prompt)}`);
+  };
+
+  const triggerTestMe = (resource: LearningResource, stage: string) => {
+    const topic = resource.quizTopic || resource.title;
+    navigate(`/mentor?mode=quiz&topic=${encodeURIComponent(topic)}&stage=${encodeURIComponent(stage)}&roadmapId=${encodeURIComponent(roadmap?.id || "")}`);
+  };
+
+  const triggerReviewWork = (resource: LearningResource) => {
+    const title = resource.practiceExerciseTitle || resource.title;
+    const contentPlaceholder = `Here is my solution for "${resource.practiceExerciseTitle || resource.title}":\n\n[Paste your code, query or analysis here]`;
+    navigate(`/mentor?mode=review&title=${encodeURIComponent(title)}&content=${encodeURIComponent(contentPlaceholder)}&type=Project Brief`);
+  };
+
+  const triggerAlternativeExplanation = (resource: LearningResource) => {
+    const prompt = `I'm having trouble understanding "${resource.title}". Can you break it down with an intuitive analogy, step-by-step mental model, and another explanation?`;
+    navigate(`/mentor?mode=chat&prompt=${encodeURIComponent(prompt)}`);
+  };
+
+  // Resources aggregation & filtering
+  const allResources: LearningResource[] = roadmap
+    ? roadmap.resources && roadmap.resources.length > 0
+      ? roadmap.resources
+      : roadmap.modules.flatMap((m) => m.resources ?? [])
     : [];
 
-  // Filter resources based on user selection
-  const filterResources = (items: LearningResource[]) => {
+  const filterList = (items: LearningResource[]) => {
     return items.filter((r) => {
-      const matchesType =
-        resourceFilter === "all" ||
-        (resourceFilter === "tutorials" && r.type === "TutorialVideo") ||
-        (resourceFilter === "developments" && (r.type === "NewDevelopmentVideo" || r.type === "BlogPost"));
-      const matchesLevel =
-        levelFilter === "all" || r.level.toLowerCase() === levelFilter.toLowerCase();
-      return matchesType && matchesLevel;
+      if (resourceFilter === "tutorials") return r.type === "TutorialVideo" || r.isHowToTutorial;
+      if (resourceFilter === "developments") return r.type === "NewDevelopmentVideo" || r.type === "BlogPost";
+      return true;
     });
   };
 
-  const filteredAllResources = filterResources(allRoadmapResources);
-  const totalTutorials = allRoadmapResources.filter((r) => r.type === "TutorialVideo").length;
-  const totalDevelopments = allRoadmapResources.filter((r) => r.type === "NewDevelopmentVideo" || r.type === "BlogPost").length;
+  // Resources for the currently selected stage
+  const currentStageResources = filterList(
+    allResources
+      .filter((r) => r.level.toLowerCase() === selectedStageKey.toLowerCase())
+      .sort((a, b) => (a.order ?? 99) - (b.order ?? 99)),
+  );
+
+  const activeStageModule = roadmap?.modules.find(
+    (m) => m.level?.toLowerCase() === selectedStageKey.toLowerCase(),
+  );
+
+  const currentStageProgress = roadmap?.stageMastery?.[selectedStageKey] ?? 0;
+  const totalTutorials = allResources.filter((r) => r.type === "TutorialVideo" || r.isHowToTutorial).length;
+  const totalDevelopments = allResources.filter((r) => r.type === "NewDevelopmentVideo" || r.type === "BlogPost").length;
 
   return (
-    <div className="r-page" style={{ maxWidth: 880 }}>
+    <div className="r-page" style={{ maxWidth: 900 }}>
       {roadmapQuery.isError && !notFound ? (
         <ErrorState title="Failed to load roadmap" description={errorMessage} onRetry={() => roadmapQuery.refetch()} />
       ) : roadmapQuery.isLoading ? (
         <>
           <div className="r-page-head">
-            <div className="r-kicker">SUGGESTED LEARNING PATHWAY</div>
+            <div className="r-kicker">RADAR LEARNING PATH</div>
           </div>
           <LoadingSkeleton variant="card" count={3} />
         </>
       ) : !roadmap ? (
-        <EmptyState icon="🗺️" title="No roadmap yet" description="Complete onboarding to get your personal growth roadmap and curated learning resources.">
+        <EmptyState
+          icon="🗺️"
+          title="No roadmap yet"
+          description="Complete onboarding to get your personal growth roadmap and curated learning path from beginner to application."
+        >
           <button className="btn btn--primary" onClick={() => navigate("/onboarding")}>
             Set up profile
           </button>
@@ -159,83 +268,144 @@ export function Learn() {
       ) : (
         <>
           {/* Header */}
-          <div className="r-page-head" style={{ marginBottom: 18 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+          <div className="r-page-head" style={{ marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
               <div>
-                <div className="r-kicker">RADAR LEARNING PATHWAY · BEGINNER TO ADVANCED</div>
-                <h1 className="r-page-title">{roadmap.title || `${roadmap.interest || roadmap.goal}: Complete Learning Path`}</h1>
+                <div className="r-kicker" style={{ letterSpacing: ".08em" }}>
+                  RADAR LEARNING PATH · BEGINNER → INTERMEDIATE → ADVANCED → APPLICATION
+                </div>
+                <h1 className="r-page-title" style={{ fontSize: "1.75rem", margin: "4px 0" }}>
+                  {roadmap.title || `${roadmap.interest || roadmap.goal}: Complete Learning Journey`}
+                </h1>
+                <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "4px 0 0 0" }}>
+                  Designed specifically for your goal: <strong>{roadmap.goal || "Mastery"}</strong>.
+                  Radar finds, filters, explains, teaches, tests and guides.
+                </p>
               </div>
+
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button className="btn btn--sm" onClick={handleGeneratePathway} disabled={generating}>
-                  {generating ? "Building your pathway…" : "Build a personalised pathway"}
+                  {generating ? "Building pathway…" : "Regenerate pathway"}
                 </button>
-                <button className="btn btn--sm" onClick={() => navigate("/learn/hub")}>
-                  Learn Hub
+                <button className="btn btn--sm" onClick={() => navigate("/mentor")}>
+                  💡 AI Learning Mentor
                 </button>
                 <button className="btn btn--primary btn--sm" onClick={() => navigate("/projects")}>
-                  Start New Project
-                </button>
-                <button className="btn btn--sm" onClick={() => navigate("/progress")}>
-                  Progress
+                  🛠️ Project Studio
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Subtitle & Distribution Pill */}
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
+          {/* Core Principle & Distribution Pill */}
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 16 }}>
             <span className="learn-split-pill">
-              <strong>80%</strong> How-To Video Tutorials · <strong>20%</strong> Latest Info & Blogs
+              <strong>80%</strong> How-To / Tutorial Content · <strong>20%</strong> Current Industry Knowledge
             </span>
             <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>
-              Beginner → Intermediate → Advanced · {estimatedWeeks} weeks estimated
+              Guided Ordering: &ldquo;Start with this&rdquo; → Practise → Test → Advance
             </span>
           </div>
 
-          <p className="learn-roadmap-desc" style={{ marginBottom: 18 }}>
-            {roadmap.interest ? `Structured for ${roadmap.interest}. ` : "A structured progression from fundamentals to real-world deployment. "}
-            {roadmap.modules.filter((m) => !m.isCompleted).length} modules remaining · 4 progressive stages · Hand-picked video & text resources.
-          </p>
-
-          {/* Progress Bar */}
-          {roadmap.progressPercent > 0 && (
-            <div style={{ marginBottom: "1.5rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--text-muted)", marginBottom: 4 }}>
-                <span>Roadmap mastery</span>
-                <span>{roadmap.progressPercent}% complete</span>
-              </div>
-              <div style={{ height: 6, background: "var(--bg-hover)", borderRadius: 99, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${roadmap.progressPercent}%`, background: "var(--cyan)", borderRadius: 99, transition: "width .4s var(--ease)" }} />
+          {/* Adaptive Recommendation / Weak Areas Alert */}
+          {roadmap.adaptiveRecommendation && (
+            <div className="learn-adaptive-card">
+              <span className="learn-adaptive-card__icon">🎯</span>
+              <div className="learn-adaptive-card__text">
+                <strong>Radar Mentor Guidance:</strong> {roadmap.adaptiveRecommendation}
               </div>
             </div>
           )}
 
-          {/* Tab Selector: Stage Progression vs All Video & Blog Resources */}
-          <div style={{ display: "flex", gap: 8, borderBottom: "1.5px solid var(--border)", paddingBottom: 10, marginBottom: 20 }}>
+          {roadmap.weakAreas && roadmap.weakAreas.length > 0 && (
+            <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 16 }}>⚠️</span>
+              <div style={{ fontSize: 12.5, color: "#991b1b" }}>
+                <strong>Reinforcement Recommended:</strong> You scored below 75% on:{" "}
+                {roadmap.weakAreas.map((w, idx) => (
+                  <span key={w} style={{ textDecoration: "underline", fontWeight: 600 }}>
+                    {w}{idx < (roadmap.weakAreas?.length ?? 0) - 1 ? ", " : ""}
+                  </span>
+                ))}
+                . Review the tutorial breakdowns below and retry the quiz when ready.
+              </div>
+            </div>
+          )}
+
+          {/* 4-Stage Progression Navigation Grid */}
+          <div className="learn-stage-grid">
+            {STAGE_DEFINITIONS.map((stage, idx) => {
+              const mastery = roadmap.stageMastery?.[stage.key] ?? 0;
+              const isCurrent = (roadmap.currentStage || "Beginner").toLowerCase() === stage.key.toLowerCase();
+              const isSelected = selectedStageKey.toLowerCase() === stage.key.toLowerCase();
+              const isCompleted = mastery >= 80;
+
+              return (
+                <div
+                  key={stage.key}
+                  className={`learn-stage-pill ${isSelected ? "active" : ""}`}
+                  onClick={() => handleSelectStage(stage.key)}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div className="learn-stage-pill__num">STAGE 0{idx + 1}</div>
+                    {isCompleted ? (
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#059669" }}>✓ Mastered</span>
+                    ) : isCurrent ? (
+                      <span style={{ fontSize: 9.5, fontWeight: 800, color: "var(--cyan)", background: "var(--cyan-light)", padding: "2px 6px", borderRadius: 99 }}>
+                        CURRENT
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="learn-stage-pill__title">{stage.key}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.3, marginBottom: 8, height: 28, overflow: "hidden" }}>
+                    {stage.subtitle}
+                  </div>
+                  <div className="learn-stage-pill__progress">
+                    <span>Mastery</span>
+                    <span>{mastery}%</span>
+                  </div>
+                  <div className="learn-stage-pill__bar">
+                    <div className="learn-stage-pill__fill" style={{ width: `${mastery}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Tab Selector */}
+          <div style={{ display: "flex", gap: 8, borderBottom: "1.5px solid var(--border)", paddingBottom: 10, marginBottom: 18 }}>
             <button
-              className={`btn btn--sm ${activeTab === "pathway" ? "btn--primary" : "btn--text"}`}
-              onClick={() => setActiveTab("pathway")}
+              className={`btn btn--sm ${activeTab === "guided" ? "btn--primary" : "btn--text"}`}
+              onClick={() => setActiveTab("guided")}
             >
-              🗺️ Learning Pathway Stages
+              🎯 {selectedStageKey} Guided Path ({currentStageResources.length} items)
             </button>
             <button
-              className={`btn btn--sm ${activeTab === "resources" ? "btn--primary" : "btn--text"}`}
-              onClick={() => setActiveTab("resources")}
+              className={`btn btn--sm ${activeTab === "all-stages" ? "btn--primary" : "btn--text"}`}
+              onClick={() => setActiveTab("all-stages")}
             >
-              🎬 Video & Blog Resources ({allRoadmapResources.length})
+              🗺️ Full 4-Stage Pathway
+            </button>
+            <button
+              className={`btn btn--sm ${activeTab === "catalog" ? "btn--primary" : "btn--text"}`}
+              onClick={() => setActiveTab("catalog")}
+            >
+              📚 All Curated Resources ({allResources.length})
             </button>
           </div>
 
-          {/* Resource Filter Bar (Visible in both views) */}
+          {/* Filter Bar: How-to Tutorials vs Latest Developments */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", background: "#f8fafb", padding: "10px 14px", borderRadius: 12, marginBottom: 20 }}>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-              <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--text-faint)", marginRight: 4 }}>Resource:</span>
+              <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--text-faint)", marginRight: 4 }}>
+                Show:
+              </span>
               <button
                 className={`r-chip ${resourceFilter === "all" ? "active" : ""}`}
                 style={{ fontSize: 11.5, padding: "3px 10px" }}
                 onClick={() => setResourceFilter("all")}
               >
-                All ({allRoadmapResources.length})
+                All Resources
               </button>
               <button
                 className={`r-chip ${resourceFilter === "tutorials" ? "active" : ""}`}
@@ -253,175 +423,162 @@ export function Learn() {
               </button>
             </div>
 
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-              <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--text-faint)", marginRight: 4 }}>Level:</span>
-              {(["all", "Beginner", "Intermediate", "Advanced"] as const).map((lvl) => (
-                <button
-                  key={lvl}
-                  className={`r-chip ${levelFilter === lvl ? "active" : ""}`}
-                  style={{ fontSize: 11.5, padding: "3px 9px" }}
-                  onClick={() => setLevelFilter(lvl)}
-                >
-                  {lvl === "all" ? "All Levels" : lvl}
-                </button>
-              ))}
+            <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>
+              Stage Mastery: <strong>{currentStageProgress}%</strong>
             </div>
           </div>
 
-          {/* TAB 1: Stage by Stage Learning Path */}
-          {activeTab === "pathway" && (
-            <div className="learn-modules">
-              {stages.map(([number, title, description, stageLevel], stageIndex) => {
-                const start = Math.floor((roadmap.modules.length * stageIndex) / stages.length);
-                const end = Math.floor((roadmap.modules.length * (stageIndex + 1)) / stages.length);
-                const stageModules = roadmap.modules.slice(start, Math.max(end, start + 1));
-                const isNext = stageModules.some((module) => !module.isCompleted && !module.isLocked);
-                const stageComplete = stageModules.length > 0 && stageModules.every((module) => module.isCompleted);
-                const isOpen = expandedStage === stageIndex;
+          {/* TAB 1: GUIDED "START WITH THIS" ORDERED VIEW FOR ACTIVE STAGE */}
+          {activeTab === "guided" && (
+            <div>
+              {/* Stage Goal Banner */}
+              <div style={{ background: "#fff", border: "1.5px solid var(--border)", borderRadius: 14, padding: "16px 20px", marginBottom: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span className="learn-seq-badge learn-seq-badge--start">ACTIVE STAGE</span>
+                    <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", margin: 0 }}>
+                      {selectedStageKey}: {activeStageModule?.title || STAGE_DEFINITIONS.find((s) => s.key === selectedStageKey)?.subtitle}
+                    </h2>
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--cyan-deep)", background: "var(--cyan-light)", padding: "3px 10px", borderRadius: 99 }}>
+                    {currentStageResources.length} ordered resources
+                  </span>
+                </div>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 12px 0", lineHeight: 1.5 }}>
+                  {activeStageModule?.stageGoal || STAGE_DEFINITIONS.find((s) => s.key === selectedStageKey)?.goal}
+                </p>
 
-                // Extract and filter stage resources
-                const stageRawResources = stageModules.flatMap((m) => m.resources ?? []);
-                const fallbackResources = allRoadmapResources.filter(
-                  (r) => r.level.toLowerCase() === stageLevel.toLowerCase()
-                );
-                const stageResources = filterResources(
-                  stageRawResources.length > 0 ? stageRawResources : fallbackResources
-                );
+                {/* Curriculum Lessons for this stage */}
+                {activeStageModule?.lessons && activeStageModule.lessons.length > 0 && (
+                  <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--text-faint)", marginBottom: 8 }}>
+                      Stage Milestones & Topics
+                    </div>
+                    <ul className="learn-stage-lessons">
+                      {activeStageModule.lessons.map((lesson) => {
+                        const open = openLessonId === lesson.id;
+                        return (
+                          <li className="learn-lesson" key={lesson.id}>
+                            <button
+                              className="learn-lesson__row"
+                              onClick={() => setOpenLessonId(open ? null : lesson.id)}
+                              aria-expanded={open}
+                            >
+                              <span className={`learn-lesson__check ${lesson.isCompleted ? "done" : ""}`}>
+                                {lesson.isCompleted ? "✓" : ""}
+                              </span>
+                              <span className="learn-lesson__title">{lesson.title}</span>
+                              {lesson.estimatedTime && <span className="learn-lesson__time">⏱️ {lesson.estimatedTime}</span>}
+                              <span className="learn-lesson__chev">{open ? "▾" : "▸"}</span>
+                            </button>
+                            {open && (
+                              <div className="learn-lesson__body">
+                                <p style={{ fontSize: 13, lineHeight: 1.6, margin: "0 0 8px 0" }}>
+                                  {lesson.body || "Master this core topic through hands-on practice."}
+                                </p>
+                                {!lesson.isCompleted ? (
+                                  <button
+                                    className="btn btn--primary btn--sm"
+                                    disabled={completing[lesson.id]}
+                                    onClick={() => markLessonComplete(activeStageModule.id, lesson.id, lesson.isCompleted)}
+                                  >
+                                    {completing[lesson.id] ? "Saving…" : "Mark topic as complete ✓"}
+                                  </button>
+                                ) : (
+                                  <span className="learn-lesson__completed-note">Completed ✓</span>
+                                )}
+                              </div>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* The Ordered Resources ("Start with this" not a dump) */}
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--cyan-deep)", marginBottom: 12 }}>
+                  ORDERED LEARNING SEQUENCE · &ldquo;START WITH THIS&rdquo;
+                </div>
+
+                {currentStageResources.length === 0 ? (
+                  <EmptyState
+                    icon="🔍"
+                    title="No resources found"
+                    description="No resources match the selected filter in this stage. Try selecting 'All Resources'."
+                  />
+                ) : (
+                  currentStageResources.map((res) => (
+                    <ResourceCard
+                      key={res.id}
+                      resource={res}
+                      isExpanded={openTutorialId === res.id}
+                      onToggleExpand={() => toggleTutorialSteps(res.id)}
+                      onToggleResourceComplete={() => handleToggleResource(res.id)}
+                      onToggleExerciseComplete={() => handleToggleExercise(res.id)}
+                      isCompletingResource={!!completingResource[res.id]}
+                      isCompletingExercise={!!completingExercise[res.id]}
+                      onAskMentor={() => askMentorQuestion(res)}
+                      onTestMe={() => triggerTestMe(res, selectedStageKey)}
+                      onReviewWork={() => triggerReviewWork(res)}
+                      onAnotherExplanation={() => triggerAlternativeExplanation(res)}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: FULL 4-STAGE PATHWAY OVERVIEW */}
+          {activeTab === "all-stages" && (
+            <div className="learn-modules">
+              {STAGE_DEFINITIONS.map((def, stageIdx) => {
+                const stageModule = roadmap.modules.find((m) => m.level?.toLowerCase() === def.key.toLowerCase()) || roadmap.modules[stageIdx];
+                const stageRes = allResources.filter((r) => r.level.toLowerCase() === def.key.toLowerCase());
+                const mastery = roadmap.stageMastery?.[def.key] ?? 0;
+                const isSelected = selectedStageKey.toLowerCase() === def.key.toLowerCase();
 
                 return (
-                  <div className="learn-module-row" key={number}>
-                    <div className={`learn-module-num ${stageComplete ? "completed" : isNext ? "active" : ""}`}>
-                      <span>{stageComplete ? "✓" : number}</span>
+                  <div className="learn-module-row" key={def.key}>
+                    <div className={`learn-module-num ${mastery >= 80 ? "completed" : isSelected ? "active" : ""}`}>
+                      <span>{mastery >= 80 ? "✓" : `0${stageIdx + 1}`}</span>
                     </div>
 
-                    <div className={`learn-module-card ${isNext ? "active" : ""}`}>
+                    <div className={`learn-module-card ${isSelected ? "active" : ""}`}>
                       <div className="learn-module-top">
                         <div>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <div className="learn-module-title">{title}</div>
+                            <div className="learn-module-title">{def.label}: {def.subtitle}</div>
                             <span className="learn-resource-badge learn-resource-badge--tutorial">
-                              {stageLevel}
+                              {def.key}
                             </span>
                           </div>
-                          <div style={{ color: "var(--text-muted)", fontSize: 12.5, marginTop: 4 }}>{description}</div>
+                          <div style={{ color: "var(--text-muted)", fontSize: 12.5, marginTop: 4 }}>
+                            {stageModule?.stageGoal || def.goal}
+                          </div>
                         </div>
-                        {isNext && <span className="learn-module-tag learn-module-tag--next">CURRENT FOCUS</span>}
+                        {isSelected && <span className="learn-module-tag learn-module-tag--next">SELECTED STAGE</span>}
                       </div>
 
                       <div className="learn-module-counts">
-                        <span className="learn-module-count">{stageModules.reduce((sum, module) => sum + module.lessons.length, 0)} curriculum lessons</span>
-                        <span className="learn-module-count">🎬 {stageResources.length} curated resources</span>
-                        <span className="learn-module-count">{stageModules.length} core modules</span>
+                        <span className="learn-module-count">{stageModule?.lessons.length ?? 4} core curriculum lessons</span>
+                        <span className="learn-module-count">🎬 {stageRes.length} curated resources</span>
+                        <span className="learn-module-count">📈 {mastery}% mastery</span>
                       </div>
 
-                      <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 12 }}>
-                        {stageModules.map((module) => module.title).join(" · ")}
-                      </div>
-
-                      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: isOpen ? 14 : 0 }}>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 8 }}>
                         <button
-                          className={isNext ? "btn btn--primary btn--sm" : "btn btn--sm"}
-                          onClick={() => (isNext ? startStage(stageIndex) : toggleStage(stageIndex))}
-                          aria-expanded={isOpen}
+                          className={isSelected ? "btn btn--primary btn--sm" : "btn btn--sm"}
+                          onClick={() => {
+                            handleSelectStage(def.key);
+                            setActiveTab("guided");
+                          }}
                         >
-                          {isOpen ? "Hide stage details ▴" : isNext ? "Start stage & explore resources ▾" : "Explore stage resources ▾"}
+                          {isSelected ? "Open Guided Sequence →" : `Select ${def.key} Stage →`}
                         </button>
-                        {isOpen && (
-                          <button className="btn btn--text btn--sm" onClick={() => toggleStage(stageIndex)}>
-                            Close
-                          </button>
-                        )}
                       </div>
-
-                      {/* Expanded Stage View: Curriculum Lessons + Rich Curated Video & Blog Resources */}
-                      {isOpen && (
-                        <div className="learn-stage-preview">
-                          {/* Module Lessons List */}
-                          <div style={{ marginBottom: 18 }}>
-                            <div style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--cyan)", marginBottom: 10 }}>
-                              Curriculum Modules & Lessons
-                            </div>
-                            {stageModules.map((module) => (
-                              <div className="learn-stage-module" key={module.id} style={{ marginBottom: 10 }}>
-                                <div className="learn-stage-module__head">
-                                  <span className="learn-stage-module__title">{module.title}</span>
-                                  {module.isCompleted ? (
-                                    <span className="learn-stage-module__done">✓ Complete</span>
-                                  ) : module.isLocked ? (
-                                    <span className="learn-stage-module__lock">Locked</span>
-                                  ) : null}
-                                </div>
-                                {module.description && <div className="learn-stage-module__desc">{module.description}</div>}
-                                <ul className="learn-stage-lessons">
-                                  {module.lessons.map((lesson) => {
-                                    const open = openLessonId === lesson.id;
-                                    return (
-                                      <li className="learn-lesson" key={lesson.id}>
-                                        <button className="learn-lesson__row" onClick={() => setOpenLessonId(open ? null : lesson.id)} aria-expanded={open}>
-                                          <span className={`learn-lesson__check ${lesson.isCompleted ? "done" : ""}`}>{lesson.isCompleted ? "✓" : ""}</span>
-                                          <span className="learn-lesson__title">{lesson.title}</span>
-                                          {lesson.estimatedTime && <span className="learn-lesson__time">{lesson.estimatedTime}</span>}
-                                          <span className="learn-lesson__chev">{open ? "▾" : "▸"}</span>
-                                        </button>
-                                        {open && (
-                                          <div className="learn-lesson__body">
-                                            {lesson.body ? <p style={{ fontSize: 13, lineHeight: 1.6 }}>{lesson.body}</p> : <p className="learn-lesson__muted">Hands-on lesson practice module.</p>}
-                                            {isNext && !lesson.isCompleted ? (
-                                              <button
-                                                className="btn btn--primary btn--sm"
-                                                disabled={completing[lesson.id]}
-                                                onClick={() => markComplete(module.id, lesson.id, lesson.isCompleted)}
-                                              >
-                                                {completing[lesson.id] ? "Saving…" : "Mark as complete"}
-                                              </button>
-                                            ) : lesson.isCompleted ? (
-                                              <span className="learn-lesson__completed-note">Completed</span>
-                                            ) : null}
-                                          </div>
-                                        )}
-                                      </li>
-                                    );
-                                  })}
-                                </ul>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Curated 80/20 Video & Blog Resources */}
-                          <div className="learn-resources-section">
-                            <div className="learn-resources-header">
-                              <div>
-                                <div className="learn-resources-title">
-                                  Stage Resources: Useful How-To Videos & Skill Developments
-                                </div>
-                                <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
-                                  80% step-by-step how-to tutorials · 20% latest updates & blog posts
-                                </div>
-                              </div>
-                              <span className="learn-resource-badge learn-resource-badge--tutorial">
-                                {stageResources.length} items
-                              </span>
-                            </div>
-
-                            {stageResources.length === 0 ? (
-                              <div style={{ fontSize: 13, color: "var(--text-faint)", fontStyle: "italic", padding: "12px 0" }}>
-                                No resources match the current filter. Try selecting "All Resources".
-                              </div>
-                            ) : (
-                              stageResources.map((res) => (
-                                <ResourceItemCard
-                                  key={res.id}
-                                  resource={res}
-                                  isExpanded={openTutorialId === res.id}
-                                  onToggleExpand={() => toggleTutorialSteps(res.id)}
-                                  onToggleComplete={() => handleToggleResource(res.id)}
-                                  isCompleting={!!completingResource[res.id]}
-                                />
-                              ))
-                            )}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
@@ -429,43 +586,47 @@ export function Learn() {
             </div>
           )}
 
-          {/* TAB 2: Direct All Resources Explorer */}
-          {activeTab === "resources" && (
+          {/* TAB 3: COMPLETE CURATED RESOURCE CATALOG */}
+          {activeTab === "catalog" && (
             <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <div>
-                  <h2 style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, margin: 0 }}>
-                    Curated Learning Library ({filteredAllResources.length})
-                  </h2>
-                  <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0 0" }}>
-                    Ordered from Beginner to Advanced. Step-by-step tutorial videos and high-signal skill intelligence.
-                  </p>
-                </div>
+              <div style={{ marginBottom: 14 }}>
+                <h2 style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, margin: 0 }}>
+                  Complete Curated Library ({filterList(allResources).length} Items)
+                </h2>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0 0" }}>
+                  Curated across YouTube, official documentation, and expert technical blogs. 80% practical tutorials, 20% industry updates.
+                </p>
               </div>
 
-              {filteredAllResources.length === 0 ? (
+              {filterList(allResources).length === 0 ? (
                 <EmptyState
                   icon="🔍"
                   title="No resources found"
-                  description="No resources match your active filter. Select 'All' to view the entire library."
+                  description="No resources match your filter. Select 'All Resources' to view the entire library."
                 />
               ) : (
-                filteredAllResources.map((res) => (
-                  <ResourceItemCard
+                filterList(allResources).map((res) => (
+                  <ResourceCard
                     key={res.id}
                     resource={res}
                     isExpanded={openTutorialId === res.id}
                     onToggleExpand={() => toggleTutorialSteps(res.id)}
-                    onToggleComplete={() => handleToggleResource(res.id)}
-                    isCompleting={!!completingResource[res.id]}
+                    onToggleResourceComplete={() => handleToggleResource(res.id)}
+                    onToggleExerciseComplete={() => handleToggleExercise(res.id)}
+                    isCompletingResource={!!completingResource[res.id]}
+                    isCompletingExercise={!!completingExercise[res.id]}
+                    onAskMentor={() => askMentorQuestion(res)}
+                    onTestMe={() => triggerTestMe(res, res.level)}
+                    onReviewWork={() => triggerReviewWork(res)}
+                    onAnotherExplanation={() => triggerAlternativeExplanation(res)}
                   />
                 ))
               )}
             </div>
           )}
 
-          <div style={{ marginTop: 28, textAlign: "center", fontFamily: "var(--font-display)", fontWeight: 700, color: "var(--text-dim)" }}>
-            Know the Basics → Build Your Skills → Build Your Depth → Put It to Work
+          <div style={{ marginTop: 32, textAlign: "center", fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 13, color: "var(--text-dim)" }}>
+            Beginner → Intermediate → Advanced → Real-World Application
           </div>
         </>
       )}
@@ -473,58 +634,108 @@ export function Learn() {
   );
 }
 
-// ── Resource Item Component ──────────────────────────────────────────────────
+// ── Resource Card Component with Guided Sequence & Mentor Actions ─────────────
 
-interface ResourceItemCardProps {
+interface ResourceCardProps {
   resource: LearningResource;
   isExpanded: boolean;
   onToggleExpand: () => void;
-  onToggleComplete: () => void;
-  isCompleting: boolean;
+  onToggleResourceComplete: () => void;
+  onToggleExerciseComplete: () => void;
+  isCompletingResource: boolean;
+  isCompletingExercise: boolean;
+  onAskMentor: () => void;
+  onTestMe: () => void;
+  onReviewWork: () => void;
+  onAnotherExplanation: () => void;
 }
 
-function ResourceItemCard({ resource, isExpanded, onToggleExpand, onToggleComplete, isCompleting }: ResourceItemCardProps) {
+function ResourceCard({
+  resource,
+  isExpanded,
+  onToggleExpand,
+  onToggleResourceComplete,
+  onToggleExerciseComplete,
+  isCompletingResource,
+  isCompletingExercise,
+  onAskMentor,
+  onTestMe,
+  onReviewWork,
+  onAnotherExplanation,
+}: ResourceCardProps) {
   const isTutorial = resource.type === "TutorialVideo" || resource.isHowToTutorial;
   const isDevelopment = resource.type === "NewDevelopmentVideo";
   const isBlog = resource.type === "BlogPost";
 
+  const sequenceRole = resource.sequenceRole || (resource.order === 1 ? "Start here" : "Next");
+  const isStart = sequenceRole.toLowerCase().includes("start");
+  const isDev = resource.isNewDevelopment || isDevelopment || isBlog;
+
   return (
-    <div className={`learn-resource-card ${resource.isCompleted ? "completed" : ""}`}>
-      {/* Top Meta Header */}
+    <div className={`learn-resource-card ${resource.isCompleted ? "completed" : ""}`} style={{ marginBottom: 18 }}>
+      {/* Sequence Header & Estimated Time */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-          {isTutorial ? (
-            <span className="learn-resource-badge learn-resource-badge--tutorial">🛠️ HOW-TO TUTORIAL · {resource.level}</span>
-          ) : isDevelopment ? (
-            <span className="learn-resource-badge learn-resource-badge--development">⚡ LATEST DEVELOPMENT · {resource.level}</span>
-          ) : (
-            <span className="learn-resource-badge learn-resource-badge--blog">📝 BLOG ESSAY · {resource.level}</span>
-          )}
+          {/* Order marker / Sequence Role */}
+          <span
+            className={`learn-seq-badge ${
+              isStart
+                ? "learn-seq-badge--start"
+                : isDev
+                ? "learn-seq-badge--dev"
+                : resource.sequenceRole?.toLowerCase().includes("practice")
+                ? "learn-seq-badge--practice"
+                : resource.sequenceRole?.toLowerCase().includes("capstone")
+                ? "learn-seq-badge--capstone"
+                : "learn-seq-badge--next"
+            }`}
+          >
+            {resource.order ? `${resource.order}. ` : ""}
+            {sequenceRole}
+          </span>
+
+          <span className={`learn-resource-badge ${isTutorial ? "learn-resource-badge--tutorial" : isDevelopment ? "learn-resource-badge--development" : "learn-resource-badge--blog"}`}>
+            {resource.level}
+          </span>
+
           <span className="learn-resource-meta">
             {resource.channelOrAuthor ? `${resource.channelOrAuthor} · ` : ""}{resource.source}
           </span>
         </div>
-        {resource.duration && (
-          <span style={{ fontSize: 11.5, fontWeight: 600, color: "var(--text-muted)" }}>
-            ⏱️ {resource.duration}
+
+        {(resource.estimatedTime || resource.duration) && (
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>
+            ⏱️ Estimated: {resource.estimatedTime || resource.duration}
           </span>
         )}
       </div>
 
-      {/* Title */}
-      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 15.5, fontWeight: 700, lineHeight: 1.4, margin: "0 0 10px 0" }}>
+      {/* Resource Title */}
+      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, lineHeight: 1.4, margin: "0 0 10px 0" }}>
         {resource.title}
       </h3>
 
-      {/* Embedded Video (Click-to-Play via VideoEmbed) or Read Link */}
+      {/* 🎯 "Why am I learning this?" Connection to Goal */}
+      {resource.whyAmILearningThis && (
+        <div className="learn-why-box">
+          <div className="learn-why-box__title">
+            <span>🎯</span> WHY AM I LEARNING THIS?
+          </div>
+          <div className="learn-why-box__text">
+            {resource.whyAmILearningThis}
+          </div>
+        </div>
+      )}
+
+      {/* Embedded Video or External Article Reader */}
       {(isTutorial || isDevelopment) && resource.url && (
-        <div style={{ marginBottom: 14 }}>
+        <div style={{ margin: "14px 0" }}>
           <VideoEmbed url={resource.url} title={resource.title} />
         </div>
       )}
 
       {isBlog && (
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ margin: "12px 0" }}>
           <a
             href={resource.url}
             target="_blank"
@@ -532,32 +743,32 @@ function ResourceItemCard({ resource, isExpanded, onToggleExpand, onToggleComple
             className="btn btn--sm"
             style={{ display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none" }}
           >
-            📖 Read Full Essay on {resource.source} ↗
+            📖 Read Full Technical Analysis on {resource.source} ↗
           </a>
         </div>
       )}
 
-      {/* FOR TUTORIAL VIDEOS (80%): What You Will Build Box */}
+      {/* FOR TUTORIAL VIDEOS (80%): What You Will Build / Learn */}
       {isTutorial && resource.whatYouWillBuild && (
-        <div className="learn-what-you-will-build">
+        <div className="learn-what-you-will-build" style={{ marginBottom: 12 }}>
           <strong style={{ color: "var(--cyan-deep)" }}>WHAT YOU WILL BUILD / LEARN:</strong> {resource.whatYouWillBuild}
         </div>
       )}
 
-      {/* FOR TUTORIAL VIDEOS (80%): Simple, Step-by-Step and Detailed Format */}
+      {/* FOR TUTORIAL VIDEOS (80%): Step-by-Step Breakdown */}
       {isTutorial && resource.stepByStepBreakdown && resource.stepByStepBreakdown.length > 0 && (
-        <div style={{ margin: "12px 0" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--cyan)" }}>
-              Step-by-Step Tutorial Breakdown ({resource.stepByStepBreakdown.length} Steps)
+        <div style={{ margin: "14px 0" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--cyan-deep)" }}>
+              STEP-BY-STEP TUTORIAL BREAKDOWN ({resource.stepByStepBreakdown.length} STEPS)
             </span>
             <button
               type="button"
               className="btn btn--text btn--sm"
-              style={{ fontSize: 11.5, padding: "2px 6px", color: "var(--cyan)" }}
+              style={{ fontSize: 11.5, padding: "2px 6px", color: "var(--cyan-deep)" }}
               onClick={onToggleExpand}
             >
-              {isExpanded ? "Hide steps ▴" : "Show detailed steps ▾"}
+              {isExpanded ? "Collapse steps ▴" : "View step-by-step instructions ▾"}
             </button>
           </div>
 
@@ -582,28 +793,24 @@ function ResourceItemCard({ resource, isExpanded, onToggleExpand, onToggleComple
         </div>
       )}
 
-      {/* Intelligence breakdown box */}
+      {/* Detailed Intelligence Breakdown Box */}
       <div className="learn-intelligence-box">
-        {/* For Tutorials: Why it matters, Edge, Next Move */}
-        {isTutorial && (
+        {isTutorial ? (
           <>
             <div>
-              <div className="learn-intelligence-label">WHY THIS TUTORIAL MATTERS</div>
+              <div className="learn-intelligence-label">WHY THIS MATTERS FOR YOUR SKILL</div>
               <div className="learn-intelligence-text">{resource.whyItMatters}</div>
             </div>
             <div>
-              <div className="learn-intelligence-label">YOUR APPLIED EDGE</div>
+              <div className="learn-intelligence-label">YOUR APPLIED ADVANTAGE (EDGE)</div>
               <div className="learn-intelligence-text">{resource.yourEdge}</div>
             </div>
             <div>
-              <div className="learn-intelligence-label">NEXT MOVE & PRACTICE PROJECT</div>
+              <div className="learn-intelligence-label">NEXT MOVE & IMPLEMENTATION</div>
               <div className="learn-intelligence-text" style={{ whiteSpace: "pre-line" }}>{resource.nextMove}</div>
             </div>
           </>
-        )}
-
-        {/* For Latest Developments & Blog Posts (20%): 4-Part Intelligence Format */}
-        {!isTutorial && (
+        ) : (
           <>
             <div>
               <div className="learn-intelligence-label">WHAT HAPPENED</div>
@@ -618,25 +825,74 @@ function ResourceItemCard({ resource, isExpanded, onToggleExpand, onToggleComple
               <div className="learn-intelligence-text">{resource.yourEdge}</div>
             </div>
             <div>
-              <div className="learn-intelligence-label">YOUR NEXT MOVE</div>
+              <div className="learn-intelligence-label">NEXT MOVE</div>
               <div className="learn-intelligence-text" style={{ whiteSpace: "pre-line" }}>{resource.nextMove}</div>
             </div>
           </>
         )}
       </div>
 
-      {/* Action footer */}
+      {/* PRACTISE TASK (Dedicated Exercise Box) */}
+      {resource.practiceExercise && (
+        <div className="learn-practice-box">
+          <div className="learn-practice-box__head">
+            <div className="learn-practice-box__title">
+              <span>🛠️</span> {resource.practiceExerciseTitle || "PRACTICAL EXERCISE"}
+            </div>
+            <button
+              className={`btn btn--sm ${resource.isExerciseCompleted ? "btn--text" : "btn--secondary"}`}
+              style={{ fontSize: 11.5, padding: "3px 10px" }}
+              onClick={onToggleExerciseComplete}
+              disabled={isCompletingExercise}
+            >
+              {isCompletingExercise
+                ? "Saving…"
+                : resource.isExerciseCompleted
+                ? "✓ Exercise Completed"
+                : "Mark Exercise Done"}
+            </button>
+          </div>
+          <div className="learn-practice-box__desc">
+            {resource.practiceExercise}
+          </div>
+        </div>
+      )}
+
+      {/* AI LEARNING MENTOR WORKFLOW: Watch/Read → Understand → Practise → Test → Apply */}
+      <div className="learn-mentor-bar">
+        <span className="learn-mentor-bar__label">AI MENTOR:</span>
+        <button className="learn-mentor-btn" onClick={onAskMentor} title="Ask mentor to explain this topic simply">
+          💡 Ask AI Mentor
+        </button>
+        <button className="learn-mentor-btn learn-mentor-btn--primary" onClick={onTestMe} title="Take an interactive test on this topic">
+          📝 Test Me (Quiz)
+        </button>
+        <button className="learn-mentor-btn" onClick={onReviewWork} title="Submit your code or practice exercise for review">
+          🛠️ Review My Work
+        </button>
+        <button className="learn-mentor-btn" onClick={onAnotherExplanation} title="Get an alternative explanation and analogy">
+          🔄 Another Explanation
+        </button>
+      </div>
+
+      {/* Footer completion toggle */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, flexWrap: "wrap", gap: 8 }}>
         <button
           className={`btn btn--sm ${resource.isCompleted ? "btn--text" : "btn--primary"}`}
-          onClick={onToggleComplete}
-          disabled={isCompleting}
+          onClick={onToggleResourceComplete}
+          disabled={isCompletingResource}
         >
-          {isCompleting ? "Saving…" : resource.isCompleted ? "✓ Completed & Mastered" : isTutorial ? "Mark tutorial completed" : "Mark as read"}
+          {isCompletingResource
+            ? "Saving…"
+            : resource.isCompleted
+            ? "✓ Resource Completed & Mastered"
+            : isTutorial
+            ? "Mark tutorial completed"
+            : "Mark as read"}
         </button>
         {resource.isCompleted && (
-          <span style={{ fontSize: 11.5, color: "#1f9d63", fontWeight: 700 }}>
-            Saved to your skill progress ✓
+          <span style={{ fontSize: 12, color: "#059669", fontWeight: 700 }}>
+            Saved to your stage mastery progress ✓
           </span>
         )}
       </div>

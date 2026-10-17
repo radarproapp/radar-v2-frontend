@@ -384,6 +384,15 @@ export interface TutorialStep {
   codeSnippetOrKeyPoint?: string | null;
 }
 
+export interface QuizPerformanceRecord {
+  id: string;
+  topic: string;
+  stage: string;
+  scorePercent: number;
+  passed: boolean;
+  takenAt: string;
+}
+
 export interface LearningResource {
   id: string;
   title: string;
@@ -393,11 +402,21 @@ export interface LearningResource {
   source: string;
   channelOrAuthor?: string | null;
   duration?: string | null;
-  level: "Beginner" | "Intermediate" | "Advanced";
+  estimatedTime?: string | null;
+  order?: number;
+  sequenceRole?: string;
+  level: "Beginner" | "Intermediate" | "Advanced" | "Application";
   type: LearningResourceType;
   isHowToTutorial?: boolean;
+  isNewDevelopment?: boolean;
+  whyAmILearningThis?: string;
   whatYouWillBuild?: string | null;
   stepByStepBreakdown: TutorialStep[];
+  practiceExerciseTitle?: string | null;
+  practiceExercise?: string | null;
+  isExerciseCompleted?: boolean;
+  quizTopic?: string | null;
+  keyConcepts?: string[];
   whatHappened: string;
   whyItMatters: string;
   yourEdge: string;
@@ -409,10 +428,12 @@ export interface RoadmapModule {
   id: string;
   title: string;
   description: string;
+  stageGoal?: string;
   order: number;
   level?: string;
   isCompleted: boolean;
   isLocked: boolean;
+  masteryPercent?: number;
   lessons: RoadmapLesson[];
   contentItemIds: string[];
   resources?: LearningResource[];
@@ -425,9 +446,16 @@ export interface GrowthRoadmap {
   goal: string;
   interest: string;
   level: string;
+  currentStage?: string;
   modules: RoadmapModule[];
   resources?: LearningResource[];
   progressPercent: number;
+  stageMastery?: Record<string, number>;
+  completedResourceIds?: string[];
+  completedExerciseIds?: string[];
+  quizResults?: QuizPerformanceRecord[];
+  weakAreas?: string[];
+  adaptiveRecommendation?: string | null;
   createdAt: string;
   isActive: boolean;
 }

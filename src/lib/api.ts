@@ -508,6 +508,26 @@ export function completeLearningResource(roadmapId: string, resourceId: string) 
   });
 }
 
+export function completeLearningExercise(roadmapId: string, resourceId: string) {
+  return request<void>(`/api/roadmaps/${roadmapId}/exercises/${resourceId}/complete`, {
+    method: "POST",
+  });
+}
+
+export function recordQuizResult(roadmapId: string, topic: string, stage: string, scorePercent: number) {
+  return request<GrowthRoadmap>(`/api/roadmaps/${roadmapId}/quizzes`, {
+    method: "POST",
+    body: JSON.stringify({ topic, stage, scorePercent }),
+  });
+}
+
+export function setRoadmapStage(roadmapId: string, stage: string) {
+  return request<void>(`/api/roadmaps/${roadmapId}/stage`, {
+    method: "POST",
+    body: JSON.stringify({ stage }),
+  });
+}
+
 export function getRoadmapProgress(roadmapId: string) {
   return request<{ progressPercent: number }>(`/api/roadmaps/${roadmapId}/progress`);
 }

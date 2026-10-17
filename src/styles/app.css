@@ -2864,4 +2864,239 @@ a:hover { color: var(--cyan-deep); }
   letter-spacing: 0.03em;
 }
 
+/* 4-Stage Navigation Cards */
+.learn-stage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.learn-stage-pill {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s var(--ease);
+  position: relative;
+}
+.learn-stage-pill:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 4px 12px rgba(0, 140, 147, 0.08);
+}
+.learn-stage-pill.active {
+  border-color: var(--cyan);
+  background: #f4fbfb;
+  box-shadow: 0 4px 14px rgba(0, 140, 147, 0.12);
+}
+.learn-stage-pill__num {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 3px;
+}
+.learn-stage-pill.active .learn-stage-pill__num {
+  color: var(--cyan);
+}
+.learn-stage-pill__title {
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.learn-stage-pill__progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.learn-stage-pill__bar {
+  height: 4px;
+  background: rgba(20, 24, 31, 0.08);
+  border-radius: 99px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.learn-stage-pill__fill {
+  height: 100%;
+  background: var(--cyan);
+  border-radius: 99px;
+  transition: width 0.3s;
+}
+
+/* Sequence Role Badges ("Start with this" not a dump) */
+.learn-seq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+.learn-seq-badge--start {
+  background: #008c93;
+  color: #fff;
+}
+.learn-seq-badge--next {
+  background: #eef2f6;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+.learn-seq-badge--practice {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+.learn-seq-badge--capstone {
+  background: #ede9fe;
+  color: #5b21b6;
+  border: 1px solid #ddd6fe;
+}
+.learn-seq-badge--dev {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+/* Why Am I Learning This? Highlight Box */
+.learn-why-box {
+  background: #f0fdf9;
+  border: 1px solid #a7f3d0;
+  border-left: 4px solid #10b981;
+  border-radius: 9px;
+  padding: 10px 14px;
+  margin: 10px 0;
+}
+.learn-why-box__title {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #047857;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.learn-why-box__text {
+  font-size: 12.5px;
+  color: #064e3b;
+  line-height: 1.55;
+  font-weight: 500;
+}
+
+/* Practical Task / Exercise Box */
+.learn-practice-box {
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 12px 0;
+}
+.learn-practice-box__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.learn-practice-box__title {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #92400e;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.learn-practice-box__desc {
+  font-size: 12.5px;
+  color: #78350f;
+  line-height: 1.55;
+  margin-bottom: 10px;
+}
+
+/* AI Learning Mentor Action Bar */
+.learn-mentor-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin: 12px 0 6px 0;
+}
+.learn-mentor-bar__label {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cyan-deep);
+  margin-right: 4px;
+}
+.learn-mentor-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.learn-mentor-btn:hover {
+  background: var(--cyan-light);
+  border-color: var(--cyan);
+  color: var(--cyan-deep);
+}
+.learn-mentor-btn--primary {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  color: #fff;
+}
+.learn-mentor-btn--primary:hover {
+  background: var(--cyan-deep);
+  color: #fff;
+}
+
+/* Adaptive Recommendation / Alert Banner */
+.learn-adaptive-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fefce8;
+  border: 1.5px solid #fef08a;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+}
+.learn-adaptive-card__icon {
+  font-size: 20px;
+  flex: none;
+}
+.learn-adaptive-card__text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #854d0e;
+}
+.learn-adaptive-card__text strong {
+  color: #713f12;
+}
+
+
 
