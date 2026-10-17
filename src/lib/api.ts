@@ -17,8 +17,10 @@ import type {
   MentorWorkReview,
   NavigatorFocus,
   Note,
+  DailyOpportunityFeed,
   Opportunity,
   OpportunityType,
+  OpportunityTrackingStatus,
   PolicyComparison,
   ProjectTemplate,
   ReportReason,
@@ -681,17 +683,66 @@ export function deleteNote(id: string) {
 // ── Opportunities ────────────────────────────────────────────────────────
 
 export function getOpportunities(
-  type: OpportunityType | null,
-  page = 1,
+  type?: OpportunityType | null,
+  pageOrFilters?:
+    | number
+    | {
+        region?: string | null;
+        goal?: string | null;
+        urgency?: string | null;
+        matchTier?: string | null;
+        fields?: readonly string[];
+        page?: number;
+        pageSize?: number;
+      },
   pageSize = 20,
   fields?: readonly string[],
 ) {
   const params = new URLSearchParams();
   if (type) params.set("type", type);
-  params.set("page", String(page));
-  params.set("pageSize", String(pageSize));
-  if (fields?.length) params.set("fields", fields.join(","));
+
+  if (typeof pageOrFilters === "object" && pageOrFilters !== null) {
+    if (pageOrFilters.region) params.set("region", pageOrFilters.region);
+    if (pageOrFilters.goal) params.set("goal", pageOrFilters.goal);
+    if (pageOrFilters.urgency) params.set("urgency", pageOrFilters.urgency);
+    if (pageOrFilters.matchTier) params.set("matchTier", pageOrFilters.matchTier);
+    params.set("page", String(pageOrFilters.page ?? 1));
+    params.set("pageSize", String(pageOrFilters.pageSize ?? pageSize));
+    if (pageOrFilters.fields?.length) params.set("fields", pageOrFilters.fields.join(","));
+  } else {
+    const page = typeof pageOrFilters === "number" ? pageOrFilters : 1;
+    params.set("page", String(page));
+    params.set("pageSize", String(pageSize));
+    if (fields?.length) params.set("fields", fields.join(","));
+  }
+
   return request<Opportunity[]>(`/api/opportunities?${params.toString()}`);
+}
+
+export function getDailyOpportunities() {
+  return request<DailyOpportunityFeed>("/api/opportunities/daily");
+}
+
+export function getOpportunityById(id: string) {
+  return request<Opportunity>(`/api/opportunities/${id}`);
+}
+
+export function updateOpportunityStatus(id: string, status: OpportunityTrackingStatus, notes?: string) {
+  return request<void>(`/api/opportunities/${id}/status`, {
+    method: "POST",
+    body: JSON.stringify({ status, notes }),
+  });
+}
+
+export function toggleOpportunityReminder(id: string, reminderSet: boolean) {
+  return request<void>(`/api/opportunities/${id}/reminder`, {
+    method: "POST",
+    body: JSON.stringify({ reminderSet }),
+  });
+}
+
+export function getOpportunityPipeline() {
+  return request<Opportunity[]>("/api/opportunities/pipeline");
 }
 
 export function saveOpportunity(id: string) {

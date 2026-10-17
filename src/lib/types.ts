@@ -63,7 +63,22 @@ export type OpportunityType =
   | "Competition"
   | "StartupAccelerator"
   | "Fellowship"
-  | "RemoteJob";
+  | "RemoteJob"
+  | "Event"
+  | "Conference"
+  | "Workshop"
+  | "Training"
+  | "Bootcamp"
+  | "Funding";
+
+export type OpportunityTrackingStatus =
+  | "None"
+  | "Saved"
+  | "Interested"
+  | "Applied"
+  | "NotRelevant"
+  | "Accepted"
+  | "Rejected";
 
 export interface Opportunity {
   id: string;
@@ -84,6 +99,28 @@ export interface Opportunity {
   preparationSteps: string[];
   discoveredAt: string;
   daysUntilDeadline: number;
+  regionTag?: string;
+  goalTag?: string;
+  benefits?: string;
+  cost?: string;
+  whoIsEligible?: string[];
+  radarsAdvice?: string[];
+  nextMoveSteps?: string[];
+  selectionProcess?: string;
+  status?: string;
+  userTrackingStatus?: OpportunityTrackingStatus;
+  reminderSet?: boolean;
+  matchTier?: "StrongMatch" | "Relevant" | "Explore";
+  urgencyLabel?: string;
+}
+
+export interface DailyOpportunityFeed {
+  totalCount: number;
+  message: string;
+  primaryFocus: string;
+  items: Opportunity[];
+  tierCounts: Record<string, number>;
+  urgencyCounts: Record<string, number>;
 }
 
 export interface NotificationPrefs {
