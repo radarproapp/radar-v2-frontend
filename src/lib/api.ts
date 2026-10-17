@@ -308,6 +308,7 @@ export const FEED_CARD_FIELDS = [
   "whyItMatters",
   "personalizedWhy",
   "nextMove",
+  "yourEdge",
   "matchedSignals",
   "aiSummary",
   "isSaved",
@@ -351,6 +352,7 @@ export function getSavedItems() {
 
 export interface PersonalizedWhy {
   text: string;
+  yourEdge?: string;
   whatToKnow: string;
   nextMove: string;
   relevanceScore: number;

@@ -174,6 +174,7 @@ export interface ContentItem {
   relevanceConfidence: number;
   matchedSignals: string[];
   nextMove: string | null;
+  yourEdge?: string | null;
   tags: string[];
   secondaryTopics: string[];
   classificationConfidence: number;

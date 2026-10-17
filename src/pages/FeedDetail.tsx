@@ -46,6 +46,52 @@ function defaultPersonaTab(persona: string | undefined, availableKeys: string[])
   return availableKeys[0];
 }
 
+function renderNextMoveSteps(text: string) {
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  const isNumbered = lines.length > 1 && lines.some((l) => /^\d+[\.\)]\s*/.test(l));
+
+  if (isNumbered) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10 }}>
+        {lines.map((line, idx) => {
+          const cleanText = line.replace(/^\d+[\.\)]\s*/, "");
+          return (
+            <div key={idx} style={{ display: "flex", gap: 11, alignItems: "flex-start" }}>
+              <div
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: "50%",
+                  background: "var(--cyan)",
+                  color: "#fff",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flex: "none",
+                  marginTop: 2,
+                }}
+              >
+                {idx + 1}
+              </div>
+              <div style={{ fontSize: 14, lineHeight: 1.65, color: "var(--text-main)" }}>
+                {cleanText}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>{text}</p>;
+}
+
 export function FeedDetail() {
   const { itemId = "" } = useParams<{ itemId: string }>();
   const navigate = useNavigate();
@@ -226,7 +272,7 @@ export function FeedDetail() {
 
       <div className="item-detail-section">
         <div className="item-detail-section-label">WHY IT MATTERS TO YOU</div>
-        <p>{whyQuery.data?.text ?? item.personalizedWhy ?? item.whyItMatters}</p>
+        <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>{whyQuery.data?.text ?? item.personalizedWhy ?? item.whyItMatters}</p>
         {whyQuery.data?.matchedSignals && whyQuery.data.matchedSignals.length > 0 && (
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 9 }}>
             <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--text-faint)" }}>WHY YOU'RE SEEING THIS</span>
@@ -248,13 +294,15 @@ export function FeedDetail() {
 
       <div className="item-detail-edge" style={{ marginBottom: 20 }}>
         <div className="item-detail-edge-label">YOUR EDGE</div>
-        <p>{item.aiSummary || "Radar's analytical edge: Gives you strategic foresight, domain depth, and competitive leverage in this market."}</p>
+        <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
+          {whyQuery.data?.yourEdge || item.yourEdge || item.aiSummary || "Radar's analytical edge: Gives you strategic foresight, domain depth, and competitive leverage in this market."}
+        </p>
       </div>
 
       <div className="item-detail-section" style={{ borderLeft: "3px solid var(--cyan)", paddingLeft: 16, marginBottom: 20 }}>
         <div className="item-detail-section-label">YOUR NEXT MOVE</div>
-        <p>{whyQuery.data?.nextMove ?? item.nextMove ?? item.recommendedActions?.[0] ?? `Apply this insight to a project or explore opportunities in ${item.topic || "this domain"}.`}</p>
-        <div style={{ marginTop: 12 }}>
+        {renderNextMoveSteps(whyQuery.data?.nextMove ?? item.nextMove ?? item.recommendedActions?.[0] ?? `Apply this insight to a project or explore opportunities in ${item.topic || "this domain"}.`)}
+        <div style={{ marginTop: 14 }}>
           <button className="btn btn--primary btn--sm" onClick={addToRoadmap} disabled={addedToRoadmap}>
             {addedToRoadmap ? "Added to roadmap ✓" : "+ Add to roadmap"}
           </button>
