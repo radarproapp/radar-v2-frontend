@@ -60,6 +60,7 @@ export function Opportunities() {
   const [activeType, setActiveType] = useState<OpportunityType | "All">("All");
   const [activeRegion, setActiveRegion] = useState<string>("All");
   const [activeUrgency, setActiveUrgency] = useState<string>("All");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Selected opportunity for the deep Intelligence Detail Drawer
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null);
@@ -89,6 +90,28 @@ export function Opportunities() {
     queryFn: getOpportunityPipeline,
     enabled: viewMode === "pipeline",
   });
+
+  // Which filters are actually narrowing the list, so the collapsed bar can say so without
+  // making the user expand it to find out.
+  const activeFilterSummary = useMemo(() => {
+    const labelFor = (list: { label: string; value: string }[], value: string) =>
+      list.find((o) => o.value === value)?.label ?? value;
+    const parts: string[] = [];
+    if (activeTier !== "All") parts.push(labelFor(TIER_FILTERS, activeTier));
+    if (activeType !== "All") parts.push(labelFor(TYPE_FILTERS as { label: string; value: string }[], activeType));
+    if (activeRegion !== "All") parts.push(labelFor(REGION_FILTERS, activeRegion));
+    if (activeUrgency !== "All") parts.push(labelFor(URGENCY_FILTERS, activeUrgency));
+    return parts;
+  }, [activeTier, activeType, activeRegion, activeUrgency]);
+
+  const activeFilterCount = activeFilterSummary.length;
+
+  const clearFilters = () => {
+    setActiveTier("All");
+    setActiveType("All");
+    setActiveRegion("All");
+    setActiveUrgency("All");
+  };
 
   // Items resolution
   const items = useMemo(() => {
@@ -265,8 +288,38 @@ export function Opportunities() {
         </div>
       )}
 
-      {/* Filter Controls Bar */}
-      <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, padding: "14px 18px", marginBottom: 22, display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* Filter Controls Bar — collapsed by default. Four rows of chips between the user and the
+          opportunities was the single loudest "this is confusing" signal on this page, so the
+          default state is now "show me the opportunities", not "configure a query first". */}
+      <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, padding: "12px 18px", marginBottom: 22, display: "flex", flexDirection: "column", gap: filtersOpen ? 12 : 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <button
+            className={`r-chip ${activeFilterCount > 0 ? "active" : ""}`}
+            style={{ fontSize: 12.5, fontWeight: 700 }}
+            onClick={() => setFiltersOpen((open) => !open)}
+            aria-expanded={filtersOpen}
+          >
+            Filters{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""} {filtersOpen ? "▲" : "▼"}
+          </button>
+
+          {!filtersOpen && activeFilterSummary.length > 0 && (
+            <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>
+              {activeFilterSummary.join(" · ")}
+            </span>
+          )}
+
+          {activeFilterCount > 0 && (
+            <button
+              style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, color: "var(--cyan)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+              onClick={clearFilters}
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+
+        {filtersOpen && (
+        <>
         {/* Match Tiers */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-faint)", width: 75 }}>
@@ -335,6 +388,8 @@ export function Opportunities() {
             ))}
           </div>
         </div>
+        </>
+        )}
       </div>
 
       {/* Feed List */}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { IntelBlock } from "../components/IntelBlock";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
@@ -612,22 +613,9 @@ function HubResourceCard({
       {/* D. ARTICLE / STAY CURRENT 4-PART BREAKDOWN */}
       {(!isPaper && !isPodcast) && item.whatHappened && (
         <div className="learn-intelligence-box">
-          <div>
-            <div className="learn-intelligence-label">WHAT HAPPENED</div>
-            <div className="learn-intelligence-text">{item.whatHappened}</div>
-          </div>
-          <div>
-            <div className="learn-intelligence-label">WHY IT MATTERS</div>
-            <div className="learn-intelligence-text">{item.whyItMatters}</div>
-          </div>
-          <div>
-            <div className="learn-intelligence-label">YOUR EDGE</div>
-            <div className="learn-intelligence-text">{item.yourEdge}</div>
-          </div>
-          <div>
-            <div className="learn-intelligence-label">NEXT MOVE</div>
-            <div className="learn-intelligence-text" style={{ whiteSpace: "pre-line" }}>{item.nextMove}</div>
-          </div>
+          <IntelBlock label="WHAT HAPPENED" value={item.whatHappened} />
+          <IntelBlock label="WHY IT MATTERS" value={item.whyItMatters} />
+          <IntelBlock label="NEXT MOVE" value={item.nextMove} preserveLineBreaks />
         </div>
       )}
 

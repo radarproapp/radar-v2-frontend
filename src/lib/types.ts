@@ -343,24 +343,6 @@ export interface CapturedItem {
   capturedAt: string;
 }
 
-export interface Clip {
-  id: string;
-  userId: string;
-  tag: string;
-  signal: string;
-  whyItMatters: string;
-  yourEdge?: string | null;
-  nextMove?: string | null;
-  source: string;
-  contentItemId: string | null;
-  mediaUrl?: string | null;
-  mediaType?: "video" | "audio" | null;
-  thumbnailUrl?: string | null;
-  durationSeconds?: number | null;
-  isSaved: boolean;
-  publishedAt: string;
-}
-
 export interface WeeklyBrief {
   id: string;
   userId: string;
@@ -916,9 +898,70 @@ export interface AiEngineStats {
   engineName: string;
   model: string;
   isCloudLlmActive: boolean;
+  isBudgetExhausted: boolean;
+  degradedReason?: string | null;
   monthlySpendUsd: number;
   monthlySpendCapUsd: number;
   totalActivitiesProcessed: number;
   activityCounts: Record<string, number>;
   recentActivities: AiActivityLog[];
+}
+
+// ── Home brief (GET /api/home) ───────────────────────────────────────────
+// Mirrors Models/HomeBrief.cs. Every field is computed from the user's own profile, roadmap,
+// behaviour and real ingested content; sections Radar can't ground arrive null/empty so the UI
+// omits them rather than rendering placeholder copy.
+
+export interface HomeSignal {
+  contentItemId: string;
+  signal: string;
+  source: string;
+  type: ContentType;
+  layer: ContentLayer;
+  topic?: string | null;
+  thumbnailUrl?: string | null;
+  publishedAt: string;
+  whyYoureSeeingThis: string;
+}
+
+export interface NoticedSignal {
+  term: string;
+  timesEngaged: number;
+  suggestion: string;
+  actionUrl: string;
+}
+
+export interface HomeFocus {
+  topic: string;
+  stage: string;
+  why: string;
+  estimatedTime?: string | null;
+  actionUrl: string;
+}
+
+export interface HomeBuild {
+  artifact: string;
+  why: string;
+  actionUrl: string;
+}
+
+export interface HomeOpportunity {
+  id: string;
+  title: string;
+  organisation: string;
+  location?: string | null;
+  matchScorePercent: number;
+  matchTier: string;
+  daysUntilDeadline?: number | null;
+  whyItMatches: string;
+}
+
+export interface HomeBrief {
+  context: string;
+  topSignals: HomeSignal[];
+  noticed: NoticedSignal[];
+  todaysFocus?: HomeFocus | null;
+  nextBuild?: HomeBuild | null;
+  opportunities: HomeOpportunity[];
+  stats: UserStats;
 }

@@ -106,12 +106,12 @@ export function Capture() {
             <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "clamp(1rem,1.8vw,1.14rem)", lineHeight: 1.38, marginBottom: 13 }}>
               {justCaptured.signal}
             </div>
-            <div className="feed-section-label">WHY IT MATTERS</div>
-            <div style={{ fontSize: 13.5, color: "#374151", lineHeight: 1.7, marginBottom: 13 }}>{justCaptured.whyItMatters}</div>
-            <div className="feed-edge">
-              <div className="feed-edge-label">YOUR EDGE</div>
-              <div className="feed-edge-text">{justCaptured.aiSummary}</div>
-            </div>
+            {justCaptured.whyItMatters && (
+              <>
+                <div className="feed-section-label">WHY IT MATTERS</div>
+                <div style={{ fontSize: 13.5, color: "#374151", lineHeight: 1.7, marginBottom: 13 }}>{justCaptured.whyItMatters}</div>
+              </>
+            )}
             <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center" }}>
               <a className="btn btn--primary btn--sm" href="/">
                 Understand →

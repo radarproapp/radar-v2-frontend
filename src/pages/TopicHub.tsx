@@ -62,15 +62,6 @@ export function TopicHub() {
             <div style={{ fontSize: 11.5, color: "rgba(255,255,255,.42)" }}>{current.summarySource}</div>
           </div>
 
-          {current.aiEdge && (
-            <div style={{ background: "var(--cyan-light)", borderRadius: 14, padding: "17px 19px", marginBottom: 20 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--cyan-deep)", marginBottom: 6 }}>
-                YOUR EDGE
-              </div>
-              <div style={{ fontSize: 13, color: "#0d3d40", lineHeight: 1.7 }}>{current.aiEdge}</div>
-            </div>
-          )}
-
           <div className="source-stats" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 20 }}>
             <div style={{ textAlign: "center", padding: "15px 8px", borderRadius: 13, background: "#fff", border: "1px solid rgba(20,24,31,.1)" }}>
               <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.3rem", color: "var(--cyan-deep)", lineHeight: 1, marginBottom: 5 }}>

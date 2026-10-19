@@ -4,7 +4,6 @@ import type {
   CaptureMode,
   CapturedItem,
   ChatMessage,
-  Clip,
   ContentItem,
   ContentReport,
   ContentType,
@@ -39,6 +38,7 @@ import type {
   UserProfile,
   UserInterestContext,
   WeeklyBrief,
+  HomeBrief,
 } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "https://radar-v2-backend-production.up.railway.app";
@@ -424,16 +424,6 @@ export function getRecentCaptures() {
   return request<CapturedItem[]>("/api/capture/recent");
 }
 
-// ── Clips ────────────────────────────────────────────────────────────────
-
-export function getTodaysClips() {
-  return request<Clip[]>("/api/clips/today");
-}
-
-export function saveClip(id: string) {
-  return request<void>(`/api/clips/${id}/save`, { method: "POST" });
-}
-
 // ── Weekly brief ─────────────────────────────────────────────────────────
 
 export function getWeeklyBrief() {
@@ -812,6 +802,12 @@ export function unsaveOpportunity(id: string) {
 
 export function markOpportunityApplied(id: string) {
   return request<void>(`/api/opportunities/${id}/applied`, { method: "POST" });
+}
+
+// ── Home ─────────────────────────────────────────────────────────────────
+
+export function getHome() {
+  return request<HomeBrief>("/api/home");
 }
 
 // ── Research ─────────────────────────────────────────────────────────────

@@ -52,15 +52,6 @@ export function Compare() {
             <div style={{ fontSize: 13.5, color: "rgba(255,255,255,.78)", lineHeight: 1.75 }}>{comparison.whyItMatters}</div>
           </div>
 
-          {comparison.aiEdge && (
-            <div style={{ background: "var(--cyan-light)", borderRadius: 14, padding: "17px 19px", marginBottom: 20 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--cyan-deep)", marginBottom: 6 }}>
-                YOUR EDGE
-              </div>
-              <div style={{ fontSize: 13, color: "#0d3d40", lineHeight: 1.7 }}>{comparison.aiEdge}</div>
-            </div>
-          )}
-
           {comparison.rows.map((row, i) => (
             <div key={i} style={{ marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 9 }}>

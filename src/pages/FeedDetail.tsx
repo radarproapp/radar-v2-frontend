@@ -191,6 +191,12 @@ export function FeedDetail() {
     );
   }
 
+  // Resolved once so the sections below can be suppressed when there is genuinely nothing to show.
+  // Note there is no invented catch-all here any more: "Apply this insight to a project" told the
+  // user nothing and merely disguised a missing recommendation as a real one.
+  const whyText = whyQuery.data?.text || item.personalizedWhy || item.whyItMatters || "";
+  const nextMoveText = whyQuery.data?.nextMove || item.nextMove || item.recommendedActions?.[0] || "";
+
   return (
     <div className="r-page" style={{ maxWidth: 700 }}>
       <button
@@ -265,14 +271,17 @@ export function FeedDetail() {
       {item.type === "Video" && <VideoEmbed url={item.url} title={item.title} />}
       {item.type === "Podcast" && <AudioEmbed url={item.audioUrl} title={item.title} />}
 
-      <div className="item-detail-section">
-        <div className="item-detail-section-label">WHAT HAPPENED</div>
-        <p>{item.whatHappened || item.aiSummary}</p>
-      </div>
+      {(item.whatHappened || item.aiSummary) && (
+        <div className="item-detail-section">
+          <div className="item-detail-section-label">WHAT HAPPENED</div>
+          <p>{item.whatHappened || item.aiSummary}</p>
+        </div>
+      )}
 
+      {whyText && (
       <div className="item-detail-section">
         <div className="item-detail-section-label">WHY IT MATTERS TO YOU</div>
-        <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>{whyQuery.data?.text ?? item.personalizedWhy ?? item.whyItMatters}</p>
+        <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>{whyText}</p>
         {whyQuery.data?.matchedSignals && whyQuery.data.matchedSignals.length > 0 && (
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 9 }}>
             <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--text-faint)" }}>WHY YOU'RE SEEING THIS</span>
@@ -291,17 +300,11 @@ export function FeedDetail() {
           </div>
         )}
       </div>
-
-      <div className="item-detail-edge" style={{ marginBottom: 20 }}>
-        <div className="item-detail-edge-label">YOUR EDGE</div>
-        <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
-          {whyQuery.data?.yourEdge || item.yourEdge || item.aiSummary || "Radar's analytical edge: Gives you strategic foresight, domain depth, and competitive leverage in this market."}
-        </p>
-      </div>
+      )}
 
       <div className="item-detail-section" style={{ borderLeft: "3px solid var(--cyan)", paddingLeft: 16, marginBottom: 20 }}>
-        <div className="item-detail-section-label">YOUR NEXT MOVE</div>
-        {renderNextMoveSteps(whyQuery.data?.nextMove ?? item.nextMove ?? item.recommendedActions?.[0] ?? `Apply this insight to a project or explore opportunities in ${item.topic || "this domain"}.`)}
+        {nextMoveText && <div className="item-detail-section-label">YOUR NEXT MOVE</div>}
+        {nextMoveText && renderNextMoveSteps(nextMoveText)}
         <div style={{ marginTop: 14 }}>
           <button className="btn btn--primary btn--sm" onClick={addToRoadmap} disabled={addedToRoadmap}>
             {addedToRoadmap ? "Added to roadmap ✓" : "+ Add to roadmap"}

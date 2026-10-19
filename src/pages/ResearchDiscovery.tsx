@@ -239,7 +239,7 @@ Could you explain how to practically apply this paper's findings and methodology
           <span>🔬</span> Academic Research & Literature Discovery
         </h1>
         <p className="r-page-sub">
-          Search peer-reviewed journal articles and conference papers across verifiable databases. Every paper includes a strictly structured 5-minute (~500-word) academic breakdown and direct verification links.
+          Search peer-reviewed journal articles and conference papers across verifiable databases. Open a paper for Radar's structured 5-minute (~500-word) breakdown, and a direct link to the original every time.
         </p>
       </div>
 
@@ -370,7 +370,7 @@ Could you explain how to practically apply this paper's findings and methodology
             results.map((paper) => {
               const b: AcademicPaperBreakdown | undefined = paper.paperBreakdown || undefined;
               const isExpanded = expandedPapers[paper.id] ?? true;
-              const wordCount = paper.wordCount || 520;
+              const wordCount = paper.wordCount ?? 0;
 
               // Build verified read link
               const verifiedPaperUrl = paper.url || (paper.doi ? `https://doi.org/${paper.doi}` : null);
@@ -391,9 +391,11 @@ Could you explain how to practically apply this paper's findings and methodology
                         DOI: {paper.doi}
                       </span>
                     )}
-                    <span className="research-badge-cite">
-                      📖 ~{wordCount} words · 5 min read
-                    </span>
+                    {b && wordCount > 0 && (
+                      <span className="research-badge-cite">
+                        📖 ~{wordCount} words · 5 min read
+                      </span>
+                    )}
                   </div>
 
                   {/* Paper Title */}
@@ -438,7 +440,9 @@ Could you explain how to practically apply this paper's findings and methodology
                       <div className="research-breakdown-header">
                         <div className="research-breakdown-title-wrap">
                           <span className="research-breakdown-title">Strict 5-Minute Academic Summary</span>
-                          <span className="research-breakdown-pill">~{wordCount} words · 7-Part Format</span>
+                          {wordCount > 0 && (
+                            <span className="research-breakdown-pill">~{wordCount} words · 7-Part Format</span>
+                          )}
                         </div>
 
                         <div style={{ display: "flex", gap: 6 }}>
@@ -527,12 +531,15 @@ Could you explain how to practically apply this paper's findings and methodology
                       )}
                     </div>
                   ) : (
-                    /* Fallback display if breakdown is not yet available */
+                    /* No Radar breakdown yet: show the publisher's own abstract, labelled as such.
+                       Never dress the source abstract up as Radar's structured summary. */
                     <div className="research-breakdown-box">
                       <div className="research-breakdown-header">
-                        <span className="research-breakdown-title">Abstract & Findings</span>
+                        <span className="research-breakdown-title">Abstract (from the source)</span>
                       </div>
-                      <div className="research-section-text">{paper.aiSummary || paper.whatHappened}</div>
+                      <div className="research-section-text">
+                        {paper.aiSummary || paper.whatHappened || "No abstract available from the source."}
+                      </div>
                       {paper.keyFindings && (
                         <div style={{ marginTop: 8, fontSize: 12.5, color: "#047857" }}>
                           <strong>Key Findings:</strong> {paper.keyFindings}
@@ -610,7 +617,7 @@ Could you explain how to practically apply this paper's findings and methodology
         <EmptyState
           icon="📖"
           title="Search All Academic Topics"
-          description="Type any topic in plain English—from single keywords like 'leadership', 'AI', 'SMEs' to full research titles. Radar searches verified databases and synthesizes strict 5-minute (~500-word) 7-part breakdowns."
+          description="Type any topic in plain English—from single keywords like 'leadership', 'AI', 'SMEs' to full research titles. Radar only returns work it can verify, and always links you to the original."
         >
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", maxWidth: 640 }}>
             {POPULAR_ACADEMIC_TOPICS.map((topic) => (

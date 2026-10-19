@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { IntelBlock } from "../components/IntelBlock";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
@@ -16,32 +17,26 @@ import {
 } from "../lib/api";
 import type { GrowthRoadmap, LearningResource } from "../lib/types";
 
-const STAGE_DEFINITIONS = [
-  {
-    key: "Beginner",
-    label: "Stage 01: Beginner",
-    subtitle: "Foundations & Core Tools",
-    goal: "Excel fundamentals, data cleaning, basic statistics, charts & visualisation",
-  },
-  {
-    key: "Intermediate",
-    label: "Stage 02: Intermediate",
-    subtitle: "Applied Workflows & Modelling",
-    goal: "SQL, advanced Excel, Power BI, relational data modelling",
-  },
-  {
-    key: "Advanced",
-    label: "Stage 03: Advanced",
-    subtitle: "Scale, Prediction & Optimization",
-    goal: "Python, advanced statistics, predictive analytics, enterprise BI",
-  },
-  {
-    key: "Application",
-    label: "Stage 04: Real-World Application",
-    subtitle: "Portfolio, Case Studies & Interview Prep",
-    goal: "Real-world projects, portfolio construction, business case studies, technical interview mastery",
-  },
-] as const;
+// The four stages are structural and always present; their *content* is not. These titles and
+// goals used to be hardcoded here as Excel / SQL / Power BI / Python, so a cybersecurity learner
+// was told their beginner stage was "Excel fundamentals, data cleaning, basic statistics" no
+// matter what their roadmap actually said. The labels now come from the roadmap itself, with a
+// domain-neutral fallback for the gap before one is generated.
+const STAGE_KEYS = ["Beginner", "Intermediate", "Advanced", "Application"] as const;
+
+const STAGE_FALLBACKS: Record<string, { subtitle: string; goal: string }> = {
+  Beginner: { subtitle: "Foundations & Core Tools", goal: "Core concepts, vocabulary and the standard toolset" },
+  Intermediate: { subtitle: "Applied Workflows", goal: "Realistic problems worked end to end" },
+  Advanced: { subtitle: "Depth & Specialisation", goal: "Specialised techniques, scale and judgement" },
+  Application: { subtitle: "Portfolio & Interview Prep", goal: "Evidence of capability, and the interview to prove it" },
+};
+
+/// Strips the redundant "Beginner: " prefix the roadmap templates put on module titles, so the
+/// stage card doesn't read "Stage 01 Beginner / Beginner: Networking & Security Foundations".
+function stripStagePrefix(title: string, key: string): string {
+  const prefix = `${key}:`;
+  return title.toLowerCase().startsWith(prefix.toLowerCase()) ? title.slice(prefix.length).trim() : title;
+}
 
 export function Learn() {
   const navigate = useNavigate();
@@ -58,6 +53,22 @@ export function Learn() {
 
   const roadmapQuery = useQuery({ queryKey: ["roadmap", "active"], queryFn: getActiveRoadmap, retry: false });
   const roadmap = roadmapQuery.data;
+
+  // Stage labels follow the roadmap the user actually has, not a fixed curriculum.
+  const stageDefinitions = useMemo(
+    () =>
+      STAGE_KEYS.map((key) => {
+        const module = roadmap?.modules?.find((m) => m.level?.toLowerCase() === key.toLowerCase());
+        const fallback = STAGE_FALLBACKS[key];
+        return {
+          key,
+          label: `Stage ${String(STAGE_KEYS.indexOf(key) + 1).padStart(2, "0")}: ${key}`,
+          subtitle: module?.title ? stripStagePrefix(module.title, key) : fallback.subtitle,
+          goal: module?.stageGoal || fallback.goal,
+        };
+      }),
+    [roadmap],
+  );
   const errorMessage = roadmapQuery.error instanceof ApiError ? roadmapQuery.error.message : "Failed to load roadmap.";
   const notFound = roadmapQuery.error instanceof ApiError && roadmapQuery.error.status === 404;
 
@@ -334,7 +345,7 @@ export function Learn() {
 
           {/* 4-Stage Progression Navigation Grid */}
           <div className="learn-stage-grid">
-            {STAGE_DEFINITIONS.map((stage, idx) => {
+            {stageDefinitions.map((stage, idx) => {
               const mastery = roadmap.stageMastery?.[stage.key] ?? 0;
               const isCurrent = (roadmap.currentStage || "Beginner").toLowerCase() === stage.key.toLowerCase();
               const isSelected = selectedStageKey.toLowerCase() === stage.key.toLowerCase();
@@ -437,7 +448,7 @@ export function Learn() {
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span className="learn-seq-badge learn-seq-badge--start">ACTIVE STAGE</span>
                     <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", margin: 0 }}>
-                      {selectedStageKey}: {activeStageModule?.title || STAGE_DEFINITIONS.find((s) => s.key === selectedStageKey)?.subtitle}
+                      {selectedStageKey}: {activeStageModule?.title || stageDefinitions.find((s) => s.key === selectedStageKey)?.subtitle}
                     </h2>
                   </div>
                   <span style={{ fontSize: 12, fontWeight: 700, color: "var(--cyan-deep)", background: "var(--cyan-light)", padding: "3px 10px", borderRadius: 99 }}>
@@ -445,7 +456,7 @@ export function Learn() {
                   </span>
                 </div>
                 <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 12px 0", lineHeight: 1.5 }}>
-                  {activeStageModule?.stageGoal || STAGE_DEFINITIONS.find((s) => s.key === selectedStageKey)?.goal}
+                  {activeStageModule?.stageGoal || stageDefinitions.find((s) => s.key === selectedStageKey)?.goal}
                 </p>
 
                 {/* Curriculum Lessons for this stage */}
@@ -534,7 +545,7 @@ export function Learn() {
           {/* TAB 2: FULL 4-STAGE PATHWAY OVERVIEW */}
           {activeTab === "all-stages" && (
             <div className="learn-modules">
-              {STAGE_DEFINITIONS.map((def, stageIdx) => {
+              {stageDefinitions.map((def, stageIdx) => {
                 const stageModule = roadmap.modules.find((m) => m.level?.toLowerCase() === def.key.toLowerCase()) || roadmap.modules[stageIdx];
                 const stageRes = allResources.filter((r) => r.level.toLowerCase() === def.key.toLowerCase());
                 const mastery = roadmap.stageMastery?.[def.key] ?? 0;
@@ -793,44 +804,24 @@ function ResourceCard({
         </div>
       )}
 
-      {/* Detailed Intelligence Breakdown Box */}
+      {/* Detailed Intelligence Breakdown Box — suppressed entirely when there is nothing to say,
+          rather than drawing an empty bordered box with labels and no content. */}
+      {(resource.whatHappened || resource.whyItMatters || resource.nextMove) && (
       <div className="learn-intelligence-box">
         {isTutorial ? (
           <>
-            <div>
-              <div className="learn-intelligence-label">WHY THIS MATTERS FOR YOUR SKILL</div>
-              <div className="learn-intelligence-text">{resource.whyItMatters}</div>
-            </div>
-            <div>
-              <div className="learn-intelligence-label">YOUR APPLIED ADVANTAGE (EDGE)</div>
-              <div className="learn-intelligence-text">{resource.yourEdge}</div>
-            </div>
-            <div>
-              <div className="learn-intelligence-label">NEXT MOVE & IMPLEMENTATION</div>
-              <div className="learn-intelligence-text" style={{ whiteSpace: "pre-line" }}>{resource.nextMove}</div>
-            </div>
+            <IntelBlock label="WHY THIS MATTERS FOR YOUR SKILL" value={resource.whyItMatters} />
+            <IntelBlock label="NEXT MOVE & IMPLEMENTATION" value={resource.nextMove} preserveLineBreaks />
           </>
         ) : (
           <>
-            <div>
-              <div className="learn-intelligence-label">WHAT HAPPENED</div>
-              <div className="learn-intelligence-text">{resource.whatHappened}</div>
-            </div>
-            <div>
-              <div className="learn-intelligence-label">WHY IT MATTERS</div>
-              <div className="learn-intelligence-text">{resource.whyItMatters}</div>
-            </div>
-            <div>
-              <div className="learn-intelligence-label">YOUR EDGE</div>
-              <div className="learn-intelligence-text">{resource.yourEdge}</div>
-            </div>
-            <div>
-              <div className="learn-intelligence-label">NEXT MOVE</div>
-              <div className="learn-intelligence-text" style={{ whiteSpace: "pre-line" }}>{resource.nextMove}</div>
-            </div>
+            <IntelBlock label="WHAT HAPPENED" value={resource.whatHappened} />
+            <IntelBlock label="WHY IT MATTERS" value={resource.whyItMatters} />
+            <IntelBlock label="NEXT MOVE" value={resource.nextMove} preserveLineBreaks />
           </>
         )}
       </div>
+      )}
 
       {/* PRACTISE TASK (Dedicated Exercise Box) */}
       {resource.practiceExercise && (

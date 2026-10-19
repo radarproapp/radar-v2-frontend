@@ -49,7 +49,7 @@ export function Metrics() {
             CENTRAL AI ENGINE · CORE PROCESSOR
           </div>
           <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 10, background: aiStats?.isCloudLlmActive ? "rgba(0,210,180,0.2)" : "rgba(255,200,0,0.2)", color: aiStats?.isCloudLlmActive ? "var(--cyan-bright)" : "var(--amber)" }}>
-            {aiStats?.isCloudLlmActive ? "● Cloud LLM Active" : "● Resilient Deterministic Brain"}
+            {aiStats?.isCloudLlmActive ? "● Cloud LLM Active" : aiStats?.isBudgetExhausted ? "● Spend cap reached — degraded" : "● Resilient Deterministic Brain"}
           </span>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 14 }}>
@@ -66,8 +66,13 @@ export function Metrics() {
             <div style={{ fontSize: 22, fontWeight: 700, fontFamily: "var(--font-display)" }}>${(aiStats?.monthlySpendCapUsd ?? 25).toFixed(0)}</div>
           </div>
         </div>
+        {aiStats?.degradedReason && (
+          <div style={{ fontSize: 12, color: "var(--amber)", fontWeight: 600, marginBottom: 10 }}>
+            {aiStats.degradedReason}
+          </div>
+        )}
         <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.8)", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 10 }}>
-          Central Processor: <strong>Feed Intelligence, Learning Paths, Learn Hub, Clips, Opportunities, Academic Research, AI Mentor</strong>
+          Central Processor: <strong>Feed Intelligence, Learning Paths, Learn Hub, Opportunities, Academic Research, AI Mentor</strong>
         </div>
       </div>
 
