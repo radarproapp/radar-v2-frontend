@@ -675,6 +675,15 @@ export function getUserProjects() {
   return request<StudioProject[]>("/api/projects");
 }
 
+/// Creates a project that is not based on a template. The endpoint has existed since the studio
+/// was built, but nothing ever called it, so there was no way to start your own project.
+export function createProject(title: string, description: string, category: string) {
+  return request<StudioProject>("/api/projects", {
+    method: "POST",
+    body: JSON.stringify({ title, description, category }),
+  });
+}
+
 export function startProject(templateId: string) {
   return request<StudioProject>(`/api/projects/${templateId}/start`, { method: "POST" });
 }

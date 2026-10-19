@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, generateProjectPlan, getProjectTemplates, getUserProjects, sendAskRadarChat, setProjectVisibility, startProject } from "../lib/api";
+import { ApiError, createProject, generateProjectPlan, getProjectTemplates, getUserProjects, sendAskRadarChat, setProjectVisibility, startProject } from "../lib/api";
 import type { StudioProject } from "../lib/types";
 
 export function ProjectStudio() {
@@ -14,6 +14,30 @@ export function ProjectStudio() {
   const [tipsLoadingId, setTipsLoadingId] = useState<string | null>(null);
   const [planLoadingId, setPlanLoadingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Starting your own project, rather than only the six templates. The endpoint has always
+  // existed; nothing in the UI reached it.
+  const [showNewProject, setShowNewProject] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  const submitNewProject = async () => {
+    if (newTitle.trim().length < 2 || newDescription.trim().length < 2 || creating) return;
+    setCreating(true);
+    setCreateError(null);
+    try {
+      await createProject(newTitle.trim(), newDescription.trim(), "Custom");
+      setNewTitle("");
+      setNewDescription("");
+      setShowNewProject(false);
+      queryClient.invalidateQueries({ queryKey: ["projects", "mine"] });
+    } catch (err) {
+      setCreateError(err instanceof ApiError ? err.message : "Could not create that project.");
+    }
+    setCreating(false);
+  };
 
   const loading = templatesQuery.isLoading || projectsQuery.isLoading;
   const error = templatesQuery.error ?? projectsQuery.error;
@@ -102,6 +126,50 @@ export function ProjectStudio() {
         <LoadingSkeleton variant="card" count={2} />
       ) : (
         <>
+          <div style={{ marginBottom: 18 }}>
+            {!showNewProject ? (
+              <button className="btn btn--primary btn--sm" onClick={() => setShowNewProject(true)}>
+                + Start your own project
+              </button>
+            ) : (
+              <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: 16 }}>
+                <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 14, marginBottom: 10 }}>
+                  Start your own project
+                </div>
+                <input
+                  className="r-input"
+                  placeholder="What are you building?"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  style={{ marginBottom: 8 }}
+                />
+                <textarea
+                  className="r-input"
+                  placeholder="What will it show when it is done?"
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  rows={3}
+                  style={{ marginBottom: 10, resize: "vertical" }}
+                />
+                {createError && (
+                  <div style={{ fontSize: 12.5, color: "var(--red)", marginBottom: 8 }}>{createError}</div>
+                )}
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    className="btn btn--primary btn--sm"
+                    onClick={submitNewProject}
+                    disabled={creating || newTitle.trim().length < 2 || newDescription.trim().length < 2}
+                  >
+                    {creating ? "Creating…" : "Create project"}
+                  </button>
+                  <button className="btn btn--ghost btn--sm" onClick={() => setShowNewProject(false)}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {userProjects.length > 0 ? (
             <div style={{ marginBottom: 24 }}>
            <div id="project-templates" style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 10 }}>
