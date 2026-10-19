@@ -339,6 +339,7 @@ export interface CapturedItem {
   aiSummary: string | null;
   source: string | null;
   linkedRoadmapId: string | null;
+  topic?: string | null;
   isProcessing: boolean;
   capturedAt: string;
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
-import { captureItem, getRecentCaptures, logEvent } from "../lib/api";
+import { addTopicToActiveRoadmap, captureItem, getRecentCaptures, logEvent } from "../lib/api";
 import type { CaptureMode, CapturedItem } from "../lib/types";
 
 const MODES: CaptureMode[] = ["Link", "Note", "Voice", "Photo"];
@@ -14,6 +14,18 @@ export function Capture() {
   const [saving, setSaving] = useState(false);
   const [justCaptured, setJustCaptured] = useState<CapturedItem | null>(null);
   const [captureError, setCaptureError] = useState<string | null>(null);
+  const [roadmapState, setRoadmapState] = useState<"idle" | "saving" | "added">("idle");
+
+  const addCaptureToRoadmap = async (topic: string) => {
+    setRoadmapState("saving");
+    try {
+      await addTopicToActiveRoadmap(topic);
+      setRoadmapState("added");
+    } catch {
+      setRoadmapState("idle");
+      setCaptureError("Could not add that to your roadmap. Try again.");
+    }
+  };
 
   const recentQuery = useQuery({ queryKey: ["capture", "recent"], queryFn: getRecentCaptures });
   const recentCaptures = recentQuery.data ?? [];
@@ -26,6 +38,7 @@ export function Capture() {
       const item = await captureItem(activeMode, input.trim());
       logEvent("CaptureCreated", { metadata: { mode: activeMode } });
       setJustCaptured(item);
+      setRoadmapState("idle");
       setInput("");
       queryClient.invalidateQueries({ queryKey: ["capture", "recent"] });
     } catch (err) {
@@ -113,9 +126,22 @@ export function Capture() {
               </>
             )}
             <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center" }}>
-              <a className="btn btn--primary btn--sm" href="/">
-                Understand →
-              </a>
+              {/* The page promises "a route into your roadmap". "Understand →" pointed at the home
+                  screen, which is not a route into anything. */}
+              {justCaptured.topic && (
+                <button
+                  className="btn btn--primary btn--sm"
+                  onClick={() => addCaptureToRoadmap(justCaptured.topic!)}
+                  disabled={roadmapState !== "idle"}
+                >
+                  {roadmapState === "added" ? "Added to roadmap ✓" : roadmapState === "saving" ? "Adding…" : `+ Add ${justCaptured.topic} to roadmap`}
+                </button>
+              )}
+              {justCaptured.mode === "Link" && (
+                <a className="btn btn--ghost btn--sm" href={justCaptured.input} target="_blank" rel="noopener noreferrer">
+                  Open link ↗
+                </a>
+              )}
               <span style={{ fontSize: 11.5, color: "var(--text-faint)", fontWeight: 600, marginLeft: "auto" }}>{justCaptured.source}</span>
             </div>
           </div>
