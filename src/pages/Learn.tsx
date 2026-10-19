@@ -448,7 +448,11 @@ export function Learn() {
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span className="learn-seq-badge learn-seq-badge--start">ACTIVE STAGE</span>
                     <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", margin: 0 }}>
-                      {selectedStageKey}: {activeStageModule?.title || stageDefinitions.find((s) => s.key === selectedStageKey)?.subtitle}
+                      {/* Module titles already carry their stage ("Beginner: Foundations of ..."),
+                          so printing the stage again gave "Beginner: Beginner: Foundations of ...". */}
+                      {selectedStageKey}: {activeStageModule?.title
+                        ? stripStagePrefix(activeStageModule.title, selectedStageKey)
+                        : stageDefinitions.find((s) => s.key === selectedStageKey)?.subtitle}
                     </h2>
                   </div>
                   <span style={{ fontSize: 12, fontWeight: 700, color: "var(--cyan-deep)", background: "var(--cyan-light)", padding: "3px 10px", borderRadius: 99 }}>
