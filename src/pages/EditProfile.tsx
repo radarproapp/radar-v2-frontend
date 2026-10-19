@@ -15,11 +15,20 @@ const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 
 const labelStyle = { fontSize: 12.5, fontWeight: 600, color: "var(--text-dim)", display: "block", marginBottom: 6 } as const;
 
+/// Which onboarding flow each persona belongs to.
+const ONBOARDING_ROUTES: Partial<Record<PersonaType, string>> = {
+  Student: "/onboarding/student",
+  Graduate: "/onboarding/graduate",
+  YoungProfessional: "/onboarding/professional",
+};
+
 export function EditProfile() {
   const navigate = useNavigate();
   const { profile, refetchProfile } = useAuth();
   const [name, setName] = useState("");
   const [persona, setPersona] = useState<PersonaType>("Student");
+  // Remembered so a save can tell a persona switch from an ordinary edit.
+  const [originalPersona, setOriginalPersona] = useState<PersonaType>("Student");
   const [primaryGoal, setPrimaryGoal] = useState("");
   const [region, setRegion] = useState("");
   const [city, setCity] = useState("");
@@ -61,6 +70,7 @@ export function EditProfile() {
     if (!profile) return;
     setName(profile.name);
     setPersona(profile.persona);
+    setOriginalPersona(profile.persona);
     setPrimaryGoal(profile.primaryGoal);
     setRegion(profile.region);
     setCity(profile.city);
@@ -107,7 +117,11 @@ export function EditProfile() {
         decisionNeeds: splitList(decisionNeeds),
       });
       await refetchProfile();
-      navigate("/");
+
+      // Switching persona changes which questions Radar should have asked, so send the user
+      // through that persona's onboarding rather than back to a home screen built from answers
+      // that belonged to someone else. The server has already reopened onboarding.
+      navigate(persona !== originalPersona ? ONBOARDING_ROUTES[persona] ?? "/onboarding" : "/");
     } finally {
       setSaving(false);
     }
