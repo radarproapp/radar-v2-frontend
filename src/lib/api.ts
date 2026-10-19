@@ -315,6 +315,7 @@ export const FEED_CARD_FIELDS = [
   "credibilityTier",
   "publishedAt",
   "whyItMatters",
+  "whyYoureSeeingThis",
   "personalizedWhy",
   "nextMove",
   "matchedSignals",

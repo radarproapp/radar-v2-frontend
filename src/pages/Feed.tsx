@@ -5,7 +5,6 @@ import { Deferred } from "../components/Deferred";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { useAuth } from "../auth/AuthContext";
 import { ApiError, dismissFeedItem, FEED_CARD_FIELDS, getFeed, logEvent, saveFeedItem, unsaveFeedItem } from "../lib/api";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
@@ -47,27 +46,18 @@ function layerGradient(layer: string): string {
   }
 }
 
-function formatWhySeeing(item: ContentItem, primaryGoal?: string | null): string {
-  if (item.matchedSignals && item.matchedSignals.length > 0) {
-    const signals = item.matchedSignals.slice(0, 2).join(" & ");
-    return `Surfaced for you based on your interest in ${signals}.`;
-  }
-  if (item.topic) {
-    if (primaryGoal) {
-      return `Relevant to your goal of "${primaryGoal}" in ${item.topic}.`;
-    }
-    return `Matches your active interest and skill track in ${item.topic}.`;
-  }
-  if (primaryGoal) {
-    return `Curated for your trajectory toward ${primaryGoal}.`;
-  }
-  return `Key industry signal in ${layerLabel(item.layer)}.`;
+/// Falls back only when the server could not compute a reason. The server-side version lives next
+/// to the scorer that produces the signals, so it can name the dimensions that actually fired; this
+/// client copy previously pasted the raw goal into a noun slot ("Relevant to your goal of \"Get
+/// Promotion\" in AI Fundamentals") and printed signals with their internal prefix still attached.
+function fallbackWhySeeing(item: ContentItem): string {
+  if (item.topic) return `Recent in ${item.topic}`;
+  return `Recent from ${item.source}`;
 }
 
 export function Feed() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
   const [activeFilter, setActiveFilter] = useState<ContentType | null>(null);
   const feedQueryKey = ["feed", activeFilter] as const;
 
@@ -254,7 +244,7 @@ export function Feed() {
                   <div className="feed-card__why-seeing">
                     <span className="feed-card__why-icon">🎯</span>
                     <span className="feed-card__why-text">
-                      {formatWhySeeing(item, profile?.primaryGoal)}
+                      {item.whyYoureSeeingThis || fallbackWhySeeing(item)}
                     </span>
                   </div>
 

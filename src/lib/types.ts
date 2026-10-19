@@ -210,6 +210,7 @@ export interface ContentItem {
   relevanceScore: number;
   relevanceConfidence: number;
   matchedSignals: string[];
+  whyYoureSeeingThis?: string | null;
   nextMove: string | null;
   yourEdge?: string | null;
   tags: string[];
