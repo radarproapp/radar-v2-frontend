@@ -710,8 +710,8 @@ export function getPublicProject(projectId: string) {
 
 // ── Notebook ─────────────────────────────────────────────────────────────
 
-export function getNotes() {
-  return request<Note[]>("/api/notes");
+export function getNotes(archived = false) {
+  return request<Note[]>(`/api/notes${archived ? "?archived=true" : ""}`);
 }
 
 export function getNote(id: string) {
@@ -725,10 +725,12 @@ export function createNote(title: string, body: string) {
   });
 }
 
-export function updateNote(id: string, title: string, body: string, tags: string[]) {
-  return request<void>(`/api/notes/${id}`, {
+/// Partial update: send only what changed. Ticking a checkbox or pinning should not have to
+/// resend the whole note, which would let one small action overwrite a concurrent edit.
+export function updateNote(id: string, patch: Partial<Pick<Note, "title" | "body" | "tags" | "isPinned" | "isArchived" | "color" | "checklist">>) {
+  return request<Note>(`/api/notes/${id}`, {
     method: "PUT",
-    body: JSON.stringify({ title, body, tags }),
+    body: JSON.stringify(patch),
   });
 }
 

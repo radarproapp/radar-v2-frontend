@@ -823,6 +823,16 @@ export interface Note {
   linkedSourceIds: string[];
   createdAt: string;
   editedAt: string;
+  isPinned: boolean;
+  isArchived: boolean;
+  color?: string | null;
+  checklist: NoteChecklistItem[];
+}
+
+export interface NoteChecklistItem {
+  id: string;
+  text: string;
+  isChecked: boolean;
 }
 
 // ── Library ──────────────────────────────────────────────────────────────

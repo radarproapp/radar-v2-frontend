@@ -44,7 +44,7 @@ export function NoteEditor() {
     }
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      updateNote(note.id, note.title, note.body, note.tags);
+      updateNote(note.id, { title: note.title, body: note.body, tags: note.tags });
     }, 700);
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
