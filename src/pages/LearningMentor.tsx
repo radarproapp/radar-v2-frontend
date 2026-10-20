@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import {
@@ -39,21 +39,59 @@ const MODES = [
   { id: "spaced", label: "⏰ Spaced Revision", desc: "Automated retention schedule" },
 ];
 
-const CHAT_SUGGESTIONS = [
-  "Teach me SQL JOINs and give me an exercise.",
-  "Why does threat modeling matter for my goal?",
-  "Check my understanding of Zero Trust microsegmentation.",
+/// Shown only when Radar knows nothing about the user yet. The previous list was hardcoded to
+/// SQL JOINs and Zero Trust, so a cybersecurity learner was offered SQL and a nurse would have
+/// been offered both — the opposite of a tutor that knows who it is teaching.
+const FALLBACK_CHAT_SUGGESTIONS = [
+  "What should I learn first?",
+  "Explain my current topic simply.",
   "Give me a real-world scenario to solve.",
 ];
 
-const QUICK_QUIZ_TOPICS = [
-  "SQL JOINs & Subqueries",
-  "Zero Trust Architecture",
-  "Threat Modeling & MITRE ATT&CK",
-  "Data Analytics Fundamentals",
-  "Machine Learning Reasoning",
-  "Power BI Data Modeling"
-];
+/// Built from the user's own goal, skill and recorded weak areas.
+function buildChatSuggestions(
+  memory: PersonalLearningMemory | null,
+  targetRole?: string | null,
+): string[] {
+  const out: string[] = [];
+  const skill = memory?.activeSkill?.trim();
+  const goal = memory?.primaryGoal?.trim();
+  const weak = memory?.weakAreas?.find((w) => w.trim().length > 0);
+
+  // The question the reviewer actually asked for: "how to become a cybersecurity expert".
+  const becoming = targetRole?.trim() || skill || goal;
+  if (becoming) out.push(`How do I become a ${becoming}?`);
+
+  // Act on recorded difficulty before anything else — this is the whole point of tracking it.
+  if (weak) out.push(`I keep getting ${weak} wrong. Explain it differently.`);
+
+  if (skill) {
+    out.push(`Teach me ${skill} and give me an exercise.`);
+    out.push(`Give me a real-world ${skill} scenario to solve.`);
+  }
+
+  if (goal && skill && goal !== skill) out.push(`Why does ${skill} matter for ${goal}?`);
+
+  return out.length > 0 ? out.slice(0, 4) : FALLBACK_CHAT_SUGGESTIONS;
+}
+
+/// Quiz shortcuts, derived from what the user is actually studying. The fixed list this replaces
+/// mixed SQL, Zero Trust and Power BI, so most of it was wrong for any given person.
+function buildQuizTopics(memory: PersonalLearningMemory | null): string[] {
+  const out: string[] = [];
+
+  // Weak areas first: practising what you already pass is the least useful quiz you can take.
+  for (const weak of memory?.weakAreas ?? []) if (weak.trim()) out.push(weak.trim());
+
+  for (const m of memory?.masteries ?? []) {
+    if (m.topic?.trim() && !out.includes(m.topic.trim())) out.push(m.topic.trim());
+  }
+
+  const skill = memory?.activeSkill?.trim();
+  if (skill && !out.includes(skill)) out.push(skill);
+
+  return out.slice(0, 6);
+}
 
 const REVIEW_TYPES = ["Essay", "Assignment", "Research", "Report", "CV / Cover Letter", "Business Plan", "Code", "Project Brief"];
 
@@ -106,6 +144,15 @@ export function LearningMentor() {
 
   // Learning Memory & Mastery
   const [memory, setMemory] = useState<PersonalLearningMemory | null>(null);
+
+  // Recomputed as the memory loads, so the prompts name the user's own subject rather than a
+  // fixed example from another domain.
+  const chatSuggestions = useMemo(
+    () => buildChatSuggestions(memory, profile?.targetRole),
+    [memory, profile?.targetRole],
+  );
+
+  const quizTopics = useMemo(() => buildQuizTopics(memory), [memory]);
   const [masteries, setMasteries] = useState<TopicMastery[]>([]);
 
   // Spaced Revision
@@ -364,7 +411,7 @@ export function LearningMentor() {
           {chatMessages.length === 0 ? (
             <div className="ask-suggestions">
               <div className="ask-suggestions-label">TRY ASKING YOUR MENTOR (CONNECTED TO YOUR ROADMAP)</div>
-              {CHAT_SUGGESTIONS.map((s) => (
+              {chatSuggestions.map((s) => (
                 <button type="button" className="ask-suggestion-item" key={s} onClick={() => sendChat(s)}>
                   {s}
                 </button>
@@ -443,8 +490,14 @@ export function LearningMentor() {
                 ))}
               </div>
 
+              {/* Suggestions only when there is something real to suggest. An empty chip row below
+                  the topic box reads as a loading failure. */}
+              {quizTopics.length > 0 && (
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
-                {QUICK_QUIZ_TOPICS.map((q) => (
+                <span style={{ fontSize: 11.5, color: "var(--text-faint)", fontWeight: 700, alignSelf: "center" }}>
+                  FROM YOUR ROADMAP:
+                </span>
+                {quizTopics.map((q) => (
                   <button
                     key={q}
                     type="button"
@@ -459,6 +512,7 @@ export function LearningMentor() {
                   </button>
                 ))}
               </div>
+              )}
 
               <button
                 type="button"
@@ -663,6 +717,64 @@ export function LearningMentor() {
                     <div className="mentor-next-move-title">Your Next Move</div>
                     <div className="mentor-next-move-text">{quiz.nextMove}</div>
                   </div>
+                </div>
+              )}
+
+              {/* Every question, right and wrong, with the reason. The score alone tells you that
+                  you got four out of six; it does not tell you what you misunderstood, which is
+                  the only part that makes the next attempt better. All of this was already on
+                  each question — it just was not shown once the session ended. */}
+              <div style={{ textAlign: "left", margin: "0 auto 24px", maxWidth: 680 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--text-faint)", marginBottom: 12 }}>
+                  YOUR ANSWERS
+                </div>
+
+                {quiz.questions.map((q, qi) => {
+                  const correct = q.userAnswerIndex === q.correctIndex;
+                  return (
+                    <div
+                      key={qi}
+                      style={{
+                        background: correct ? "var(--cyan-light)" : "#fdf3f2",
+                        border: `1px solid ${correct ? "var(--cyan)" : "#f0c4c0"}`,
+                        borderRadius: 12,
+                        padding: "14px 16px",
+                        marginBottom: 10,
+                      }}
+                    >
+                      <div style={{ display: "flex", gap: 8, alignItems: "baseline", marginBottom: 6 }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: correct ? "var(--cyan-deep)" : "#c0392b" }}>
+                          {correct ? "CORRECT ✓" : "INCORRECT ✗"}
+                        </span>
+                        <span style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 600 }}>
+                          Question {qi + 1}
+                        </span>
+                      </div>
+
+                      <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 8, color: "#0f172a" }}>{q.question}</div>
+
+                      {!correct && q.userAnswerIndex != null && q.options[q.userAnswerIndex] && (
+                        <div style={{ fontSize: 12.5, color: "#c0392b", marginBottom: 4 }}>
+                          You chose: {q.options[q.userAnswerIndex]}
+                        </div>
+                      )}
+                      {q.options[q.correctIndex] && (
+                        <div style={{ fontSize: 12.5, color: "var(--cyan-deep)", fontWeight: 600, marginBottom: 6 }}>
+                          Correct answer: {q.options[q.correctIndex]}
+                        </div>
+                      )}
+
+                      {q.explanation && (
+                        <div style={{ fontSize: 13, color: "#374151", lineHeight: 1.6 }}>{q.explanation}</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {quiz.detectedWeakAreas && quiz.detectedWeakAreas.length > 0 && (
+                <div style={{ textAlign: "left", margin: "0 auto 20px", maxWidth: 680, fontSize: 13, color: "var(--text-dim)" }}>
+                  <strong>Keep working on:</strong> {quiz.detectedWeakAreas.join(", ")}
                 </div>
               )}
 
