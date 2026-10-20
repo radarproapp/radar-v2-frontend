@@ -40,7 +40,9 @@ export function Notebook() {
     queryFn: () => getNotes(showArchived),
   });
 
-  const notes = notesQuery.data ?? [];
+  // `?? []` would allocate a new array on every render, so the filter memo below would never
+  // actually hit. Depending on the query data directly keeps the identity stable between renders.
+  const notes = useMemo(() => notesQuery.data ?? [], [notesQuery.data]);
   const errorMessage = notesQuery.error instanceof ApiError ? notesQuery.error.message : "Could not load notes.";
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["notes"] });
 

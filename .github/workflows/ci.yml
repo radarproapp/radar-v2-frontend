@@ -1,0 +1,35 @@
+name: CI
+
+# main deploys straight to Vercel, so this is the only gate between a broken commit and the
+# running site.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # `npm ci` rather than `npm install`: it installs exactly what the lockfile says, so CI
+      # cannot pass against a different dependency tree than the one committed.
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      # Runs `tsc -b` then `vite build`, so a type error fails here rather than at deploy time.
+      - name: Build
+        run: npm run build
