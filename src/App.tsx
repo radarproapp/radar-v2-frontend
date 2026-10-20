@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
+import { EnvironmentBanner } from "./components/EnvironmentBanner";
 import { RequireAuth } from "./auth/RequireAuth";
 import { RequireAdmin } from "./auth/RequireAdmin";
 import { MainLayout } from "./components/MainLayout";
@@ -82,6 +83,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
+          {/* Above everything, including the error boundary: if the app fails to start on a
+              non-production build, the first question is still "which environment is this?" */}
+          <EnvironmentBanner />
           {/* One boundary around the whole route tree: each route is its own chunk, so the fallback
               is what a visitor sees for the moment between navigation and that chunk arriving. */}
           <Suspense fallback={<RouteFallback />}>

@@ -41,7 +41,26 @@ import type {
   HomeBrief,
 } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "https://radar-v2-backend-production.up.railway.app";
+/// Which API this build talks to.
+///
+/// There used to be a hardcoded production URL as the fallback here. That is the most dangerous
+/// possible default once more than one environment exists: a staging build missing its variable
+/// would come up looking healthy while reading and writing real user data, and nothing would say
+/// so. A build with no API configured is a broken build, and it should behave like one.
+///
+/// Local development is the one case where a default is helpful, since the dev server is always
+/// on the same port.
+const API_BASE: string = (() => {
+  const configured = import.meta.env.VITE_API_BASE_URL;
+  if (configured) return configured;
+
+  if (import.meta.env.DEV) return "http://127.0.0.1:5080";
+
+  throw new Error(
+    "VITE_API_BASE_URL is not set for this build. Set it per environment " +
+      "(staging and production point at different APIs) — refusing to guess.",
+  );
+})();
 const TOKEN_KEY = "radar_jwt";
 
 export class ApiError extends Error {
