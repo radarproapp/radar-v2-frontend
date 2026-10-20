@@ -1000,6 +1000,20 @@ export function LearningMentor() {
                 {reviewRunning ? "Evaluating against rubric…" : revisedFromId ? "Submit Revised Version" : "Review My Work"}
               </button>
             </div>
+          ) : review.wasReviewed === false ? (
+            /* Radar could not read the work. Showing the normal result card here would present a
+               score of 0 and empty sections as if they were an assessment. */
+            <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 16, padding: 24, marginBottom: 20 }}>
+              <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.1rem", marginBottom: 8 }}>
+                Radar couldn't review this yet
+              </div>
+              <p style={{ fontSize: 13.5, color: "var(--text-dim)", lineHeight: 1.6, marginBottom: 16 }}>
+                {review.feedback || "Your work is saved — try submitting it again in a moment."}
+              </p>
+              <button type="button" className="btn btn--primary btn--sm" onClick={() => setReview(null)}>
+                Try again
+              </button>
+            </div>
           ) : (
             <>
               {/* Review Header with Score */}

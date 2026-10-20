@@ -660,6 +660,7 @@ export interface MentorStudyPlan {
 }
 
 export interface MentorWorkReview {
+  wasReviewed: boolean;
   id: string;
   workTitle: string;
   workContent: string;
