@@ -1,5 +1,8 @@
 import {
   Archive,
+  ChevronDown,
+  ChevronUp,
+  Circle,
   Bot,
   Code2,
   CreditCard,
@@ -174,6 +177,13 @@ export const ICONS = {
   thumbsUp: ThumbsUp,
   thumbsDown: ThumbsDown,
   security: Shield,
+
+  // Disclosure and timing, from the second sweep: the first emoji scan started at U+2600 and so
+  // never saw the stopwatch, the play triangle or the chevrons used as expand/collapse arrows.
+  time: Clock,
+  expand: ChevronDown,
+  collapse: ChevronUp,
+  dot: Circle,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

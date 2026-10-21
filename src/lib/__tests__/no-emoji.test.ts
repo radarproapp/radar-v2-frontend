@@ -10,10 +10,13 @@ import { describe, expect, it } from "vitest";
 /// state, and a screen reader announces the full Unicode name ("rocket", "high voltage") in the
 /// middle of a sentence that was never written to contain it.
 ///
-/// 272 of them were removed in one pass. Without a guard the next one arrives in a hurry and the
-/// whole pass has to happen again, so this fails the build instead.
+/// The range below is wider than it first looked. The first version of this guard started at
+/// U+2600 and happily reported zero while a stopwatch (U+23F1), play triangles (U+25B6) and the
+/// chevrons used as expand/collapse arrows were all still on screen. Arrows (U+2190–21FF) and box
+/// drawing (U+2500–257F) stay allowed on purpose: this codebase uses them in comment separators
+/// and in ordinary prose, and they are typography rather than pictures.
 const EMOJI =
-  /[\u{1F300}-\u{1FAFF}\u{1F000}-\u{1F2FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2B00}-\u{2BFF}]/u;
+  /[\u{1F000}-\u{1FAFF}\u{2300}-\u{23FF}\u{25A0}-\u{25FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2B00}-\u{2BFF}]/u;
 
 function sourceFiles(dir: string, found: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {

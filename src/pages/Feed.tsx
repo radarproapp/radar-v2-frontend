@@ -10,7 +10,7 @@ import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ContentItem, ContentType, FeedEmptyReason, Page } from "../lib/types";
 import { feedEmptyCopy } from "../lib/feed-empty";
-import { Icon } from "../components/Icon";
+import { Icon, type IconName } from "../components/Icon";
 
 const FILTERS: [string, ContentType | null][] = [
   ["All", null],
@@ -27,14 +27,19 @@ const PAGE_SIZE = 20;
 /// Shape react-query stores for an infinite query — needed to patch the cache optimistically.
 type FeedCache = { pages: Page<ContentItem>[]; pageParams: unknown[] };
 
-function layerIcon(layer: string): string {
+/// The badge drawn on a feed card that has no image of its own.
+///
+/// Each branch used to return an emoji. Stripping them left every branch returning an empty
+/// string, which renders as nothing - the card kept its coloured placeholder and lost the one
+/// mark that said what kind of thing it was.
+function layerIcon(layer: string): IconName {
   switch (layer) {
-    case "Policy": return "";
-    case "Science": return "";
-    case "Capital": return "";
-    case "Ideas": return "";
-    case "Enterprise": return "";
-    default: return "";
+    case "Policy": return "policy";
+    case "Science": return "paper";
+    case "Capital": return "trend";
+    case "Ideas": return "idea";
+    case "Enterprise": return "organisation";
+    default: return "energy";
   }
 }
 
@@ -217,7 +222,9 @@ export function Feed() {
                       background: layerGradient(item.layer),
                     }}
                   >
-                    <span className="feed-card__placeholder-icon">{layerIcon(item.layer)}</span>
+                    <span className="feed-card__placeholder-icon">
+                      <Icon name={layerIcon(item.layer)} size={26} strokeWidth={1.5} />
+                    </span>
                     <span className="feed-card__placeholder-tag">{item.topic || layerLabel(item.layer)}</span>
                   </div>
                 </div>

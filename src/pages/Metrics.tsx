@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { ErrorState } from "../components/ErrorState";
 import { ApiError, getEventsSummary, getAiEngineStatus } from "../lib/api";
+import { Icon } from "../components/Icon";
 
 const DAY_OPTIONS = [7, 30, 90];
 
@@ -49,7 +50,12 @@ export function Metrics() {
             CENTRAL AI ENGINE · CORE PROCESSOR
           </div>
           <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 10, background: aiStats?.isCloudLlmActive ? "rgba(0,210,180,0.2)" : "rgba(255,200,0,0.2)", color: aiStats?.isCloudLlmActive ? "var(--cyan-bright)" : "var(--amber)" }}>
-            {aiStats?.isCloudLlmActive ? "● Cloud LLM Active" : aiStats?.isBudgetExhausted ? "● Spend cap reached — degraded" : "● Resilient Deterministic Brain"}
+            <Icon name="dot" size={9} />{" "}
+            {aiStats?.isCloudLlmActive
+              ? "Cloud LLM Active"
+              : aiStats?.isBudgetExhausted
+                ? "Spend cap reached — degraded"
+                : "Resilient Deterministic Brain"}
           </span>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 14 }}>

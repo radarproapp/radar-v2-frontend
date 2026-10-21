@@ -310,7 +310,8 @@ export function Opportunities() {
             onClick={() => setFiltersOpen((open) => !open)}
             aria-expanded={filtersOpen}
           >
-            Filters{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""} {filtersOpen ? "▲" : "▼"}
+            Filters{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}{" "}
+            <Icon name={filtersOpen ? "collapse" : "expand"} size={13} />
           </button>
 
           {!filtersOpen && activeFilterSummary.length > 0 && (

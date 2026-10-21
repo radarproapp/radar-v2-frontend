@@ -37,7 +37,7 @@ const MODES = [
   { id: "studyplan", label: "Study Plan", desc: "Dynamic goal-oriented week-by-week plan" },
   { id: "review", label: "Review Work", desc: "Rubric evaluation, score & revision loop" },
   { id: "mastery", label: "Mastery & Memory", desc: "Topic mastery progress & learning memory" },
-  { id: "spaced", label: "⏰ Spaced Revision", desc: "Automated retention schedule" },
+  { id: "spaced", label: "Spaced Revision", desc: "Automated retention schedule" },
 ];
 
 /// Shown only when Radar knows nothing about the user yet. The previous list was hardcoded to

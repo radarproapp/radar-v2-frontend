@@ -1,3 +1,4 @@
+import { Icon } from "./Icon";
 interface AudioEmbedProps {
   url: string | null | undefined;
   title: string;
@@ -9,7 +10,9 @@ export function AudioEmbed({ url, title }: AudioEmbedProps) {
   if (!url) return null;
   return (
     <div className="audio-embed" onClick={(e) => e.stopPropagation()}>
-      <div className="audio-embed__label">▶ {title}</div>
+      <div className="audio-embed__label">
+      <Icon name="play" size={13} /> {title}
+    </div>
       <audio className="audio-embed__player" controls preload="metadata" src={url}>
         Your browser does not support audio playback.
       </audio>

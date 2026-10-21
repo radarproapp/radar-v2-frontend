@@ -457,7 +457,8 @@ Could you explain how to practically apply this paper's findings and methodology
                             className="research-breakdown-copy"
                             onClick={() => togglePaperExpand(paper.id)}
                           >
-                            {isExpanded ? "Collapse ▲" : "Expand 7-Part Summary ▼"}
+                            {isExpanded ? "Collapse" : "Expand 7-Part Summary"}{" "}
+                      <Icon name={isExpanded ? "collapse" : "expand"} size={13} />
                           </button>
                         </div>
                       </div>

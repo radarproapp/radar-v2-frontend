@@ -484,8 +484,10 @@ export function Learn() {
                                 {lesson.isCompleted ? "" : ""}
                               </span>
                               <span className="learn-lesson__title">{lesson.title}</span>
-                              {lesson.estimatedTime && <span className="learn-lesson__time">⏱️ {lesson.estimatedTime}</span>}
-                              <span className="learn-lesson__chev">{open ? "▾" : "▸"}</span>
+                              {lesson.estimatedTime && <span className="learn-lesson__time"><Icon name="time" size={12} /> {lesson.estimatedTime}</span>}
+                              <span className="learn-lesson__chev">
+                      <Icon name={open ? "collapse" : "expand"} size={14} />
+                    </span>
                             </button>
                             {open && (
                               <div className="learn-lesson__body">
@@ -723,7 +725,7 @@ function ResourceCard({
 
         {(resource.estimatedTime || resource.duration) && (
           <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>
-            ⏱️ Estimated: {resource.estimatedTime || resource.duration}
+            <Icon name="time" size={12} /> Estimated: {resource.estimatedTime || resource.duration}
           </span>
         )}
       </div>
@@ -786,7 +788,8 @@ function ResourceCard({
               style={{ fontSize: 11.5, padding: "2px 6px", color: "var(--cyan-deep)" }}
               onClick={onToggleExpand}
             >
-              {isExpanded ? "Collapse steps ▴" : "View step-by-step instructions ▾"}
+              {isExpanded ? "Collapse steps" : "View step-by-step instructions"}{" "}
+                      <Icon name={isExpanded ? "collapse" : "expand"} size={13} />
             </button>
           </div>
 

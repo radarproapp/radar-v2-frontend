@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { OnboardingShell } from "../components/OnboardingShell";
-import { Icon } from "../components/Icon";
+import { Icon, type IconName } from "../components/Icon";
 
 type UserTypeKey = "student" | "graduate" | "professional";
 
@@ -11,7 +11,7 @@ interface UserTypeOption {
   badge: string;
   target: string;
   desc: string;
-  icon: string;
+  icon: IconName;
   route: string;
   sideImage: string;
   sideEyebrow: string;
@@ -115,7 +115,9 @@ export function OnboardingSelection() {
                   }
                 }}
               >
-                <div className="ob-type-card__icon-box">{option.icon}</div>
+                <div className="ob-type-card__icon-box">
+                  <Icon name={option.icon} size={22} strokeWidth={1.75} />
+                </div>
                 <div className="ob-type-card__body">
                   <div className="ob-type-card__header">
                     <div className="ob-type-card__title-row">

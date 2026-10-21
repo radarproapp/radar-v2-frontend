@@ -600,7 +600,9 @@ export function ProfessionalOnboarding() {
             </div>
 
             <div className="ob-plan-item">
-              <span className="ob-plan-item-icon">⏱️</span>
+              <span className="ob-plan-item-icon">
+                <Icon name="time" size={15} />
+              </span>
               <div>
                 <strong style={{ color: "#f8fafc" }}>Strategy: </strong>
                 {availableTime} ({maintainIncomePriority ? "Income preserved" : "Open risk"})

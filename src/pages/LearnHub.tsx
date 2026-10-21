@@ -17,9 +17,9 @@ import type {
   HubResourceCategory,
   HubResourceItem,
 } from "../lib/types";
-import { Icon } from "../components/Icon";
+import { Icon, type IconName } from "../components/Icon";
 
-const INTENT_STREAMS: { id: HubResourceCategory; label: string; icon: string; desc: string }[] = [
+const INTENT_STREAMS: { id: HubResourceCategory; label: string; icon: IconName; desc: string }[] = [
   { id: "Learn", label: "Learn", icon: "build", desc: "Tutorials, courses, how-to videos & technical guides" },
   { id: "Understand", label: "Understand", icon: "idea", desc: "Articles, explainers, podcasts & in-depth interviews" },
   { id: "Research", label: "Research", icon: "paper", desc: "Peer-reviewed papers, benchmarks & threat research" },
@@ -211,7 +211,7 @@ export function LearnHub() {
               <div className="hub-next-card__title">{hubData.nextAction.title}</div>
               <div className="hub-next-card__desc">{hubData.nextAction.description}</div>
               <div className="hub-next-card__meta">
-                <span className="hub-next-card__pill">⏱️ {hubData.nextAction.estimatedTime}</span>
+                <span className="hub-next-card__pill"><Icon name="time" size={12} /> {hubData.nextAction.estimatedTime}</span>
                 <span className="hub-next-card__pill"><Icon name="tag" /> {hubData.nextAction.subInterest}</span>
                 <span className="hub-next-card__pill"><Icon name="trend" /> {hubData.nextAction.stage} Milestone</span>
                 <button
@@ -252,7 +252,8 @@ export function LearnHub() {
                   style={{ fontSize: 11.5, padding: "2px 6px" }}
                   onClick={() => setShowGraph(!showGraph)}
                 >
-                  {showGraph ? "Hide Graph ▴" : "Show Graph ▾"}
+                  {showGraph ? "Hide Graph" : "Show Graph"}{" "}
+                <Icon name={showGraph ? "collapse" : "expand"} size={13} />
                 </button>
               </div>
             </div>
@@ -344,7 +345,7 @@ export function LearnHub() {
                   onClick={() => setActiveIntent(st.id)}
                   title={st.desc}
                 >
-                  <span>{st.icon}</span> {st.label} ({count})
+                  <Icon name={st.icon} size={14} /> {st.label} ({count})
                 </button>
               );
             })}
@@ -452,7 +453,7 @@ function HubResourceCard({
 
         {item.durationOrReadTime && (
           <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>
-            ⏱️ {item.durationOrReadTime}
+            <Icon name="time" size={12} /> {item.durationOrReadTime}
           </span>
         )}
       </div>
@@ -513,7 +514,8 @@ function HubResourceCard({
               style={{ fontSize: 11.5, padding: "2px 6px", color: "var(--cyan-deep)" }}
               onClick={() => setShowSteps(!showSteps)}
             >
-              {showSteps ? "Collapse steps ▴" : "View step-by-step instructions ▾"}
+              {showSteps ? "Collapse steps" : "View step-by-step instructions"}{" "}
+                      <Icon name={showSteps ? "collapse" : "expand"} size={13} />
             </button>
           </div>
 

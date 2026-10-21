@@ -674,7 +674,9 @@ export function StudentOnboarding() {
             </div>
 
             <div className="ob-plan-item">
-              <span className="ob-plan-item-icon">⏱️</span>
+              <span className="ob-plan-item-icon">
+                <Icon name="time" size={15} />
+              </span>
               <div>
                 <strong style={{ color: "#f8fafc" }}>Pace: </strong>
                 {studyTime} ({examDeadline})

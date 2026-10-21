@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { parseVideoUrl } from "../lib/video";
+import { Icon } from "./Icon";
 
 interface VideoEmbedProps {
   url: string | null | undefined;
@@ -17,7 +18,7 @@ export function VideoEmbed({ url, title }: VideoEmbedProps) {
     if (!url) return null;
     return (
       <a className="video-embed video-embed--link" href={url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
-        ▶ Watch on the source site
+        <Icon name="play" size={13} /> Watch on the source site
       </a>
     );
   }
