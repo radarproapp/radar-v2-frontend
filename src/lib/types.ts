@@ -9,7 +9,18 @@ export interface Page<T> {
   items: T[];
   nextCursor: string | null;
   hasMore: boolean;
+  /// Why the page is empty, when it is. The client cannot work this out for itself: an empty
+  /// list looks the same whether nothing has been ingested, the type filter matches nothing, or
+  /// the user dismissed it all.
+  emptyReason?: FeedEmptyReason;
 }
+
+export type FeedEmptyReason =
+  | "NotEmpty"
+  | "NoContentAtAll"
+  | "NoneOfThisType"
+  | "EverythingDismissed"
+  | "NothingNewRightNow";
 
 export type ContentType =
   | "Article"

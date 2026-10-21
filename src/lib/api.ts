@@ -426,6 +426,12 @@ export function dismissFeedItem(id: string) {
   return request<void>(`/api/feed/${id}/dismiss`, { method: "POST" });
 }
 
+// Brings every dismissed item back. Offered from the empty feed, which can now tell the user that
+// their own dismissals are what emptied it.
+export function restoreDismissedFeedItems() {
+  return request<{ restored: number }>("/api/feed/dismissed", { method: "DELETE" });
+}
+
 export function getSavedItems() {
   return request<ContentItem[]>("/api/feed/saved");
 }

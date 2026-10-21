@@ -5,10 +5,11 @@ import { Deferred } from "../components/Deferred";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, dismissFeedItem, FEED_CARD_FIELDS, getFeed, logEvent, saveFeedItem, unsaveFeedItem } from "../lib/api";
+import { ApiError, dismissFeedItem, FEED_CARD_FIELDS, getFeed, logEvent, restoreDismissedFeedItems, saveFeedItem, unsaveFeedItem } from "../lib/api";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
-import type { ContentItem, ContentType, Page } from "../lib/types";
+import type { ContentItem, ContentType, FeedEmptyReason, Page } from "../lib/types";
+import { feedEmptyCopy } from "../lib/feed-empty";
 
 const FILTERS: [string, ContentType | null][] = [
   ["All", null],
@@ -171,9 +172,15 @@ export function Feed() {
       ) : feedQuery.isError ? (
         <ErrorState title="Failed to load feed" description={errorMessage} onRetry={() => feedQuery.refetch()} />
       ) : items.length === 0 ? (
-        <EmptyState icon="📰" title="Nothing here yet" description="Radar is still curating content for your interests. Check back soon.">
-          <button className="btn btn--primary btn--sm" onClick={() => feedQuery.refetch()}>Refresh feed</button>
-        </EmptyState>
+        <FeedEmptyState
+          reason={feedQuery.data?.pages?.[0]?.emptyReason}
+          onRefresh={() => feedQuery.refetch()}
+          onClearFilter={() => setActiveFilter(null)}
+          onRestoreDismissed={async () => {
+            await restoreDismissedFeedItems();
+            await feedQuery.refetch();
+          }}
+        />
       ) : (
         <>
           {items.map((item, position) => (
@@ -301,5 +308,40 @@ export function Feed() {
         </>
       )}
     </div>
+  );
+}
+
+
+/// Renders the empty-feed message chosen by `feedEmptyCopy`.
+///
+/// The wording and the choice of action live in lib/feed-empty.ts so they can be tested without a
+/// DOM; this only wires the chosen action to a handler.
+function FeedEmptyState({
+  reason,
+  onRefresh,
+  onClearFilter,
+  onRestoreDismissed,
+}: {
+  reason?: FeedEmptyReason;
+  onRefresh: () => void;
+  onClearFilter: () => void;
+  onRestoreDismissed: () => void;
+}) {
+  const copy = feedEmptyCopy(reason);
+
+  const handlers: Record<string, () => void> = {
+    refresh: onRefresh,
+    clearFilter: onClearFilter,
+    restoreDismissed: onRestoreDismissed,
+  };
+
+  return (
+    <EmptyState icon={copy.icon} title={copy.title} description={copy.description}>
+      {copy.action !== "none" && (
+        <button className="btn btn--primary btn--sm" onClick={handlers[copy.action]}>
+          {copy.actionLabel}
+        </button>
+      )}
+    </EmptyState>
   );
 }
