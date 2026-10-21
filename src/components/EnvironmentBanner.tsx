@@ -4,6 +4,11 @@
 /// live, or you demo production believing it is safe to click through. The cheapest fix is to make
 /// the difference impossible to miss, and only ever on the non-production side.
 ///
+/// The ordinary banner says only which environment this is. It used to name the API too, but that
+/// is addressed at the team and testers see this screen - and the API is in the bundle and every
+/// network request anyway, so showing it bought nothing a developer could not already get. The
+/// misconfigured banner still names it, because there the specific wrong value IS the message.
+///
 /// It also catches a specific misconfiguration. Vercel builds a staging branch as a *preview*, but
 /// if that preview has no Preview variables set it falls back to the committed `.env.production` —
 /// so it points at the production API and labels itself production. `VITE_ENVIRONMENT` alone would
@@ -47,16 +52,11 @@ export function EnvironmentBanner() {
       {misconfigured ? (
         <>
           {label} — this is a Vercel preview{branch ? ` of "${branch}"` : ""} but it is built as
-          production. It is calling the production API. Set VITE_API_BASE_URL and VITE_ENVIRONMENT
-          on this environment.
+          production. It is calling {api}. Set VITE_API_BASE_URL and VITE_ENVIRONMENT on this
+          environment.
         </>
       ) : (
-        <>
-          {label} — not production. Data here is disposable.
-          {/* The API is named because the dangerous failure is a staging site pointed at the
-              production backend, which otherwise looks completely normal. */}
-          <span style={{ fontWeight: 500, opacity: 0.85, marginLeft: 8 }}>API: {api}</span>
-        </>
+        <>{label} — not production. Data here is disposable.</>
       )}
     </div>
   );
