@@ -438,7 +438,6 @@ export function getSavedItems() {
 
 export interface PersonalizedWhy {
   text: string;
-  yourEdge?: string;
   whatToKnow: string;
   nextMove: string;
   relevanceScore: number;

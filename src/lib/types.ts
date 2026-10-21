@@ -226,7 +226,6 @@ export interface ContentItem {
   matchedSignals: string[];
   whyYoureSeeingThis?: string | null;
   nextMove: string | null;
-  yourEdge?: string | null;
   tags: string[];
   secondaryTopics: string[];
   classificationConfidence: number;
@@ -465,7 +464,6 @@ export interface LearningResource {
   keyConcepts?: string[];
   whatHappened: string;
   whyItMatters: string;
-  yourEdge: string;
   nextMove: string;
   isCompleted: boolean;
 }
@@ -552,7 +550,6 @@ export interface HubResourceItem {
   practiceExercise?: string | null;
   whatHappened?: string;
   whyItMatters?: string;
-  yourEdge?: string;
   nextMove?: string;
   paperBreakdown?: AcademicPaperBreakdown | null;
   podcastBreakdown?: PodcastBreakdown | null;
