@@ -13,7 +13,6 @@ const PERSONAS: [PersonaType, string][] = [
 ];
 const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 
-const labelStyle = { fontSize: 12.5, fontWeight: 600, color: "var(--text-dim)", display: "block", marginBottom: 6 } as const;
 
 /// Which onboarding flow each persona belongs to.
 const ONBOARDING_ROUTES: Partial<Record<PersonaType, string>> = {
@@ -170,43 +169,39 @@ export function EditProfile() {
         <input type="text" className="r-input" value={primaryGoal} onChange={(e) => setPrimaryGoal(e.target.value)} />
       </div>
 
+      {/* 10.2: this was seven free-text boxes asking the same questions the persona flows ask -
+          "What's making this difficult?", "Target role", "What do you want to become better at?" -
+          but without the guidance, the examples or the ordering that makes them answerable. Two
+          places to edit the same answers also means two places for them to disagree.
+
+          The answers are shown rather than hidden, for the same reason they are shown in
+          Settings: someone has to be able to see what Radar is working from. Changing them goes
+          through the flow built for their persona. */}
       <div style={{ marginBottom: 18 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 10 }}>YOUR SITUATION</div>
-        <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
-          <div>
-            <label style={labelStyle}>What's making this difficult?</label>
-            <input className="r-input" placeholder="e.g. no practical experience, information overload" value={problems} onChange={(e) => setProblems(e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>What are you trying to do right now?</label>
-            <input className="r-input" placeholder="e.g. find a finance internship" value={currentIntent} onChange={(e) => setCurrentIntent(e.target.value)} />
-          </div>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <div style={{ flex: "1 1 180px" }}>
-              <label style={labelStyle}>Target role</label>
-              <input className="r-input" placeholder="e.g. Financial Analyst" value={targetRole} onChange={(e) => setTargetRole(e.target.value)} />
-            </div>
-            <div style={{ flex: "1 1 180px" }}>
-              <label style={labelStyle}>Target industry</label>
-              <input className="r-input" placeholder="e.g. Financial Services" value={targetIndustry} onChange={(e) => setTargetIndustry(e.target.value)} />
-            </div>
-          </div>
-          <div>
-            <label style={labelStyle}>What do you want to become better at?</label>
-            <input className="r-input" placeholder="e.g. financial analysis, data analysis (comma-separated)" value={capabilities} onChange={(e) => setCapabilities(e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>Opportunities to prioritise</label>
-            <input className="r-input" placeholder="e.g. Internship, Scholarship, Fellowship" value={opportunityPreferences} onChange={(e) => setOpportunityPreferences(e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>Where are you open to opportunities?</label>
-            <input className="r-input" placeholder="e.g. Nigeria, Ghana, remote" value={geography} onChange={(e) => setGeography(e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>Decisions you want Radar's help with</label>
-            <input className="r-input" placeholder="e.g. career, investment, market entry" value={decisionNeeds} onChange={(e) => setDecisionNeeds(e.target.value)} />
-          </div>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 10 }}>
+          YOUR SITUATION
+        </div>
+        <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: "16px 18px" }}>
+          <StatedAnswer label="What is making this difficult" value={problems} />
+          <StatedAnswer label="What you are doing right now" value={currentIntent} />
+          <StatedAnswer label="Role you want" value={targetRole} />
+          <StatedAnswer label="Industry you want" value={targetIndustry} />
+          <StatedAnswer label="What you want to get better at" value={capabilities} />
+          <StatedAnswer label="Opportunities to prioritise" value={opportunityPreferences} />
+          <StatedAnswer label="Where you are open to work" value={geography} />
+          <StatedAnswer label="Decisions you want help with" value={decisionNeeds} />
+
+          <button
+            className="btn btn--sm"
+            style={{ marginTop: 12 }}
+            onClick={() => navigate(ONBOARDING_ROUTES[persona] ?? "/onboarding")}
+          >
+            Update these answers
+          </button>
+          <p style={{ fontSize: 11.5, color: "var(--text-muted)", margin: "8px 0 0", lineHeight: 1.5 }}>
+            These come from your {PERSONAS.find(([p]) => p === persona)?.[1] ?? "onboarding"} questions, which ask
+            them in the order that makes them easiest to answer.
+          </p>
         </div>
       </div>
 
@@ -340,5 +335,23 @@ export function EditProfile() {
         </button>
       </div>
     </div>
+  );
+}
+
+
+/// One answer the user gave during onboarding.
+///
+/// Renders an honest blank rather than hiding the row when there is nothing: an empty answer is
+/// usually what explains thin personalisation, so hiding it hides the cause.
+function StatedAnswer({ label, value }: { label: string; value: string }) {
+  return (
+    <p style={{ fontSize: 13, margin: "0 0 8px", lineHeight: 1.5 }}>
+      <span style={{ color: "var(--text-muted)" }}>{label}:</span>{" "}
+      {value.trim() ? (
+        <strong>{value}</strong>
+      ) : (
+        <em style={{ color: "var(--text-muted)" }}>not answered yet</em>
+      )}
+    </p>
   );
 }
