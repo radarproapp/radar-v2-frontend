@@ -228,6 +228,58 @@ export function getSignals() {
   return request<SignalsSummary>("/api/me/signals");
 }
 
+export interface RecordSignal {
+  term: string;
+  strength: number;
+  timesEngaged: number;
+  source: string;
+}
+
+export interface TopicEvidence {
+  topic: string;
+  lessonsCompleted: number;
+  averageScore: number;
+}
+
+/// Everything Radar has worked out about this user's learning, in one object.
+export interface LearningRecord {
+  primaryGoal: string;
+  targetRole: string;
+  targetIndustry: string;
+  interests: string[];
+  capabilities: string[];
+  problems: string[];
+  location: string;
+  declaredLevel: string;
+  signals: RecordSignal[];
+  topics: TopicEvidence[];
+  strongAreas: string[];
+  weakAreas: string[];
+  lessonsCompleted: number;
+  resourcesCompleted: number;
+  quizzesTaken: number;
+  averageQuizScore: number;
+  recommendedStartStage: string;
+  priorityTopics: string[];
+  masteredTopics: string[];
+  confidence: number;
+  summary: string;
+  updatedAt: string;
+}
+
+export function getLearningRecord() {
+  return request<LearningRecord>("/api/me/learning-record");
+}
+
+// "This is not about me." Returns the rebuilt record so the caller can show the corrected
+// version rather than guessing at what changed.
+export function correctLearningRecord(term: string) {
+  return request<LearningRecord>("/api/me/learning-record/corrections", {
+    method: "POST",
+    body: JSON.stringify({ term }),
+  });
+}
+
 export interface FollowUpSuggestion {
   id: string;
   kind: string;

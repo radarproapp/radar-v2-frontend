@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { updateMe } from "../lib/api";
+import { WhatRadarKnows } from "../components/WhatRadarKnows";
 import { FONT_SCALES, getFontScale, setFontScale } from "../lib/fontSize";
 import type { NotificationPrefs } from "../lib/types";
 
@@ -62,6 +63,8 @@ export function Settings() {
           </div>
         </div>
       </div>
+
+      <WhatRadarKnows />
 
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 10 }}>NOTIFICATIONS</div>
