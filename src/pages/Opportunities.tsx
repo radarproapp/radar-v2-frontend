@@ -672,6 +672,37 @@ export function Opportunities() {
                 <span className={`opp-tier-pill ${selectedOpp.matchTier === "StrongMatch" ? "opp-tier-pill--strong" : "opp-tier-pill--relevant"}`} style={{ marginBottom: 6 }}>
                   {selectedOpp.matchScorePercent}% Match · {selectedOpp.type}
                 </span>
+                {/* 7.4: the drawer showed match, cost and status but never when it closes - the
+                    one fact that decides whether applying is possible at all. A closed
+                    opportunity read as applicable right up until you followed the link. */}
+                {selectedOpp.urgencyLabel && (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 5,
+                      marginLeft: 8,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: selectedOpp.urgencyLevel === "Urgent" ? "var(--red)" : "var(--text-muted)",
+                    }}
+                  >
+                    <Icon
+                      name={
+                        selectedOpp.urgencyLevel === "Closed"
+                          ? "closed"
+                          : selectedOpp.urgencyLevel === "Urgent"
+                            ? "urgent"
+                            : "deadline"
+                      }
+                      size={12}
+                    />
+                    {selectedOpp.urgencyLabel}
+                    {selectedOpp.deadline && selectedOpp.urgencyLevel !== "Closed"
+                      ? ` · closes ${new Date(selectedOpp.deadline).toLocaleDateString()}`
+                      : ""}
+                  </span>
+                )}
                 <h2 style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 800, margin: 0, color: "var(--text)" }}>
                   {selectedOpp.title}
                 </h2>
@@ -734,7 +765,7 @@ export function Opportunities() {
                   ))}
                   {selectedOpp.whoIsEligible?.map((e, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12.5, color: "var(--text-muted)" }}>
-                      <span style={{ color: "var(--cyan)" }}>ℹ</span>
+                      <span style={{ color: "var(--cyan)" }}><Icon name="dot" size={12} /></span>
                       <span>Target applicant: {e}</span>
                     </div>
                   ))}

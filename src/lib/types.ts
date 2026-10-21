@@ -123,6 +123,9 @@ export interface Opportunity {
   reminderSet?: boolean;
   matchTier?: "StrongMatch" | "Relevant" | "Explore";
   urgencyLabel?: string;
+  /// The deadline state as a value rather than a sentence, so the UI can colour it without
+  /// string-matching the label. The server used to bake a coloured circle into urgencyLabel.
+  urgencyLevel?: "Open" | "Soon" | "Urgent" | "Closed" | "NoDeadline";
 }
 
 export interface DailyOpportunityFeed {

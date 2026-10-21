@@ -15,8 +15,12 @@ import { describe, expect, it } from "vitest";
 /// chevrons used as expand/collapse arrows were all still on screen. Arrows (U+2190–21FF) and box
 /// drawing (U+2500–257F) stay allowed on purpose: this codebase uses them in comment separators
 /// and in ordinary prose, and they are typography rather than pictures.
+///
+/// This range has now been widened twice, each time after something slipped through it. That is
+/// the nature of the check: Unicode scatters pictographs across blocks that have nothing else in
+/// common, so the honest position is that this catches the common cases rather than all of them.
 const EMOJI =
-  /[\u{1F000}-\u{1FAFF}\u{2300}-\u{23FF}\u{25A0}-\u{25FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2B00}-\u{2BFF}]/u;
+  /[\u{1F000}-\u{1FAFF}\u{2100}-\u{214F}\u{2300}-\u{23FF}\u{25A0}-\u{25FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2B00}-\u{2BFF}]/u;
 
 function sourceFiles(dir: string, found: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
