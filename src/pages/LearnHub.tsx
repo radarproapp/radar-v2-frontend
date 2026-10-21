@@ -85,9 +85,16 @@ export function LearnHub() {
     }
   };
 
-  // Navigations to AI Learning Mentor with prefilled context
+  // Navigations to AI Learning Mentor with prefilled context.
+  //
+  // The field is left out of the sentence when Radar does not know it. It used to fall back to
+  // "Cybersecurity", so a learner whose hub had no skill set asked the mentor to explain their
+  // topic "in Cybersecurity" — a question they never asked, answered confidently.
   const askMentorQuestion = (item: HubResourceItem) => {
-    const prompt = `I'm exploring "${item.title}" in ${hubData?.primarySkill || "Cybersecurity"}. Can you explain the core concepts in simple terms and give a real-world example?`;
+    const field = hubData?.primarySkill?.trim();
+    const prompt = field
+      ? `I'm exploring "${item.title}" in ${field}. Can you explain the core concepts in simple terms and give a real-world example?`
+      : `I'm exploring "${item.title}". Can you explain the core concepts in simple terms and give a real-world example?`;
     navigate(`/mentor?mode=chat&prompt=${encodeURIComponent(prompt)}`);
   };
 

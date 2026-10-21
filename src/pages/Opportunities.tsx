@@ -260,9 +260,19 @@ export function Opportunities() {
             <span>Personalized Batch · Refreshed Today</span>
           </div>
           <h2 className="opp-daily-title">{dailyData.message}</h2>
+          {/* The focus is named only when there is one. It used to default to "Cybersecurity"
+              on the server, so a new user was told Radar had matched against a focus they never
+              chose; with that default removed the sentence would otherwise trail off into an
+              empty bold tag. */}
           <p className="opp-daily-sub">
-            Radar matched and filtered these opportunities against your primary focus:{" "}
-            <strong>{dailyData.primaryFocus}</strong>. Every opportunity includes match confidence, practical advice, and next moves.
+            {dailyData.primaryFocus ? (
+              <>
+                Radar matched these against your focus: <strong>{dailyData.primaryFocus}</strong>.{" "}
+              </>
+            ) : (
+              <>Tell Radar what you are working on and it will match these against it. </>
+            )}
+            Every opportunity includes match confidence, practical advice, and next moves.
           </p>
 
           <div className="opp-daily-stats">
