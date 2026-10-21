@@ -34,3 +34,8 @@ jobs:
       # Runs `tsc -b` then `vite build`, so a type error fails here rather than at deploy time.
       - name: Build
         run: npm run build
+
+      # Staging builds with a different mode and env file. Building it here means a change that
+      # only breaks staging is caught before it reaches staging.
+      - name: Build (staging)
+        run: npm run build:staging
