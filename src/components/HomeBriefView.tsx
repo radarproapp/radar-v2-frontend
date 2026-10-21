@@ -35,7 +35,11 @@ export function HomeBriefView({ firstName }: { firstName: string }) {
 
   const dateLabel = new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" });
   const hasAnything =
-    brief.topSignals.length > 0 || brief.noticed.length > 0 || brief.todaysFocus || brief.opportunities.length > 0;
+    brief.topSignals.length > 0 ||
+    brief.noticed.length > 0 ||
+    brief.todaysFocus ||
+    brief.opportunities.length > 0 ||
+    (brief.closingSoon?.length ?? 0) > 0;
 
   return (
     <div className="r-page">
@@ -120,6 +124,37 @@ export function HomeBriefView({ firstName }: { firstName: string }) {
               )}
             </div>
           </button>
+        </>
+      )}
+
+      {/* 3b. Reminders the user set. Above the general list on purpose: these are deadlines
+             they chose to track, and they are about to pass. */}
+      {(brief.closingSoon?.length ?? 0) > 0 && (
+        <>
+          <div className="nav-section-label">CLOSING SOON — YOU ASKED TO BE REMINDED</div>
+          {brief.closingSoon!.map((opp) => (
+            <button
+              className="nav-opp-card"
+              key={opp.id}
+              onClick={() => navigate("/opportunities")}
+              style={{ marginBottom: 10 }}
+            >
+              <div className="nav-opp-match-row">
+                <span className="nav-opp-deadline" style={{ color: "var(--red)" }}>
+                  {opp.daysUntilDeadline === 0
+                    ? "Closes today"
+                    : opp.daysUntilDeadline === 1
+                      ? "Closes tomorrow"
+                      : `${opp.daysUntilDeadline} days left`}
+                </span>
+              </div>
+              <div className="nav-focus-title" style={{ marginBottom: 3 }}>{opp.title}</div>
+              <div className="opp-org">
+                {opp.organisation}
+                {opp.location ? ` · ${opp.location}` : ""}
+              </div>
+            </button>
+          ))}
         </>
       )}
 

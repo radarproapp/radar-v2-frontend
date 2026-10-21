@@ -978,6 +978,10 @@ export interface HomeOpportunity {
   matchTier: string;
   daysUntilDeadline?: number | null;
   whyItMatches: string;
+  reminderSet?: boolean;
+  /// What to say about the deadline, including when it has already passed. Server-computed so
+  /// the card cannot disagree with the opportunities page about whether something is still open.
+  urgencyLabel?: string;
 }
 
 export interface HomeBrief {
@@ -987,5 +991,8 @@ export interface HomeBrief {
   todaysFocus?: HomeFocus | null;
   nextBuild?: HomeBuild | null;
   opportunities: HomeOpportunity[];
+  /// Deadlines the user asked to be reminded about, closing soonest first. The reminder toggle
+  /// used to write a boolean nothing read; this is where it is delivered.
+  closingSoon?: HomeOpportunity[];
   stats: UserStats;
 }
