@@ -77,9 +77,14 @@ export function WhatRadarKnows() {
                   <span style={{ minWidth: 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 700, display: "block" }}>{signal.term}</span>
                     <span style={{ fontSize: 11.5, color: "var(--text-muted)" }}>
-                      {signal.timesEngaged === 1
-                        ? "you looked at this once"
-                        : `you came back to this ${signal.timesEngaged} times`}
+                      {/* A count of zero is never worth printing: it reads as an accusation that
+                          the user did something they did not do. The server already filters
+                          rejected terms out, so this is the second line of defence. */}
+                      {signal.timesEngaged <= 0
+                        ? "Radar picked this up from how you browse"
+                        : signal.timesEngaged === 1
+                          ? "you looked at this once"
+                          : `you came back to this ${signal.timesEngaged} times`}
                     </span>
                   </span>
                   <button
