@@ -10,6 +10,7 @@ import { AudioEmbed } from "../components/AudioEmbed";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ReportReason } from "../lib/types";
+import { Icon } from "../components/Icon";
 
 const REPORT_REASONS: [ReportReason, string][] = [
   ["Incorrect", "Incorrect / misleading"],
@@ -294,8 +295,8 @@ export function FeedDetail() {
         {whyQuery.data && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
             <span style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 600 }}>Was this helpful?</span>
-            <button style={{ fontSize: 13, background: "none", border: "none", cursor: whyRated === null ? "pointer" : "default", opacity: whyRated === false ? 0.35 : 1 }} onClick={() => submitWhyRating(true)} disabled={whyRated !== null} aria-label="Helpful">👍</button>
-            <button style={{ fontSize: 13, background: "none", border: "none", cursor: whyRated === null ? "pointer" : "default", opacity: whyRated === true ? 0.35 : 1 }} onClick={() => submitWhyRating(false)} disabled={whyRated !== null} aria-label="Not helpful">👎</button>
+            <button style={{ fontSize: 13, background: "none", border: "none", cursor: whyRated === null ? "pointer" : "default", opacity: whyRated === false ? 0.35 : 1 }} onClick={() => submitWhyRating(true)} disabled={whyRated !== null} aria-label="Helpful"><Icon name="thumbsUp" /></button>
+            <button style={{ fontSize: 13, background: "none", border: "none", cursor: whyRated === null ? "pointer" : "default", opacity: whyRated === true ? 0.35 : 1 }} onClick={() => submitWhyRating(false)} disabled={whyRated !== null} aria-label="Not helpful"><Icon name="thumbsDown" /></button>
             {whyRated !== null && <span style={{ fontSize: 11.5, color: "var(--cyan)", fontWeight: 600 }}>Thanks</span>}
           </div>
         )}
@@ -307,7 +308,7 @@ export function FeedDetail() {
         {nextMoveText && renderNextMoveSteps(nextMoveText)}
         <div style={{ marginTop: 14 }}>
           <button className="btn btn--primary btn--sm" onClick={addToRoadmap} disabled={addedToRoadmap}>
-            {addedToRoadmap ? "Added to roadmap ✓" : "+ Add to roadmap"}
+            {addedToRoadmap ? "Added to roadmap " : "+ Add to roadmap"}
           </button>
         </div>
       </div>
@@ -434,13 +435,13 @@ export function FeedDetail() {
           <span className="item-detail-learn-loop-tag">1 project</span>
         </div>
         <button className="btn btn--sm" style={{ background: "var(--cyan-bright)", color: "#0d2b2d", borderColor: "transparent" }} onClick={addToRoadmap}>
-          {addedToRoadmap ? "✓ Added" : "Add to roadmap"}
+          {addedToRoadmap ? "Added" : "Add to roadmap"}
         </button>
       </div>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <button className="btn btn--sm" onClick={toggleSave}>
-          {item.isSaved ? "Saved ✓" : "Save"}
+          {item.isSaved ? "Saved " : "Save"}
         </button>
         {hasRealUrl(item.url) ? (
           <a className="btn btn--sm" style={{ background: "#f0f2f4", color: "var(--text)", borderColor: "transparent" }} href={item.url} target="_blank" rel="noreferrer">

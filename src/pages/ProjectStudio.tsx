@@ -201,11 +201,11 @@ export function ProjectStudio() {
                       {tipsLoadingId === project.id ? "Asking Radar…" : "Ask Radar for tips"}
                     </button>
                     <button className="btn btn--sm" onClick={() => toggleVisibility(project)}>
-                      {project.isPublic ? "Public ✓ — make private" : "Make public"}
+                      {project.isPublic ? "Public — make private" : "Make public"}
                     </button>
                     {project.isPublic && (
                       <button className="btn btn--sm" onClick={() => copyShareLink(project.id)}>
-                        {copiedId === project.id ? "Link copied ✓" : "Copy share link"}
+                        {copiedId === project.id ? "Link copied " : "Copy share link"}
                       </button>
                     )}
                   </div>
@@ -293,7 +293,7 @@ export function ProjectStudio() {
               ))}
             </div>
           ) : (
-            <EmptyState icon="🚀" title="No projects yet" description="Start a project from a template below to practice what you've learned." compact />
+            <EmptyState icon="launch" title="No projects yet" description="Start a project from a template below to practice what you've learned." compact />
           )}
 
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 10 }}>

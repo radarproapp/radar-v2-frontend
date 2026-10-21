@@ -82,7 +82,7 @@ export function SourceQuality() {
       ) : openQuery.isError ? (
         <ErrorState title="Failed to load reports" description={errorMessage} onRetry={() => openQuery.refetch()} />
       ) : openReports.length === 0 ? (
-        <EmptyState icon="✅" title="Nothing to review" description="No open reports right now." compact />
+        <EmptyState icon="done" title="Nothing to review" description="No open reports right now." compact />
       ) : (
         openReports.map((report) => (
           <div key={report.id} style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: "15px 18px", marginBottom: 8 }}>

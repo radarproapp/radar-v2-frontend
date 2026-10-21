@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { OnboardingShell } from "../components/OnboardingShell";
 import { ApiError, completeOnboarding, register } from "../lib/api";
+import { Icon } from "../components/Icon";
 
 const INDUSTRIES = [
   "Technology & Software",
@@ -402,7 +403,7 @@ export function ProfessionalOnboarding() {
                   className={`ob-tag-btn ${active ? "active" : ""}`}
                   onClick={() => setClaimedStrengths((prev) => toggleItem(prev, skill, 4))}
                 >
-                  {skill} {active ? "✓" : "+"}
+                  {skill} {active ? "" : "+"}
                 </button>
               );
             })}
@@ -464,7 +465,7 @@ export function ProfessionalOnboarding() {
                   onClick={() => setSelectedGoals((prev) => toggleItem(prev, goal, 3))}
                 >
                   <span>{goal}</span>
-                  <span className="ob-option__check">✓</span>
+                  <span className="ob-option__check"><Icon name="check" /></span>
                 </button>
               );
             })}
@@ -509,7 +510,7 @@ export function ProfessionalOnboarding() {
                 onClick={() => setRiskTolerance(risk)}
               >
                 <span>{risk}</span>
-                <span className="ob-option__check">✓</span>
+                <span className="ob-option__check"><Icon name="check" /></span>
               </button>
             ))}
           </div>
@@ -526,7 +527,7 @@ export function ProfessionalOnboarding() {
                 onClick={() => setAvailableTime(time)}
               >
                 <span>{time}</span>
-                <span className="ob-option__check">✓</span>
+                <span className="ob-option__check"><Icon name="check" /></span>
               </button>
             ))}
           </div>
@@ -577,13 +578,13 @@ export function ProfessionalOnboarding() {
           </p>
 
           <div className="ob-plan-card">
-            <div className="ob-plan-badge">🚀 Radar Career: Professional Track</div>
+            <div className="ob-plan-badge"><Icon name="launch" /> Radar Career: Professional Track</div>
             <div className="ob-plan-hero">
               {role} · {industry}
             </div>
 
             <div className="ob-plan-item">
-              <span className="ob-plan-item-icon">⚖️</span>
+              <span className="ob-plan-item-icon"><Icon name="policy" /></span>
               <div>
                 <strong style={{ color: "#f8fafc" }}>Decision Framework: </strong>
                 Comparing Internal Promotion vs Lateral Move vs Advisory
@@ -591,7 +592,7 @@ export function ProfessionalOnboarding() {
             </div>
 
             <div className="ob-plan-item">
-              <span className="ob-plan-item-icon">💼</span>
+              <span className="ob-plan-item-icon"><Icon name="job" /></span>
               <div>
                 <strong style={{ color: "#f8fafc" }}>Core Objectives: </strong>
                 {selectedGoals.join(" · ")}
@@ -609,7 +610,7 @@ export function ProfessionalOnboarding() {
 
           <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px 14px", marginBottom: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#166534", marginBottom: 2 }}>
-              ✓ Career Decision Intelligence & Impact Tracker Primed
+              <Icon name="check" /> Career Decision Intelligence & Impact Tracker Primed
             </div>
             <div style={{ fontSize: 12.5, color: "#15803d", lineHeight: 1.45 }}>
               Your dashboard answers: <em>"What move would most improve my career position, and what should I do next?"</em> without generic courses or motivational fluff.

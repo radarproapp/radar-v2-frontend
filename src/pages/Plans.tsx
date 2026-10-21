@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getPlans } from "../lib/api";
 import type { SubscriptionPlan } from "../lib/types";
+import { Icon } from "../components/Icon";
 
 function formatPrice(plan: SubscriptionPlan, yearly: boolean): string {
   if (plan.monthlyPrice === 0) return `${plan.currency}0`;
@@ -72,7 +73,7 @@ export function Plans() {
               <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 20 }}>
                 {plan.features.map((feature) => (
                   <div key={feature} style={{ display: "flex", gap: 9, fontSize: 13, lineHeight: 1.55 }}>
-                    <span style={{ color: "var(--cyan-bright)", fontWeight: 800, flex: "none" }}>✓</span>
+                    <span style={{ color: "var(--cyan-bright)", fontWeight: 800, flex: "none" }}><Icon name="check" /></span>
                     <span style={{ color: "rgba(255,255,255,.85)" }}>{feature}</span>
                   </div>
                 ))}
@@ -94,7 +95,7 @@ export function Plans() {
               <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 20 }}>
                 {plan.features.map((feature) => (
                   <div key={feature} style={{ display: "flex", gap: 9, fontSize: 13, lineHeight: 1.55 }}>
-                    <span style={{ color: "var(--cyan)", fontWeight: 800, flex: "none" }}>✓</span>
+                    <span style={{ color: "var(--cyan)", fontWeight: 800, flex: "none" }}><Icon name="check" /></span>
                     <span>{feature}</span>
                   </div>
                 ))}

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Icon } from "../components/Icon";
 
 export function Landing() {
   return (
@@ -62,12 +63,12 @@ export function Landing() {
           </div>
           <div className="mkt-problem__cards">
             <div className="mkt-card">
-              <div className="mkt-card__icon">🔍</div>
+              <div className="mkt-card__icon"><Icon name="search" /></div>
               <div className="mkt-card__title">Google finds it. It doesn't explain it.</div>
               <div className="mkt-card__desc">You still have to decide what's trustworthy, what's current, and what it means for you.</div>
             </div>
             <div className="mkt-card">
-              <div className="mkt-card__icon">🎓</div>
+              <div className="mkt-card__icon"><Icon name="course" /></div>
               <div className="mkt-card__title">Courses end. Learning shouldn't.</div>
               <div className="mkt-card__desc">
                 Most learning platforms go quiet the moment the syllabus finishes — right when the real world keeps
@@ -75,7 +76,7 @@ export function Landing() {
               </div>
             </div>
             <div className="mkt-card">
-              <div className="mkt-card__icon">💬</div>
+              <div className="mkt-card__icon"><Icon name="chat" /></div>
               <div className="mkt-card__title">AI chat answers one question.</div>
               <div className="mkt-card__desc">
                 Radar builds the whole picture — connecting months of reading into one growing body of knowledge.

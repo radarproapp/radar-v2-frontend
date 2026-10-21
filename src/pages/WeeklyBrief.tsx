@@ -19,7 +19,7 @@ export function WeeklyBrief() {
   return (
     <div className="r-page" style={{ maxWidth: 720 }}>
       {!unlocked ? (
-        <EmptyState icon="📋" title="Your weekly brief unlocks Saturday evening" description="Radar spends the week gathering your best signals, then wraps them up for you every Saturday from 6pm.">
+        <EmptyState icon="checklist" title="Your weekly brief unlocks Saturday evening" description="Radar spends the week gathering your best signals, then wraps them up for you every Saturday from 6pm.">
           <button className="btn btn--primary btn--sm" onClick={() => navigate("/feed")}>
             Browse the feed
           </button>
@@ -33,7 +33,7 @@ export function WeeklyBrief() {
       ) : briefQuery.isError ? (
         <ErrorState title="Failed to load weekly brief" description={errorMessage} onRetry={() => briefQuery.refetch()} />
       ) : !brief ? (
-        <EmptyState icon="📋" title="No weekly brief yet" description="Check back once Radar has finished gathering this week's signals.">
+        <EmptyState icon="checklist" title="No weekly brief yet" description="Check back once Radar has finished gathering this week's signals.">
           <button className="btn btn--primary btn--sm" onClick={() => navigate("/feed")}>
             Browse the feed
           </button>

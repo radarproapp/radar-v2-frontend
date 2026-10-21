@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { OnboardingShell } from "../components/OnboardingShell";
 import { ApiError, completeOnboarding, register } from "../lib/api";
+import { Icon } from "../components/Icon";
 
 const ACADEMIC_LEVELS = [
   "Year 1 (Freshman)",
@@ -320,7 +321,7 @@ export function StudentOnboarding() {
                 onClick={() => setAcademicLevel(lvl)}
               >
                 <span>{lvl}</span>
-                <span className="ob-option__check">✓</span>
+                <span className="ob-option__check"><Icon name="check" /></span>
               </button>
             ))}
           </div>
@@ -399,7 +400,7 @@ export function StudentOnboarding() {
                 }}
               >
                 <span>{goal}</span>
-                <span className="ob-option__check">✓</span>
+                <span className="ob-option__check"><Icon name="check" /></span>
               </button>
             ))}
           </div>
@@ -424,7 +425,7 @@ export function StudentOnboarding() {
                   className={`ob-tag-btn ${active ? "active" : ""}`}
                   onClick={() => setSelectedDifficultCourses((prev) => toggleArrayItem(prev, course, 5))}
                 >
-                  {course} {active ? "✓" : "+"}
+                  {course} {active ? "" : "+"}
                 </button>
               );
             })}
@@ -508,7 +509,7 @@ export function StudentOnboarding() {
                   className={`ob-tag-btn ${active ? "active" : ""}`}
                   onClick={() => setSelectedCareerInterests((prev) => toggleArrayItem(prev, interest, 3))}
                 >
-                  {interest} {active ? "✓" : "+"}
+                  {interest} {active ? "" : "+"}
                 </button>
               );
             })}
@@ -526,7 +527,7 @@ export function StudentOnboarding() {
                   className={`ob-tag-btn ${active ? "active" : ""}`}
                   onClick={() => setSelectedPracticalSkills((prev) => toggleArrayItem(prev, skill, 2))}
                 >
-                  {skill} {active ? "✓" : "+"}
+                  {skill} {active ? "" : "+"}
                 </button>
               );
             })}
@@ -571,7 +572,7 @@ export function StudentOnboarding() {
                 onClick={() => setStudyTime(time)}
               >
                 <span>{time}</span>
-                <span className="ob-option__check">✓</span>
+                <span className="ob-option__check"><Icon name="check" /></span>
               </button>
             ))}
           </div>
@@ -643,13 +644,13 @@ export function StudentOnboarding() {
           </p>
 
           <div className="ob-plan-card">
-            <div className="ob-plan-badge">⚡ Personalised Student Plan</div>
+            <div className="ob-plan-badge"><Icon name="energy" /> Personalised Student Plan</div>
             <div className="ob-plan-hero">
               {academicLevel.split(" ")[0]} · {effectiveField}
             </div>
 
             <div className="ob-plan-item">
-              <span className="ob-plan-item-icon">🎯</span>
+              <span className="ob-plan-item-icon"><Icon name="goal" /></span>
               <div>
                 <strong style={{ color: "#f8fafc" }}>Academic Weak Area: </strong>
                 Prioritising <span style={{ color: "#38bdf8" }}>{selectedDifficultCourses.join(", ")}</span> first on your roadmap.
@@ -657,7 +658,7 @@ export function StudentOnboarding() {
             </div>
 
             <div className="ob-plan-item">
-              <span className="ob-plan-item-icon">🛠️</span>
+              <span className="ob-plan-item-icon"><Icon name="build" /></span>
               <div>
                 <strong style={{ color: "#f8fafc" }}>Practical Skill Track: </strong>
                 {selectedPracticalSkills.join(", ")}
@@ -665,7 +666,7 @@ export function StudentOnboarding() {
             </div>
 
             <div className="ob-plan-item">
-              <span className="ob-plan-item-icon">💼</span>
+              <span className="ob-plan-item-icon"><Icon name="job" /></span>
               <div>
                 <strong style={{ color: "#f8fafc" }}>Career Trajectory: </strong>
                 {selectedCareerInterests.join(", ")}
@@ -683,7 +684,7 @@ export function StudentOnboarding() {
 
           <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px 14px", marginBottom: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#166534", marginBottom: 2 }}>
-              ✓ AI Academic Mentor & Opportunity Radar Ready
+              <Icon name="check" /> AI Academic Mentor & Opportunity Radar Ready
             </div>
             <div style={{ fontSize: 12.5, color: "#15803d", lineHeight: 1.45 }}>
               Your syllabus concepts are primed in the AI Mentor with practice quizzes, and your feed is filtering academic papers and internships.

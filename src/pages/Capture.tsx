@@ -4,6 +4,7 @@ import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { addTopicToActiveRoadmap, captureItem, getRecentCaptures, logEvent } from "../lib/api";
 import type { CaptureMode, CapturedItem } from "../lib/types";
+import { Icon } from "../components/Icon";
 
 const MODES: CaptureMode[] = ["Link", "Note", "Voice", "Photo"];
 
@@ -99,7 +100,7 @@ export function Capture() {
 
       {captureError && (
         <div style={{ background: "#fdf3f2", border: "1px solid rgba(192,57,43,.15)", borderRadius: 12, padding: "14px 16px", marginBottom: 22, display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 16 }}>⚠️</span>
+          <span style={{ fontSize: 16 }}><Icon name="warning" /></span>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: "#c0392b" }}>Capture failed</div>
             <div style={{ fontSize: 12, color: "#8a4b44" }}>{captureError}</div>
@@ -134,7 +135,7 @@ export function Capture() {
                   onClick={() => addCaptureToRoadmap(justCaptured.topic!)}
                   disabled={roadmapState !== "idle"}
                 >
-                  {roadmapState === "added" ? "Added to roadmap ✓" : roadmapState === "saving" ? "Adding…" : `+ Add ${justCaptured.topic} to roadmap`}
+                  {roadmapState === "added" ? "Added to roadmap " : roadmapState === "saving" ? "Adding…" : `+ Add ${justCaptured.topic} to roadmap`}
                 </button>
               )}
               {justCaptured.mode === "Link" && (
@@ -154,7 +155,7 @@ export function Capture() {
       {recentQuery.isLoading ? (
         <LoadingSkeleton variant="text" lines={3} />
       ) : recentCaptures.length === 0 ? (
-        <EmptyState icon="📥" title="No captures yet" description="Paste a link or type a note above to get started." compact />
+        <EmptyState icon="inbox" title="No captures yet" description="Paste a link or type a note above to get started." compact />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {recentCaptures.map((item) => (

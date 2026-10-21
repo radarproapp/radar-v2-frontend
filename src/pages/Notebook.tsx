@@ -6,6 +6,7 @@ import { ErrorState } from "../components/ErrorState";
 import { ApiError, createNote, deleteNote, getNotes, updateNote } from "../lib/api";
 import { humanize } from "../lib/date";
 import type { Note, NoteChecklistItem } from "../lib/types";
+import { Icon } from "../components/Icon";
 
 /// Notes, modelled on Google Keep.
 ///
@@ -91,7 +92,7 @@ export function Notebook() {
         <LoadingSkeleton variant="card" count={3} />
       ) : visible.length === 0 ? (
         <EmptyState
-          icon="📝"
+          icon="note"
           title={search ? "Nothing matches that." : "No notes yet."}
           description={
             search
@@ -248,7 +249,7 @@ function NoteCard({ note, onChanged }: { note: Note; onChanged: () => void }) {
           title={note.isPinned ? "Unpin" : "Pin"}
           onClick={() => patchNow({ isPinned: !note.isPinned })}
         >
-          {note.isPinned ? "📌" : "📍"}
+          {note.isPinned ? "" : ""}
         </button>
       </div>
 
@@ -284,18 +285,14 @@ function NoteCard({ note, onChanged }: { note: Note; onChanged: () => void }) {
       )}
 
       <div className="r-note-actions">
-        <button className="r-note-icon-btn" title="Add list item" onClick={addItem}>
-          ☑
-        </button>
-        <button className="r-note-icon-btn" title="Colour" onClick={() => setShowColors((v) => !v)}>
-          🎨
-        </button>
+        <button className="r-note-icon-btn" title="Add list item" onClick={addItem}><Icon name="check" /></button>
+        <button className="r-note-icon-btn" title="Colour" onClick={() => setShowColors((v) => !v)}><Icon name="palette" /></button>
         <button
           className="r-note-icon-btn"
           title={note.isArchived ? "Unarchive" : "Archive"}
           onClick={() => patchNow({ isArchived: !note.isArchived })}
         >
-          {note.isArchived ? "📤" : "📥"}
+          {note.isArchived ? "" : ""}
         </button>
         <button
           className="r-note-icon-btn"
@@ -304,9 +301,7 @@ function NoteCard({ note, onChanged }: { note: Note; onChanged: () => void }) {
             await deleteNote(note.id);
             onChanged();
           }}
-        >
-          🗑
-        </button>
+        ><Icon name="delete" /></button>
         <span className="r-note-edited">{humanize(note.editedAt)}</span>
       </div>
 

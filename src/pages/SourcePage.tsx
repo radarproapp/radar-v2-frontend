@@ -118,7 +118,7 @@ export function SourcePage() {
             RECENT FROM THIS SOURCE
           </div>
           {current.recentItems.length === 0 ? (
-            <EmptyState icon="📄" title="No recent items" description="This source hasn't published anything recently." compact />
+            <EmptyState icon="document" title="No recent items" description="This source hasn't published anything recently." compact />
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 20 }}>
               {current.recentItems.map((item) => (

@@ -10,6 +10,7 @@ import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ContentItem, ContentType, FeedEmptyReason, Page } from "../lib/types";
 import { feedEmptyCopy } from "../lib/feed-empty";
+import { Icon } from "../components/Icon";
 
 const FILTERS: [string, ContentType | null][] = [
   ["All", null],
@@ -28,12 +29,12 @@ type FeedCache = { pages: Page<ContentItem>[]; pageParams: unknown[] };
 
 function layerIcon(layer: string): string {
   switch (layer) {
-    case "Policy": return "⚖️";
-    case "Science": return "🔬";
-    case "Capital": return "📈";
-    case "Ideas": return "💡";
-    case "Enterprise": return "🏢";
-    default: return "⚡";
+    case "Policy": return "";
+    case "Science": return "";
+    case "Capital": return "";
+    case "Ideas": return "";
+    case "Enterprise": return "";
+    default: return "";
   }
 }
 
@@ -249,7 +250,7 @@ export function Feed() {
 
                   {/* 3. A SHORT SENTENCE ON WHY THE USER IS SEEING IT */}
                   <div className="feed-card__why-seeing">
-                    <span className="feed-card__why-icon">🎯</span>
+                    <span className="feed-card__why-icon"><Icon name="goal" /></span>
                     <span className="feed-card__why-text">
                       {item.whyYoureSeeingThis || fallbackWhySeeing(item)}
                     </span>
@@ -273,7 +274,7 @@ export function Feed() {
                         onClick={() => toggleSave(item, position)}
                         title={item.isSaved ? "Saved" : "Save for later"}
                       >
-                        {item.isSaved ? "Saved ✓" : "Save"}
+                        {item.isSaved ? "Saved " : "Save"}
                       </button>
                       <button
                         className="btn btn--text btn--sm"

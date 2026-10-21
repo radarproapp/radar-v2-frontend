@@ -1,3 +1,4 @@
+import type { IconName } from "../components/Icon";
 import type { FeedEmptyReason } from "./types";
 
 /// What an empty feed should say, and which action can actually resolve it.
@@ -12,7 +13,7 @@ import type { FeedEmptyReason } from "./types";
 export type FeedEmptyAction = "refresh" | "clearFilter" | "restoreDismissed" | "none";
 
 export interface FeedEmptyCopy {
-  icon: string;
+  icon: IconName;
   title: string;
   description: string;
   action: FeedEmptyAction;
@@ -23,7 +24,7 @@ export function feedEmptyCopy(reason: FeedEmptyReason | undefined): FeedEmptyCop
   switch (reason) {
     case "NoneOfThisType":
       return {
-        icon: "🔍",
+        icon: "search",
         title: "Nothing of this kind yet",
         description: "Radar has other things for you — just none of this type so far.",
         action: "clearFilter",
@@ -32,7 +33,7 @@ export function feedEmptyCopy(reason: FeedEmptyReason | undefined): FeedEmptyCop
 
     case "EverythingDismissed":
       return {
-        icon: "🗂️",
+        icon: "folder",
         title: "You have dismissed everything here",
         description: "Nothing is left to show. You can bring the dismissed items back if you went too fast.",
         action: "restoreDismissed",
@@ -41,7 +42,7 @@ export function feedEmptyCopy(reason: FeedEmptyReason | undefined): FeedEmptyCop
 
     case "NoContentAtAll":
       return {
-        icon: "📰",
+        icon: "article",
         title: "Radar has not pulled anything in yet",
         description: "New content arrives through the day. There is nothing to show until the first batch lands.",
         // Deliberately no action: the corpus is empty, so the next request returns the same
@@ -53,7 +54,7 @@ export function feedEmptyCopy(reason: FeedEmptyReason | undefined): FeedEmptyCop
       // Covers NothingNewRightNow and an older server that sends no reason at all, so a version
       // mismatch degrades to the sensible general case rather than rendering nothing.
       return {
-        icon: "📰",
+        icon: "article",
         title: "Nothing new right now",
         description: "You are up to date. Radar will have more as it comes in.",
         action: "refresh",

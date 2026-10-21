@@ -14,6 +14,7 @@ import {
   markOpportunityApplied,
 } from "../lib/api";
 import type { Opportunity, OpportunityType, OpportunityTrackingStatus } from "../lib/types";
+import { Icon } from "../components/Icon";
 
 const TYPE_FILTERS: { label: string; value: OpportunityType | "All" }[] = [
   { label: "All Types", value: "All" },
@@ -29,25 +30,25 @@ const TYPE_FILTERS: { label: string; value: OpportunityType | "All" }[] = [
 
 const REGION_FILTERS = [
   { label: "All Regions", value: "All" },
-  { label: "🇳🇬 Nigeria", value: "Nigeria" },
-  { label: "🇬🇭 Ghana", value: "Ghana" },
-  { label: "🌍 Pan-Africa", value: "Africa" },
-  { label: "🌐 Remote", value: "Remote" },
+  { label: "Nigeria", value: "Nigeria" },
+  { label: "Ghana", value: "Ghana" },
+  { label: "Pan-Africa", value: "Africa" },
+  { label: "Remote", value: "Remote" },
   { label: "Global", value: "Global" },
 ];
 
 const URGENCY_FILTERS = [
   { label: "All Deadlines", value: "All" },
-  { label: "🔴 3–7 Days Left (Urgent)", value: "urgent" },
-  { label: "🟡 Within 2 Weeks", value: "2weeks" },
-  { label: "🟢 Open / Recently Added", value: "open" },
+  { label: "3–7 Days Left (Urgent)", value: "urgent" },
+  { label: "Within 2 Weeks", value: "2weeks" },
+  { label: "Open / Recently Added", value: "open" },
 ];
 
 const TIER_FILTERS = [
   { label: "All Match Scores", value: "All" },
-  { label: "🟢 Strong Match (80–100%)", value: "StrongMatch" },
-  { label: "🔵 Relevant (60–79%)", value: "Relevant" },
-  { label: "🟣 Explore (40–59%)", value: "Explore" },
+  { label: "Strong Match (80–100%)", value: "StrongMatch" },
+  { label: "Relevant (60–79%)", value: "Relevant" },
+  { label: "Explore (40–59%)", value: "Explore" },
 ];
 
 export function Opportunities() {
@@ -217,7 +218,7 @@ export function Opportunities() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
           <div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(0,210,219,0.1)", color: "var(--cyan-deep)", padding: "4px 10px", borderRadius: 99, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
-              <span>🎯</span> Opportunity Intelligence
+              <span><Icon name="goal" /></span> Opportunity Intelligence
             </div>
             <h1 className="r-page-title" style={{ margin: 0 }}>Radar Opportunity Hub</h1>
             <p className="r-page-sub" style={{ marginTop: 6, maxWidth: 640 }}>
@@ -232,21 +233,21 @@ export function Opportunities() {
               style={{ borderRadius: 8, padding: "6px 14px" }}
               onClick={() => setViewMode("daily")}
             >
-              📅 Today's Curated Batch (12)
+              <Icon name="deadline" /> Today's Curated Batch (12)
             </button>
             <button
               className={`btn btn--sm ${viewMode === "all" ? "btn--primary" : ""}`}
               style={{ borderRadius: 8, padding: "6px 14px" }}
               onClick={() => setViewMode("all")}
             >
-              🔎 Explore All
+              <Icon name="search" /> Explore All
             </button>
             <button
               className={`btn btn--sm ${viewMode === "pipeline" ? "btn--primary" : ""}`}
               style={{ borderRadius: 8, padding: "6px 14px" }}
               onClick={() => setViewMode("pipeline")}
             >
-              📋 My Pipeline
+              <Icon name="checklist" /> My Pipeline
             </button>
           </div>
         </div>
@@ -256,7 +257,7 @@ export function Opportunities() {
       {viewMode === "daily" && dailyData && (
         <div className="opp-daily-banner">
           <div className="opp-daily-tag">
-            <span>⚡</span>
+            <span><Icon name="energy" /></span>
             <span>Personalized Batch · Refreshed Today</span>
           </div>
           <h2 className="opp-daily-title">{dailyData.message}</h2>
@@ -277,20 +278,20 @@ export function Opportunities() {
 
           <div className="opp-daily-stats">
             <span className="opp-daily-stat-pill strong">
-              <span>🟢</span>
+              <span><Icon name="open" /></span>
               <span>{dailyData.tierCounts["StrongMatch"] || 0} Strong Matches (80–100%)</span>
             </span>
             <span className="opp-daily-stat-pill">
-              <span>🔵</span>
+              <span><Icon name="open" /></span>
               <span>{dailyData.tierCounts["Relevant"] || 0} Relevant Opportunities</span>
             </span>
             <span className="opp-daily-stat-pill">
-              <span>🟣</span>
+              <span><Icon name="open" /></span>
               <span>{dailyData.tierCounts["Explore"] || 0} Serendipitous Explore</span>
             </span>
             {dailyData.urgencyCounts["Urgent"] > 0 && (
               <span className="opp-daily-stat-pill urgent">
-                <span>🔴</span>
+                <span><Icon name="urgent" /></span>
                 <span>{dailyData.urgencyCounts["Urgent"]} Closing in ≤ 7 Days</span>
               </span>
             )}
@@ -416,7 +417,7 @@ export function Opportunities() {
         />
       ) : items.length === 0 ? (
         <EmptyState
-          icon="🎯"
+          icon="goal"
           title={viewMode === "pipeline" ? "No tracked opportunities in your pipeline" : "No opportunities match your filters"}
           description={
             viewMode === "pipeline"
@@ -449,12 +450,12 @@ export function Opportunities() {
 
             const urgencyText =
               opp.daysUntilDeadline <= 3
-                ? `🔴 ${opp.daysUntilDeadline} days left`
+                ? `${opp.daysUntilDeadline} days left`
                 : opp.daysUntilDeadline <= 7
-                ? `🔴 1 week left`
+                ? `1 week left`
                 : opp.daysUntilDeadline <= 21
-                ? `🟡 2 weeks left`
-                : `🟢 Open · ${opp.daysUntilDeadline}d`;
+                ? `2 weeks left`
+                : `Open · ${opp.daysUntilDeadline}d`;
 
             return (
               <div
@@ -502,7 +503,7 @@ export function Opportunities() {
                       onClick={() => handleToggleReminder(opp)}
                       title={opp.reminderSet ? "Reminder active" : "Set deadline reminder"}
                     >
-                      {opp.reminderSet ? "🔔 Reminded" : "🔔 Remind"}
+                      {opp.reminderSet ? "Reminded" : "Remind"}
                     </button>
                   </div>
                 </div>
@@ -513,15 +514,25 @@ export function Opportunities() {
                 </h3>
                 <div className="opp-org" style={{ fontSize: 13, marginBottom: 10 }}>
                   <span>{opp.organisation}</span>
-                  {opp.location && <span> · 📍 {opp.location}</span>}
-                  {opp.isRemote && <span> · 🌐 Remote Friendly</span>}
+                  {opp.location && (
+              <span>
+                {" · "}
+                <Icon name="location" size={12} /> {opp.location}
+              </span>
+            )}
+                  {opp.isRemote && (
+              <span>
+                {" · "}
+                <Icon name="remote" size={12} /> Remote Friendly
+              </span>
+            )}
                 </div>
 
                 {/* Explanation: Why Radar Matched You */}
                 {opp.whyItFits && (
                   <div className="opp-why-matched">
                     <div className="opp-why-matched-label">
-                      <span>🎯</span>
+                      <span><Icon name="goal" /></span>
                       <span>Why Radar Matched You</span>
                     </div>
                     <p className="opp-why-matched-text">{opp.whyItFits}</p>
@@ -537,19 +548,19 @@ export function Opportunities() {
                 <div className="opp-meta-row">
                   {opp.benefits && (
                     <span className="opp-meta-pill benefit">
-                      <span>🎁</span>
+                      <span><Icon name="gift" /></span>
                       <span>{opp.benefits}</span>
                     </span>
                   )}
                   {opp.cost && (
                     <span className="opp-meta-pill cost">
-                      <span>🏷️</span>
+                      <span><Icon name="tag" /></span>
                       <span>{opp.cost}</span>
                     </span>
                   )}
                   {opp.deadline && (
                     <span className="opp-meta-pill">
-                      <span>📅</span>
+                      <span><Icon name="deadline" /></span>
                       <span>Deadline: {new Date(opp.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                     </span>
                   )}
@@ -564,7 +575,7 @@ export function Opportunities() {
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {opp.requirements.slice(0, 3).map((r, i) => (
                         <span key={i} style={{ fontSize: 11.5, background: "var(--bg-card)", border: "1px solid var(--border)", padding: "3px 8px", borderRadius: 6, color: "var(--text-dim)" }}>
-                          ✓ {r}
+                          <Icon name="check" /> {r}
                         </span>
                       ))}
                       {opp.requirements.length > 3 && (
@@ -594,7 +605,7 @@ export function Opportunities() {
                       onClick={() => openMentorForOpp(opp)}
                       title="Draft statement, tailor CV, or prep with AI Mentor"
                     >
-                      <span>💡</span> Help Me Apply
+                      <span><Icon name="idea" /></span> Help Me Apply
                     </button>
                   </div>
 
@@ -614,12 +625,12 @@ export function Opportunities() {
                       onChange={(e) => handleStatusChange(opp.id, e.target.value as OpportunityTrackingStatus)}
                     >
                       <option value="None">Pipeline: None</option>
-                      <option value="Saved">🔖 Save for later</option>
-                      <option value="Interested">💡 Interested</option>
-                      <option value="Applied">📤 Applied</option>
-                      <option value="Accepted">🟢 Accepted!</option>
-                      <option value="Rejected">🔴 Rejected</option>
-                      <option value="NotRelevant">❌ Not relevant</option>
+                      <option value="Saved"><Icon name="save" /> Save for later</option>
+                      <option value="Interested"><Icon name="idea" /> Interested</option>
+                      <option value="Applied"><Icon name="upload" /> Applied</option>
+                      <option value="Accepted"><Icon name="open" /> Accepted!</option>
+                      <option value="Rejected"><Icon name="urgent" /> Rejected</option>
+                      <option value="NotRelevant"><Icon name="close" /> Not relevant</option>
                     </select>
 
                     {/* Official Apply Link */}
@@ -664,13 +675,12 @@ export function Opportunities() {
                   {selectedOpp.title}
                 </h2>
                 <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
-                  {selectedOpp.organisation} · 📍 {selectedOpp.location || "Remote"}
+                  {selectedOpp.organisation}{" · "}
+                  <Icon name="location" size={12} /> {selectedOpp.location || "Remote"}
                 </div>
               </div>
 
-              <button className="opp-drawer-close" onClick={() => setSelectedOpp(null)} aria-label="Close">
-                ✕
-              </button>
+              <button className="opp-drawer-close" onClick={() => setSelectedOpp(null)} aria-label="Close"><Icon name="close" /></button>
             </div>
 
             {/* Drawer Body */}
@@ -679,7 +689,7 @@ export function Opportunities() {
               {selectedOpp.whyItFits && (
                 <div className="opp-why-matched" style={{ margin: 0 }}>
                   <div className="opp-why-matched-label">
-                    <span>🎯</span>
+                    <span><Icon name="goal" /></span>
                     <span>Why Radar Matched You</span>
                   </div>
                   <p className="opp-why-matched-text">{selectedOpp.whyItFits}</p>
@@ -699,7 +709,7 @@ export function Opportunities() {
               {/* Benefits & Funding */}
               <div style={{ background: "#fefce8", border: "1px solid #fef08a", borderRadius: 12, padding: "14px 18px" }}>
                 <h4 style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", color: "#854d0e", marginBottom: 6 }}>
-                  🎁 What You Get / Benefits
+                  <Icon name="gift" /> What You Get / Benefits
                 </h4>
                 <div style={{ fontSize: 13, color: "#713f12", fontWeight: 600 }}>
                   {selectedOpp.benefits || "Competitive stipend / grant / fully funded position"}
@@ -717,7 +727,7 @@ export function Opportunities() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {selectedOpp.requirements.map((r, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: "var(--text)" }}>
-                      <span style={{ color: "var(--lime)", fontWeight: 800 }}>✓</span>
+                      <span style={{ color: "var(--lime)", fontWeight: 800 }}><Icon name="check" /></span>
                       <span>{r}</span>
                     </div>
                   ))}
@@ -733,7 +743,7 @@ export function Opportunities() {
               {/* Radar's Advice: How to Get Ahead */}
               <div className="opp-advice-box">
                 <div className="opp-advice-title">
-                  <span>💡</span>
+                  <span><Icon name="idea" /></span>
                   <span>Radar's Advice · How to Get Ahead</span>
                 </div>
                 <ol className="opp-advice-list">
@@ -778,7 +788,7 @@ export function Opportunities() {
                 style={{ background: "#f5f3ff", color: "#6d28d9", border: "1px solid #ddd6fe", fontWeight: 700 }}
                 onClick={() => openMentorForOpp(selectedOpp)}
               >
-                <span>💡</span> Prepare Application with AI Mentor
+                <span><Icon name="idea" /></span> Prepare Application with AI Mentor
               </button>
 
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -788,12 +798,12 @@ export function Opportunities() {
                   onChange={(e) => handleStatusChange(selectedOpp.id, e.target.value as OpportunityTrackingStatus)}
                 >
                   <option value="None">Pipeline: None</option>
-                  <option value="Saved">🔖 Save for later</option>
-                  <option value="Interested">💡 Interested</option>
-                  <option value="Applied">📤 Applied</option>
-                  <option value="Accepted">🟢 Accepted!</option>
-                  <option value="Rejected">🔴 Rejected</option>
-                  <option value="NotRelevant">❌ Not relevant</option>
+                  <option value="Saved"><Icon name="save" /> Save for later</option>
+                  <option value="Interested"><Icon name="idea" /> Interested</option>
+                  <option value="Applied"><Icon name="upload" /> Applied</option>
+                  <option value="Accepted"><Icon name="open" /> Accepted!</option>
+                  <option value="Rejected"><Icon name="urgent" /> Rejected</option>
+                  <option value="NotRelevant"><Icon name="close" /> Not relevant</option>
                 </select>
 
                 {selectedOpp.url && /^https?:\/\//i.test(selectedOpp.url) ? (

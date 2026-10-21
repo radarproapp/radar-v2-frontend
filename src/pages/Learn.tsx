@@ -16,6 +16,7 @@ import {
   getActiveRoadmap,
 } from "../lib/api";
 import type { GrowthRoadmap, LearningResource } from "../lib/types";
+import { Icon } from "../components/Icon";
 
 // The four stages are structural and always present; their *content* is not. These titles and
 // goals used to be hardcoded here as Excel / SQL / Power BI / Python, so a cybersecurity learner
@@ -268,7 +269,7 @@ export function Learn() {
         </>
       ) : !roadmap ? (
         <EmptyState
-          icon="🗺️"
+          icon="explore"
           title="No roadmap yet"
           description="Complete onboarding to get your personal growth roadmap and curated learning path from beginner to application."
         >
@@ -299,10 +300,10 @@ export function Learn() {
                   {generating ? "Building pathway…" : "Regenerate pathway"}
                 </button>
                 <button className="btn btn--sm" onClick={() => navigate("/mentor")}>
-                  💡 AI Learning Mentor
+                  <Icon name="idea" /> AI Learning Mentor
                 </button>
                 <button className="btn btn--primary btn--sm" onClick={() => navigate("/projects")}>
-                  🛠️ Project Studio
+                  <Icon name="build" /> Project Studio
                 </button>
               </div>
             </div>
@@ -321,7 +322,7 @@ export function Learn() {
           {/* Adaptive Recommendation / Weak Areas Alert */}
           {roadmap.adaptiveRecommendation && (
             <div className="learn-adaptive-card">
-              <span className="learn-adaptive-card__icon">🎯</span>
+              <span className="learn-adaptive-card__icon"><Icon name="goal" /></span>
               <div className="learn-adaptive-card__text">
                 <strong>Radar Mentor Guidance:</strong> {roadmap.adaptiveRecommendation}
               </div>
@@ -330,7 +331,7 @@ export function Learn() {
 
           {roadmap.weakAreas && roadmap.weakAreas.length > 0 && (
             <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 16 }}>⚠️</span>
+              <span style={{ fontSize: 16 }}><Icon name="warning" /></span>
               <div style={{ fontSize: 12.5, color: "#991b1b" }}>
                 <strong>Reinforcement Recommended:</strong> You scored below 75% on:{" "}
                 {roadmap.weakAreas.map((w, idx) => (
@@ -360,7 +361,7 @@ export function Learn() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div className="learn-stage-pill__num">STAGE 0{idx + 1}</div>
                     {isCompleted ? (
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "#059669" }}>✓ Mastered</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#059669" }}><Icon name="check" /> Mastered</span>
                     ) : isCurrent ? (
                       <span style={{ fontSize: 9.5, fontWeight: 800, color: "var(--cyan)", background: "var(--cyan-light)", padding: "2px 6px", borderRadius: 99 }}>
                         CURRENT
@@ -389,19 +390,19 @@ export function Learn() {
               className={`btn btn--sm ${activeTab === "guided" ? "btn--primary" : "btn--text"}`}
               onClick={() => setActiveTab("guided")}
             >
-              🎯 {selectedStageKey} Guided Path ({currentStageResources.length} items)
+              <Icon name="goal" /> {selectedStageKey} Guided Path ({currentStageResources.length} items)
             </button>
             <button
               className={`btn btn--sm ${activeTab === "all-stages" ? "btn--primary" : "btn--text"}`}
               onClick={() => setActiveTab("all-stages")}
             >
-              🗺️ Full 4-Stage Pathway
+              <Icon name="explore" /> Full 4-Stage Pathway
             </button>
             <button
               className={`btn btn--sm ${activeTab === "catalog" ? "btn--primary" : "btn--text"}`}
               onClick={() => setActiveTab("catalog")}
             >
-              📚 All Curated Resources ({allResources.length})
+              <Icon name="book" /> All Curated Resources ({allResources.length})
             </button>
           </div>
 
@@ -423,14 +424,14 @@ export function Learn() {
                 style={{ fontSize: 11.5, padding: "3px 10px" }}
                 onClick={() => setResourceFilter("tutorials")}
               >
-                🛠️ How-To Tutorials (80%) ({totalTutorials})
+                <Icon name="build" /> How-To Tutorials (80%) ({totalTutorials})
               </button>
               <button
                 className={`r-chip ${resourceFilter === "developments" ? "active" : ""}`}
                 style={{ fontSize: 11.5, padding: "3px 10px" }}
                 onClick={() => setResourceFilter("developments")}
               >
-                ⚡ Latest Info & Blogs (20%) ({totalDevelopments})
+                <Icon name="energy" /> Latest Info & Blogs (20%) ({totalDevelopments})
               </button>
             </div>
 
@@ -480,7 +481,7 @@ export function Learn() {
                               aria-expanded={open}
                             >
                               <span className={`learn-lesson__check ${lesson.isCompleted ? "done" : ""}`}>
-                                {lesson.isCompleted ? "✓" : ""}
+                                {lesson.isCompleted ? "" : ""}
                               </span>
                               <span className="learn-lesson__title">{lesson.title}</span>
                               {lesson.estimatedTime && <span className="learn-lesson__time">⏱️ {lesson.estimatedTime}</span>}
@@ -497,10 +498,12 @@ export function Learn() {
                                     disabled={completing[lesson.id]}
                                     onClick={() => markLessonComplete(activeStageModule.id, lesson.id, lesson.isCompleted)}
                                   >
-                                    {completing[lesson.id] ? "Saving…" : "Mark topic as complete ✓"}
+                                    {completing[lesson.id] ? "Saving…" : "Mark topic as complete "}
                                   </button>
                                 ) : (
-                                  <span className="learn-lesson__completed-note">Completed ✓</span>
+                                  <span className="learn-lesson__completed-note">
+                          <Icon name="done" size={13} /> Completed
+                        </span>
                                 )}
                               </div>
                             )}
@@ -520,7 +523,7 @@ export function Learn() {
 
                 {currentStageResources.length === 0 ? (
                   <EmptyState
-                    icon="🔍"
+                    icon="search"
                     title="No resources found"
                     description="No resources match the selected filter in this stage. Try selecting 'All Resources'."
                   />
@@ -558,7 +561,7 @@ export function Learn() {
                 return (
                   <div className="learn-module-row" key={def.key}>
                     <div className={`learn-module-num ${mastery >= 80 ? "completed" : isSelected ? "active" : ""}`}>
-                      <span>{mastery >= 80 ? "✓" : `0${stageIdx + 1}`}</span>
+                      <span>{mastery >= 80 ? "" : `0${stageIdx + 1}`}</span>
                     </div>
 
                     <div className={`learn-module-card ${isSelected ? "active" : ""}`}>
@@ -579,8 +582,8 @@ export function Learn() {
 
                       <div className="learn-module-counts">
                         <span className="learn-module-count">{stageModule?.lessons.length ?? 4} core curriculum lessons</span>
-                        <span className="learn-module-count">🎬 {stageRes.length} curated resources</span>
-                        <span className="learn-module-count">📈 {mastery}% mastery</span>
+                        <span className="learn-module-count"><Icon name="video" /> {stageRes.length} curated resources</span>
+                        <span className="learn-module-count"><Icon name="trend" /> {mastery}% mastery</span>
                       </div>
 
                       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 8 }}>
@@ -615,7 +618,7 @@ export function Learn() {
 
               {filterList(allResources).length === 0 ? (
                 <EmptyState
-                  icon="🔍"
+                  icon="search"
                   title="No resources found"
                   description="No resources match your filter. Select 'All Resources' to view the entire library."
                 />
@@ -730,11 +733,11 @@ function ResourceCard({
         {resource.title}
       </h3>
 
-      {/* 🎯 "Why am I learning this?" Connection to Goal */}
+      {/* "Why am I learning this?" Connection to Goal */}
       {resource.whyAmILearningThis && (
         <div className="learn-why-box">
           <div className="learn-why-box__title">
-            <span>🎯</span> WHY AM I LEARNING THIS?
+            <span><Icon name="goal" /></span> WHY AM I LEARNING THIS?
           </div>
           <div className="learn-why-box__text">
             {resource.whyAmILearningThis}
@@ -758,7 +761,7 @@ function ResourceCard({
             className="btn btn--sm"
             style={{ display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none" }}
           >
-            📖 Read Full Technical Analysis on {resource.source} ↗
+            <Icon name="book" /> Read Full Technical Analysis on {resource.source} ↗
           </a>
         </div>
       )}
@@ -832,7 +835,7 @@ function ResourceCard({
         <div className="learn-practice-box">
           <div className="learn-practice-box__head">
             <div className="learn-practice-box__title">
-              <span>🛠️</span> {resource.practiceExerciseTitle || "PRACTICAL EXERCISE"}
+              <span><Icon name="build" /></span> {resource.practiceExerciseTitle || "PRACTICAL EXERCISE"}
             </div>
             <button
               className={`btn btn--sm ${resource.isExerciseCompleted ? "btn--text" : "btn--secondary"}`}
@@ -843,7 +846,7 @@ function ResourceCard({
               {isCompletingExercise
                 ? "Saving…"
                 : resource.isExerciseCompleted
-                ? "✓ Exercise Completed"
+                ? "Exercise Completed"
                 : "Mark Exercise Done"}
             </button>
           </div>
@@ -857,16 +860,16 @@ function ResourceCard({
       <div className="learn-mentor-bar">
         <span className="learn-mentor-bar__label">AI MENTOR:</span>
         <button className="learn-mentor-btn" onClick={onAskMentor} title="Ask mentor to explain this topic simply">
-          💡 Ask AI Mentor
+          <Icon name="idea" /> Ask AI Mentor
         </button>
         <button className="learn-mentor-btn learn-mentor-btn--primary" onClick={onTestMe} title="Take an interactive test on this topic">
-          📝 Test Me (Quiz)
+          <Icon name="note" /> Test Me (Quiz)
         </button>
         <button className="learn-mentor-btn" onClick={onReviewWork} title="Submit your code or practice exercise for review">
-          🛠️ Review My Work
+          <Icon name="build" /> Review My Work
         </button>
         <button className="learn-mentor-btn" onClick={onAnotherExplanation} title="Get an alternative explanation and analogy">
-          🔄 Another Explanation
+          <Icon name="refresh" /> Another Explanation
         </button>
       </div>
 
@@ -880,14 +883,14 @@ function ResourceCard({
           {isCompletingResource
             ? "Saving…"
             : resource.isCompleted
-            ? "✓ Resource Completed & Mastered"
+            ? "Resource Completed & Mastered"
             : isTutorial
             ? "Mark tutorial completed"
             : "Mark as read"}
         </button>
         {resource.isCompleted && (
           <span style={{ fontSize: 12, color: "#059669", fontWeight: 700 }}>
-            Saved to your stage mastery progress ✓
+            Saved to your stage mastery progress
           </span>
         )}
       </div>

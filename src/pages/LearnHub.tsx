@@ -17,13 +17,14 @@ import type {
   HubResourceCategory,
   HubResourceItem,
 } from "../lib/types";
+import { Icon } from "../components/Icon";
 
 const INTENT_STREAMS: { id: HubResourceCategory; label: string; icon: string; desc: string }[] = [
-  { id: "Learn", label: "Learn", icon: "🛠️", desc: "Tutorials, courses, how-to videos & technical guides" },
-  { id: "Understand", label: "Understand", icon: "💡", desc: "Articles, explainers, podcasts & in-depth interviews" },
-  { id: "Research", label: "Research", icon: "🔬", desc: "Peer-reviewed papers, benchmarks & threat research" },
-  { id: "Apply", label: "Apply", icon: "💻", desc: "Hands-on projects, virtual labs & security challenges" },
-  { id: "StayCurrent", label: "Stay Current", icon: "⚡", desc: "Vulnerability advisories & industry developments" },
+  { id: "Learn", label: "Learn", icon: "build", desc: "Tutorials, courses, how-to videos & technical guides" },
+  { id: "Understand", label: "Understand", icon: "idea", desc: "Articles, explainers, podcasts & in-depth interviews" },
+  { id: "Research", label: "Research", icon: "paper", desc: "Peer-reviewed papers, benchmarks & threat research" },
+  { id: "Apply", label: "Apply", icon: "code", desc: "Hands-on projects, virtual labs & security challenges" },
+  { id: "StayCurrent", label: "Stay Current", icon: "energy", desc: "Vulnerability advisories & industry developments" },
 ];
 
 export function LearnHub() {
@@ -135,7 +136,7 @@ export function LearnHub() {
           <LoadingSkeleton variant="card" count={4} />
         </>
       ) : !hubData ? (
-        <EmptyState icon="📚" title="Learn Hub is empty" description="Radar is curating resources for your domain." />
+        <EmptyState icon="book" title="Learn Hub is empty" description="Radar is curating resources for your domain." />
       ) : (
         <>
           {/* Top Page Header & Navigation Breadcrumb */}
@@ -161,13 +162,13 @@ export function LearnHub() {
 
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button className="btn btn--sm" onClick={() => navigate("/learn")}>
-                  🗺️ Learning Path
+                  <Icon name="explore" /> Learning Path
                 </button>
                 <button className="btn btn--sm" onClick={() => navigate("/mentor")}>
-                  💡 AI Mentor
+                  <Icon name="idea" /> AI Mentor
                 </button>
                 <button className="btn btn--primary btn--sm" onClick={() => navigate("/projects")}>
-                  🛠️ Projects
+                  <Icon name="build" /> Projects
                 </button>
               </div>
             </div>
@@ -205,14 +206,14 @@ export function LearnHub() {
           {hubData.nextAction && (
             <div className="hub-next-card">
               <div className="hub-next-card__kicker">
-                <span>🎯</span> YOUR NEXT BEST LEARNING ACTION
+                <span><Icon name="goal" /></span> YOUR NEXT BEST LEARNING ACTION
               </div>
               <div className="hub-next-card__title">{hubData.nextAction.title}</div>
               <div className="hub-next-card__desc">{hubData.nextAction.description}</div>
               <div className="hub-next-card__meta">
                 <span className="hub-next-card__pill">⏱️ {hubData.nextAction.estimatedTime}</span>
-                <span className="hub-next-card__pill">🏷️ {hubData.nextAction.subInterest}</span>
-                <span className="hub-next-card__pill">📈 {hubData.nextAction.stage} Milestone</span>
+                <span className="hub-next-card__pill"><Icon name="tag" /> {hubData.nextAction.subInterest}</span>
+                <span className="hub-next-card__pill"><Icon name="trend" /> {hubData.nextAction.stage} Milestone</span>
                 <button
                   className="btn btn--primary btn--sm"
                   style={{ background: "#fff", color: "var(--cyan-deep)", border: "none", fontWeight: 700 }}
@@ -234,7 +235,7 @@ export function LearnHub() {
           <div className="hub-graph-wrapper">
             <div className="hub-graph-head">
               <div className="hub-graph-title">
-                <span>🕸️</span> Personalised Knowledge Graph
+                <span><Icon name="remote" /></span> Personalised Knowledge Graph
                 <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", marginLeft: 6 }}>
                   ({hubData.totalMasteredNodes} Mastered · {hubData.totalLearningNodes} Learning · {hubData.totalWeakNodes} Needs Practice)
                 </span>
@@ -318,7 +319,7 @@ export function LearnHub() {
                       Filtering resources by node: <strong>{hubData.graphNodes.find((n) => n.id === selectedNodeId)?.label}</strong>
                     </span>
                     <button className="btn btn--text btn--sm" style={{ fontSize: 11 }} onClick={() => setSelectedNodeId(null)}>
-                      Clear filter ✕
+                      Clear filter
                     </button>
                   </div>
                 )}
@@ -332,7 +333,7 @@ export function LearnHub() {
               className={`btn btn--sm ${activeIntent === "all" ? "btn--primary" : "btn--text"}`}
               onClick={() => setActiveIntent("all")}
             >
-              🌟 All Streams ({hubData.resources.length})
+              <Icon name="star" /> All Streams ({hubData.resources.length})
             </button>
             {INTENT_STREAMS.map((st) => {
               const count = rawResources.filter((r) => r.category === st.id).length;
@@ -359,7 +360,7 @@ export function LearnHub() {
 
             {filteredResources.length === 0 ? (
               <EmptyState
-                icon="🔍"
+                icon="search"
                 title="No resources match this filter"
                 description="Try clearing node selection or switching intent streams to view all resources."
               />
@@ -465,7 +466,7 @@ function HubResourceCard({
       {item.whyThisResource && (
         <div className="learn-why-box">
           <div className="learn-why-box__title">
-            <span>🎯</span> WHY THIS RESOURCE?
+            <span><Icon name="goal" /></span> WHY THIS RESOURCE?
           </div>
           <div className="learn-why-box__text">
             {item.whyThisResource}
@@ -485,7 +486,7 @@ function HubResourceCard({
           {item.mediaUrl && <AudioEmbed url={item.mediaUrl} title={item.title} />}
           {!item.mediaUrl && item.url && (
             <a href={item.url} target="_blank" rel="noreferrer" className="btn btn--sm" style={{ textDecoration: "none" }}>
-              🎧 Listen to Full Episode on {item.source} ↗
+              <Icon name="podcast" /> Listen to Full Episode on {item.source} ↗
             </a>
           )}
         </div>
@@ -541,7 +542,7 @@ function HubResourceCard({
       {isPaper && item.paperBreakdown && (
         <div className="hub-paper-box">
           <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".06em", color: "#4f46e5", marginBottom: 10 }}>
-            🔬 Academic Research Paper Breakdown (8-Part Analysis)
+            <Icon name="paper" /> Academic Research Paper Breakdown (8-Part Analysis)
           </div>
           <div className="hub-paper-item">
             <div className="hub-paper-label">1. Introduction</div>
@@ -582,7 +583,7 @@ function HubResourceCard({
       {isPodcast && item.podcastBreakdown && (
         <div className="hub-podcast-box">
           <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".06em", color: "#9333ea", marginBottom: 10 }}>
-            🎧 Podcast Key Insights & Takeaways
+            <Icon name="podcast" /> Podcast Key Insights & Takeaways
           </div>
           <div style={{ marginBottom: 10 }}>
             <div className="hub-podcast-label">KEY IDEAS</div>
@@ -631,7 +632,7 @@ function HubResourceCard({
         <div className="learn-practice-box">
           <div className="learn-practice-box__head">
             <div className="learn-practice-box__title">
-              <span>🛠️</span> {item.practiceExerciseTitle || "PRACTICAL LAB EXERCISE"}
+              <span><Icon name="build" /></span> {item.practiceExerciseTitle || "PRACTICAL LAB EXERCISE"}
             </div>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#92400e" }}>
               Hands-on Lab
@@ -647,16 +648,16 @@ function HubResourceCard({
       <div className="learn-mentor-bar">
         <span className="learn-mentor-bar__label">AI MENTOR:</span>
         <button className="learn-mentor-btn" onClick={onAskMentor} title="Ask mentor to explain this concept simply">
-          💡 Ask AI Mentor
+          <Icon name="idea" /> Ask AI Mentor
         </button>
         <button className="learn-mentor-btn learn-mentor-btn--primary" onClick={onTestMe} title="Test your understanding with an interactive quiz">
-          📝 Test Me (Quiz)
+          <Icon name="note" /> Test Me (Quiz)
         </button>
         <button className="learn-mentor-btn" onClick={onReviewWork} title="Submit your code or lab output for review">
-          🛠️ Review My Work
+          <Icon name="build" /> Review My Work
         </button>
         <button className="learn-mentor-btn" onClick={onAnotherExplanation} title="Get an alternative analogy">
-          🔄 Another Explanation
+          <Icon name="refresh" /> Another Explanation
         </button>
       </div>
 
@@ -668,19 +669,19 @@ function HubResourceCard({
             onClick={onToggleComplete}
             disabled={isCompleting}
           >
-            {isCompleting ? "Saving…" : item.isCompleted ? "✓ Completed & Mastered" : "Mark as Completed"}
+            {isCompleting ? "Saving…" : item.isCompleted ? "Completed & Mastered" : "Mark as Completed"}
           </button>
           <button
             className={`btn btn--sm ${item.isSaved ? "btn--secondary" : "btn--text"}`}
             onClick={onToggleSave}
           >
-            {item.isSaved ? "★ Saved in Library" : "☆ Save Resource"}
+            {item.isSaved ? "Saved in Library" : "Save Resource"}
           </button>
         </div>
 
         {item.isCompleted && (
           <span style={{ fontSize: 12, color: "#059669", fontWeight: 700 }}>
-            Knowledge Graph confidence updated ✓
+            Knowledge Graph confidence updated
           </span>
         )}
       </div>

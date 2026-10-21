@@ -6,6 +6,7 @@ import { ErrorState } from "../components/ErrorState";
 import { ApiError, getTopic, toggleTopicAlert, toggleTopicFollow } from "../lib/api";
 import { humanize } from "../lib/date";
 import type { TopicProfile } from "../lib/types";
+import { Icon } from "../components/Icon";
 
 export function TopicHub() {
   const { topicId = "" } = useParams<{ topicId: string }>();
@@ -129,7 +130,7 @@ export function TopicHub() {
                     <div style={{ fontSize: 13.5, fontWeight: 700 }}>{alert.label}</div>
                     <div style={{ fontSize: 11.5, color: "var(--text-muted)" }}>{alert.note}</div>
                   </div>
-                  <span style={{ fontSize: 12, color: alert.isEnabled ? "var(--cyan)" : "transparent", fontWeight: 800, flex: "none" }}>✓</span>
+                  <span style={{ fontSize: 12, color: alert.isEnabled ? "var(--cyan)" : "transparent", fontWeight: 800, flex: "none" }}><Icon name="check" /></span>
                 </button>
               ))}
             </div>
@@ -139,7 +140,7 @@ export function TopicHub() {
             RECENT IN THIS TOPIC
           </div>
           {current.recentItems.length === 0 ? (
-            <EmptyState icon="📰" title="No recent items" description="Radar hasn't found anything new in this topic this week." compact />
+            <EmptyState icon="article" title="No recent items" description="Radar hasn't found anything new in this topic this week." compact />
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
               {current.recentItems.map((item) => (

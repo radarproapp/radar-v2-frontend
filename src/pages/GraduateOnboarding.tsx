@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { OnboardingShell } from "../components/OnboardingShell";
 import { ApiError, completeOnboarding, register } from "../lib/api";
+import { Icon } from "../components/Icon";
 
 const QUALIFICATIONS = [
   "BSc / Bachelor of Science",
@@ -429,7 +430,7 @@ export function GraduateOnboarding() {
                   className={`ob-tag-btn ${active ? "active" : ""}`}
                   onClick={() => setSelectedRoles((prev) => toggleItem(prev, role, 3))}
                 >
-                  {role} {active ? "✓" : "+"}
+                  {role} {active ? "" : "+"}
                 </button>
               );
             })}
@@ -447,7 +448,7 @@ export function GraduateOnboarding() {
                   className={`ob-tag-btn ${active ? "active" : ""}`}
                   onClick={() => setWorkEnjoyed((prev) => toggleItem(prev, w, 3))}
                 >
-                  {w} {active ? "✓" : "+"}
+                  {w} {active ? "" : "+"}
                 </button>
               );
             })}
@@ -504,7 +505,7 @@ export function GraduateOnboarding() {
                   className={`ob-tag-btn ${active ? "active" : ""}`}
                   onClick={() => setSelfReportedSkills((prev) => toggleItem(prev, skill, 5))}
                 >
-                  {skill} {active ? "✓" : "+"}
+                  {skill} {active ? "" : "+"}
                 </button>
               );
             })}
@@ -591,7 +592,7 @@ export function GraduateOnboarding() {
                 onClick={() => setWorkArrangement(arr)}
               >
                 <span>{arr}</span>
-                <span className="ob-option__check">✓</span>
+                <span className="ob-option__check"><Icon name="check" /></span>
               </button>
             ))}
           </div>
@@ -608,7 +609,7 @@ export function GraduateOnboarding() {
                   className={`ob-tag-btn ${active ? "active" : ""}`}
                   onClick={() => setOpportunityPrefs((prev) => toggleItem(prev, op, 3))}
                 >
-                  {op} {active ? "✓" : "+"}
+                  {op} {active ? "" : "+"}
                 </button>
               );
             })}
@@ -648,7 +649,7 @@ export function GraduateOnboarding() {
                 onClick={() => setPrimaryPriority(p)}
               >
                 <span>{p}</span>
-                <span className="ob-option__check">✓</span>
+                <span className="ob-option__check"><Icon name="check" /></span>
               </button>
             ))}
           </div>
@@ -665,7 +666,7 @@ export function GraduateOnboarding() {
                 onClick={() => setAvailability(a)}
               >
                 <span>{a}</span>
-                <span className="ob-option__check">✓</span>
+                <span className="ob-option__check"><Icon name="check" /></span>
               </button>
             ))}
           </div>
@@ -693,13 +694,13 @@ export function GraduateOnboarding() {
           </p>
 
           <div className="ob-plan-card">
-            <div className="ob-plan-badge">💼 Radar Career: Graduate Track</div>
+            <div className="ob-plan-badge"><Icon name="job" /> Radar Career: Graduate Track</div>
             <div className="ob-plan-hero">
               {qualification.split(" ")[0]} in {effectiveField}
             </div>
 
             <div className="ob-plan-item">
-              <span className="ob-plan-item-icon">🎯</span>
+              <span className="ob-plan-item-icon"><Icon name="goal" /></span>
               <div>
                 <strong style={{ color: "#f8fafc" }}>Target Role: </strong>
                 {selectedRoles.join(", ")}
@@ -707,7 +708,7 @@ export function GraduateOnboarding() {
             </div>
 
             <div className="ob-plan-item">
-              <span className="ob-plan-item-icon">🛠️</span>
+              <span className="ob-plan-item-icon"><Icon name="build" /></span>
               <div>
                 <strong style={{ color: "#f8fafc" }}>Self-Reported Skills: </strong>
                 {selfReportedSkills.join(", ")} (ready for project verification)
@@ -725,7 +726,7 @@ export function GraduateOnboarding() {
 
           <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px 14px", marginBottom: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#166534", marginBottom: 2 }}>
-              ✓ Six-Part Action Plan Primed
+              <Icon name="check" /> Six-Part Action Plan Primed
             </div>
             <div style={{ fontSize: 12.5, color: "#15803d", lineHeight: 1.45 }}>
               Your dashboard answers: <em>"What is the most useful thing I can do for my career today?"</em> with guided project rubrics and verified role listings.

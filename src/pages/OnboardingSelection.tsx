@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { OnboardingShell } from "../components/OnboardingShell";
+import { Icon } from "../components/Icon";
 
 type UserTypeKey = "student" | "graduate" | "professional";
 
@@ -24,7 +25,7 @@ const USER_TYPES: UserTypeOption[] = [
     badge: "Student",
     target: "For university & college students",
     desc: "Master difficult courses, improve your grades, build practical skills (Python, SQL, Data Analysis), and prepare for internships and scholarships.",
-    icon: "🎓",
+    icon: "course",
     route: "/onboarding/student",
     sideImage: "/images/marketing/student.jpg",
     sideEyebrow: "Radar Student",
@@ -36,7 +37,7 @@ const USER_TYPES: UserTypeOption[] = [
     badge: "Graduate",
     target: "For recent graduates & job seekers",
     desc: "Become employable, demonstrate what you can do through practical projects, bridge skill gaps, and find genuine opportunities.",
-    icon: "💼",
+    icon: "job",
     route: "/onboarding/graduate",
     sideImage: "/images/marketing/career.jpg",
     sideEyebrow: "Radar Career for Graduates",
@@ -48,7 +49,7 @@ const USER_TYPES: UserTypeOption[] = [
     badge: "Professional",
     target: "For working professionals",
     desc: "Turn your experience into your next advantage. Compare career decisions, assess market value, and build demonstrable impact without unnecessary risks.",
-    icon: "🚀",
+    icon: "launch",
     route: "/onboarding/professional",
     sideImage: "/images/marketing/leader.jpg",
     sideEyebrow: "Radar Career for Professionals",
@@ -121,7 +122,7 @@ export function OnboardingSelection() {
                       <span className="ob-type-card__name">{option.name}</span>
                       <span className="ob-type-card__badge">{option.badge}</span>
                     </div>
-                    <div className="ob-type-card__check">✓</div>
+                    <div className="ob-type-card__check"><Icon name="check" /></div>
                   </div>
                   <div className="ob-type-card__target">{option.target}</div>
                   <div className="ob-type-card__desc">{option.desc}</div>

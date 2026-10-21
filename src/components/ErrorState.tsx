@@ -1,3 +1,4 @@
+import { Icon } from "./Icon";
 interface ErrorStateProps {
   title?: string;
   description?: string;
@@ -8,7 +9,7 @@ interface ErrorStateProps {
 export function ErrorState({ title = "Something went wrong", description, retryLabel = "Try again", onRetry }: ErrorStateProps) {
   return (
     <div className="r-error-state">
-      <div className="r-error-state__icon">⚠</div>
+      <div className="r-error-state__icon"><Icon name="warning" /></div>
       <div className="r-error-state__title">{title}</div>
       {description && <p className="r-error-state__desc">{description}</p>}
       {onRetry && (

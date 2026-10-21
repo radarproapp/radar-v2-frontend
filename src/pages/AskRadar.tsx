@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiError, clearAskHistory, getAskHistory, streamAskRadarChat, summarizeFile, summarizeLink } from "../lib/api";
 import { plainText } from "../lib/text";
 import type { ChatMessage } from "../lib/types";
+import { Icon } from "../components/Icon";
 
 const SUGGESTIONS = [
   "What should I do today to get closer to my goal?",
@@ -232,7 +233,7 @@ export function AskRadar() {
                 onClick={() => summarizeFile_(sec)}
                 disabled={busy}
               >
-                {i === 0 ? "✨ " : ""}{sec}
+                {i === 0 ? "" : ""}{sec}
               </button>
             ))}
           </div>
@@ -280,14 +281,14 @@ export function AskRadar() {
                 }
               }}
             >
-              <div className="ask-file-upload__icon">📄</div>
+              <div className="ask-file-upload__icon"><Icon name="document" /></div>
               <div className="ask-file-upload__prompt">Click to browse or drag & drop your document</div>
               <div className="ask-file-upload__formats">PDF (.pdf), Word (.docx), Markdown (.md), TXT, CSV, JSON, HTML up to 20MB</div>
             </div>
           ) : (
             <div className="ask-file-selected">
               <div className="ask-file-selected__info">
-                <span className="ask-file-selected__icon">📄</span>
+                <span className="ask-file-selected__icon"><Icon name="document" /></span>
                 <div className="ask-file-selected__meta">
                   <div className="ask-file-selected__name">{file.name}</div>
                   <div className="ask-file-selected__size">{formatFileSize(file.size)} · Ready to summarize</div>
@@ -310,9 +311,7 @@ export function AskRadar() {
                     if (fileInputRef.current) fileInputRef.current.value = "";
                   }}
                   title="Remove file"
-                >
-                  ✕
-                </button>
+                ><Icon name="close" /></button>
               </div>
             </div>
           )}

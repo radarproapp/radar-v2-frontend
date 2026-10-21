@@ -29,13 +29,14 @@ import type {
   ChallengeResult,
   SpacedRevisionItem
 } from "../lib/types";
+import { Icon } from "../components/Icon";
 
 const MODES = [
-  { id: "chat", label: "💬 Ask (Tutor)", desc: "Socratic Q&A connected to your roadmap" },
-  { id: "quiz", label: "📝 Practice & Quiz", desc: "Adaptive exercises across 4 cognitive levels" },
-  { id: "studyplan", label: "📅 Study Plan", desc: "Dynamic goal-oriented week-by-week plan" },
-  { id: "review", label: "✍️ Review Work", desc: "Rubric evaluation, score & revision loop" },
-  { id: "mastery", label: "📊 Mastery & Memory", desc: "Topic mastery progress & learning memory" },
+  { id: "chat", label: "Ask (Tutor)", desc: "Socratic Q&A connected to your roadmap" },
+  { id: "quiz", label: "Practice & Quiz", desc: "Adaptive exercises across 4 cognitive levels" },
+  { id: "studyplan", label: "Study Plan", desc: "Dynamic goal-oriented week-by-week plan" },
+  { id: "review", label: "Review Work", desc: "Rubric evaluation, score & revision loop" },
+  { id: "mastery", label: "Mastery & Memory", desc: "Topic mastery progress & learning memory" },
   { id: "spaced", label: "⏰ Spaced Revision", desc: "Automated retention schedule" },
 ];
 
@@ -353,7 +354,7 @@ export function LearningMentor() {
       {/* Header */}
       <div className="r-page-head" style={{ marginBottom: 14 }}>
         <h1 className="r-page-title" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span>🧠</span> Radar AI Learning Mentor
+          <span><Icon name="brain" /></span> Radar AI Learning Mentor
         </h1>
         <p className="r-page-sub">
           Your personal tutor connected to your Radar Roadmap. Helps you understand concepts simply, practice adaptive exercises, follow dynamic study plans, and continuously improve through work reviews.
@@ -366,15 +367,15 @@ export function LearningMentor() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10 }}>
             <div>
               <div className="mentor-today-badge">
-                <span>⚡</span> Today&apos;s Learning · 20 Minutes
+                <span><Icon name="energy" /></span> Today&apos;s Learning · 20 Minutes
               </div>
               <div className="mentor-today-title">{todayCard.topic}</div>
               <div className="mentor-today-why">{todayCard.why}</div>
 
               <div className="mentor-time-breakdown">
-                <span className="mentor-time-pill">📖 Learn: {todayCard.learnMinutes} min</span>
-                <span className="mentor-time-pill">✍️ Practice: {todayCard.practiceMinutes} min</span>
-                <span className="mentor-time-pill">🛠️ Apply: {todayCard.applyMinutes} min</span>
+                <span className="mentor-time-pill"><Icon name="book" /> Learn: {todayCard.learnMinutes} min</span>
+                <span className="mentor-time-pill"><Icon name="note" /> Practice: {todayCard.practiceMinutes} min</span>
+                <span className="mentor-time-pill"><Icon name="build" /> Apply: {todayCard.applyMinutes} min</span>
               </div>
             </div>
 
@@ -625,7 +626,7 @@ export function LearningMentor() {
                                 color: showResult && isCorrect ? "#fff" : "var(--text-faint)"
                               }}
                             >
-                              {showResult ? (isCorrect ? "✓" : isSelected ? "✗" : idx + 1) : idx + 1}
+                              {showResult ? (isCorrect ? "" : isSelected ? "" : idx + 1) : idx + 1}
                             </span>
                             <span>{option}</span>
                           </button>
@@ -653,7 +654,7 @@ export function LearningMentor() {
                               marginBottom: 6
                             }}
                           >
-                            {q.userAnswerIndex === q.correctIndex ? "CORRECT ✓" : "INCORRECT ✗"}
+                            {q.userAnswerIndex === q.correctIndex ? "CORRECT " : "INCORRECT "}
                           </div>
                           <div style={{ fontSize: 13, color: "#374151", lineHeight: 1.6 }}>{q.explanation}</div>
                         </div>
@@ -712,7 +713,7 @@ export function LearningMentor() {
               {/* NEXT MOVE BANNER */}
               {quiz.nextMove && (
                 <div className="mentor-next-move-banner" style={{ textAlign: "left", margin: "16px auto 24px", maxWidth: 600 }}>
-                  <span className="mentor-next-move-icon">🎯</span>
+                  <span className="mentor-next-move-icon"><Icon name="goal" /></span>
                   <div>
                     <div className="mentor-next-move-title">Your Next Move</div>
                     <div className="mentor-next-move-text">{quiz.nextMove}</div>
@@ -744,7 +745,7 @@ export function LearningMentor() {
                     >
                       <div style={{ display: "flex", gap: 8, alignItems: "baseline", marginBottom: 6 }}>
                         <span style={{ fontSize: 12, fontWeight: 800, color: correct ? "var(--cyan-deep)" : "#c0392b" }}>
-                          {correct ? "CORRECT ✓" : "INCORRECT ✗"}
+                          {correct ? "CORRECT " : "INCORRECT "}
                         </span>
                         <span style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 600 }}>
                           Question {qi + 1}
@@ -872,13 +873,13 @@ export function LearningMentor() {
                       </div>
                       {week.milestone && (
                         <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
-                          🎯 Milestone: {week.milestone}
+                          <Icon name="goal" /> Milestone: {week.milestone}
                         </div>
                       )}
                     </div>
                     {week.isCompleted && (
                       <span style={{ fontSize: 11, fontWeight: 700, color: "var(--lime)", background: "rgba(46,168,96,0.1)", borderRadius: 99, padding: "4px 10px" }}>
-                        ✓ Week Done
+                        <Icon name="check" /> Week Done
                       </span>
                     )}
                   </div>
@@ -923,7 +924,7 @@ export function LearningMentor() {
               {/* Dynamic Adjust Controls */}
               <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
                 <button type="button" className="btn" onClick={() => handleAdjustPlan("Struggling with advanced subtopics")}>
-                  ⚡ Need Help (Adjust Plan)
+                  <Icon name="energy" /> Need Help (Adjust Plan)
                 </button>
                 <button type="button" className="btn" onClick={() => setStudyPlan(null)}>
                   Create New Plan
@@ -968,8 +969,7 @@ export function LearningMentor() {
               </div>
 
               {revisedFromId && (
-                <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", padding: "10px 14px", borderRadius: 8, marginBottom: 14, fontSize: 12.5, color: "#1e40af" }}>
-                  🔁 <strong>Submitting a Revision:</strong> Radar will compare this against your previous score and verify whether you fixed the main issue.
+                <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", padding: "10px 14px", borderRadius: 8, marginBottom: 14, fontSize: 12.5, color: "#1e40af" }}><Icon name="refresh" /><strong>Submitting a Revision:</strong> Radar will compare this against your previous score and verify whether you fixed the main issue.
                 </div>
               )}
 
@@ -1051,7 +1051,7 @@ export function LearningMentor() {
               {/* MAIN ISSUE (PEDAGOGICAL TEACHING MOMENT) */}
               {review.mainIssue && (
                 <div className="mentor-main-issue-box">
-                  <div className="mentor-main-issue-title">⚠️ Main Issue Identified</div>
+                  <div className="mentor-main-issue-title"><Icon name="warning" /> Main Issue Identified</div>
                   <div className="mentor-main-issue-text">{review.mainIssue}</div>
                 </div>
               )}
@@ -1059,7 +1059,7 @@ export function LearningMentor() {
               {/* NEXT STEP BANNER */}
               {review.nextStep && (
                 <div className="mentor-next-move-banner">
-                  <span className="mentor-next-move-icon">🎯</span>
+                  <span className="mentor-next-move-icon"><Icon name="goal" /></span>
                   <div>
                     <div className="mentor-next-move-title">Immediate Next Step</div>
                     <div className="mentor-next-move-text">{review.nextStep}</div>
@@ -1070,7 +1070,7 @@ export function LearningMentor() {
               {/* Strengths */}
               <div style={{ background: "var(--cyan-light)", borderRadius: 14, padding: "16px 18px", marginBottom: 12 }}>
                 <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--cyan-deep)", marginBottom: 8 }}>
-                  ✓ STRENGTHS
+                  <Icon name="check" /> STRENGTHS
                 </div>
                 {review.strengths.map((s, i) => (
                   <div key={i} style={{ fontSize: 13, color: "#0d3d40", lineHeight: 1.6, marginBottom: 4 }}>
@@ -1110,7 +1110,7 @@ export function LearningMentor() {
                   className="btn btn--primary"
                   onClick={() => prepareRevision(review)}
                 >
-                  🔁 Submit Revision (Improve Score)
+                  <Icon name="refresh" /> Submit Revision (Improve Score)
                 </button>
                 <button type="button" className="btn" onClick={() => setReview(null)}>
                   Review New Work
@@ -1198,7 +1198,7 @@ export function LearningMentor() {
           {/* CHALLENGE ME BUTTON */}
           <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: "18px 20px", marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <div style={{ fontSize: 14.5, fontWeight: 700 }}>⚡ Challenge Mode</div>
+              <div style={{ fontSize: 14.5, fontWeight: 700 }}><Icon name="energy" /> Challenge Mode</div>
               <div style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
                 Diagnostic test evaluating Conceptual Understanding vs Practical Application.
               </div>
@@ -1226,10 +1226,10 @@ export function LearningMentor() {
 
               <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
                 <span className="mentor-time-pill" style={{ background: "#fef3c7", color: "#92400e" }}>
-                  💡 Conceptual Understanding: {challengeResult.conceptualScorePercent}%
+                  <Icon name="idea" /> Conceptual Understanding: {challengeResult.conceptualScorePercent}%
                 </span>
                 <span className="mentor-time-pill" style={{ background: "#fee2e2", color: "#991b1b" }}>
-                  🛠️ Practical Application: {challengeResult.practicalScorePercent}%
+                  <Icon name="build" /> Practical Application: {challengeResult.practicalScorePercent}%
                 </span>
               </div>
 
@@ -1238,7 +1238,7 @@ export function LearningMentor() {
               </div>
 
               <div className="mentor-next-move-banner">
-                <span className="mentor-next-move-icon">🎯</span>
+                <span className="mentor-next-move-icon"><Icon name="goal" /></span>
                 <div>
                   <div className="mentor-next-move-title">Your Next Move</div>
                   <div className="mentor-next-move-text">{challengeResult.nextMove}</div>
@@ -1303,7 +1303,7 @@ export function LearningMentor() {
                             : "progress"
                         }`}
                       >
-                        {sub.status === "WeakArea" ? "⚠️ Weak Area" : sub.status}
+                        {sub.status === "WeakArea" ? "Weak Area" : sub.status}
                       </span>
                     </div>
                   </div>
@@ -1340,7 +1340,7 @@ export function LearningMentor() {
                         style={{ background: "#ecfdf5", color: "#065f46", border: "1px solid #a7f3d0" }}
                         onClick={() => handleCompleteRevision(rev.id, true)}
                       >
-                        ✓ I Remembered
+                        <Icon name="check" /> I Remembered
                       </button>
                       <button
                         type="button"
@@ -1353,7 +1353,7 @@ export function LearningMentor() {
                     </>
                   ) : (
                     <span style={{ fontSize: 11, fontWeight: 700, color: "var(--lime)" }}>
-                      ✓ Revision completed
+                      <Icon name="check" /> Revision completed
                     </span>
                   )}
                 </div>

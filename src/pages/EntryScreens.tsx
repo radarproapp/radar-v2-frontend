@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { Icon } from "../components/Icon";
 
 type EntryTab = "splash" | "forgot" | "sent" | "newpw" | "verify";
 
@@ -77,7 +78,7 @@ function ForgotPassword({ onSent }: { onSent: () => void }) {
 function SentScreen() {
   return (
     <EntryCard className="r-entry-card--centered">
-      <div className="r-entry-mail-icon">✉</div>
+      <div className="r-entry-mail-icon"><Icon name="mail" /></div>
       <h1>Check your inbox.</h1>
       <p className="r-entry-card__copy">We sent a reset link to <strong>amara@example.com</strong>. It works once and expires in 30 minutes.</p>
       <div className="r-entry-note"><strong>Didn&apos;t get it?</strong><br />Check spam, or confirm you signed up with this address. You can resend in <strong>0:42</strong>.</div>

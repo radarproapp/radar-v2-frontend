@@ -5,6 +5,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { ApiError, logEvent, saveFeedItem, searchResearch, unsaveFeedItem, getPaperCitation } from "../lib/api";
 import type { ContentItem, AcademicPaperBreakdown } from "../lib/types";
+import { Icon } from "../components/Icon";
 
 const YEAR_RANGES: { label: string; yearFrom: number; badge: string }[] = [
   { label: "2020–2026 (Recent & Current)", yearFrom: 2020, badge: "2020–2026" },
@@ -21,14 +22,14 @@ const PAPER_TYPES = [
 ];
 
 const POPULAR_ACADEMIC_TOPICS = [
-  { label: "💡 AI & Autonomous Agents", query: "AI" },
-  { label: "👥 Transformational Leadership", query: "leadership" },
-  { label: "🏢 SMEs & Digital Transformation", query: "SMEs" },
-  { label: "🛡️ Zero Trust Cybersecurity", query: "cybersecurity" },
-  { label: "💳 Fintech & Mobile Money in Africa", query: "fintech in Africa" },
-  { label: "🧠 Attention Is All You Need (Classic)", query: "Attention Is All You Need" },
-  { label: "🏥 Health Informatics & AI Diagnosis", query: "health informatics" },
-  { label: "⚡ Renewable Energy & Smart Grids", query: "renewable energy" },
+  { label: "AI & Autonomous Agents", query: "AI" },
+  { label: "Transformational Leadership", query: "leadership" },
+  { label: "SMEs & Digital Transformation", query: "SMEs" },
+  { label: "Zero Trust Cybersecurity", query: "cybersecurity" },
+  { label: "Fintech & Mobile Money in Africa", query: "fintech in Africa" },
+  { label: "Attention Is All You Need (Classic)", query: "Attention Is All You Need" },
+  { label: "Health Informatics & AI Diagnosis", query: "health informatics" },
+  { label: "Renewable Energy & Smart Grids", query: "renewable energy" },
 ];
 
 const CITATION_STYLES = ["APA", "Harvard", "IEEE", "BibTeX", "MLA"] as const;
@@ -236,7 +237,7 @@ Could you explain how to practically apply this paper's findings and methodology
       {/* Page Header */}
       <div className="r-page-head" style={{ marginBottom: 14 }}>
         <h1 className="r-page-title" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span>🔬</span> Academic Research & Literature Discovery
+          <span><Icon name="paper" /></span> Academic Research & Literature Discovery
         </h1>
         <p className="r-page-sub">
           Search peer-reviewed journal articles and conference papers across verifiable databases. Open a paper for Radar's structured 5-minute (~500-word) breakdown, and a direct link to the original every time.
@@ -246,14 +247,14 @@ Could you explain how to practically apply this paper's findings and methodology
       {/* Verifiable Databases Trust Bar */}
       <div className="research-trust-bar">
         <strong>Verifiable Databases:</strong>
-        <span className="research-trust-tag">🏛️ OpenAlex (250M+ Works)</span>
-        <span className="research-trust-tag">🔗 CrossRef</span>
-        <span className="research-trust-tag">⚡ IEEE Xplore</span>
-        <span className="research-trust-tag">📄 arXiv</span>
-        <span className="research-trust-tag">🏥 PubMed</span>
-        <span className="research-trust-tag">💻 ACM</span>
+        <span className="research-trust-tag"><Icon name="institution" /> OpenAlex (250M+ Works)</span>
+        <span className="research-trust-tag"><Icon name="link" /> CrossRef</span>
+        <span className="research-trust-tag"><Icon name="energy" /> IEEE Xplore</span>
+        <span className="research-trust-tag"><Icon name="document" /> arXiv</span>
+        <span className="research-trust-tag"><Icon name="health" /> PubMed</span>
+        <span className="research-trust-tag"><Icon name="code" /> ACM</span>
         <span style={{ marginLeft: "auto", fontWeight: 700, color: "#047857" }}>
-          ✓ 2020–2026 Default Filter
+          <Icon name="check" /> 2020–2026 Default Filter
         </span>
       </div>
 
@@ -275,9 +276,7 @@ Could you explain how to practically apply this paper's findings and methodology
             }}
             style={{ background: "transparent", color: "var(--text-muted)", padding: "0 8px", fontSize: 16 }}
             title="Clear search"
-          >
-            ✕
-          </button>
+          ><Icon name="close" /></button>
         )}
         <button type="submit" disabled={searching}>
           {searching ? "Searching…" : "Search Literature"}
@@ -351,7 +350,7 @@ Could you explain how to practically apply this paper's findings and methodology
 
           {results.length === 0 ? (
             <EmptyState
-              icon="🔬"
+              icon="paper"
               title="No papers found for this query"
               description="Try a broader term, toggle 'All Years' to include seminal classics, or choose one of the recommended topics above."
             >
@@ -393,7 +392,7 @@ Could you explain how to practically apply this paper's findings and methodology
                     )}
                     {b && wordCount > 0 && (
                       <span className="research-badge-cite">
-                        📖 ~{wordCount} words · 5 min read
+                        <Icon name="book" size={12} /> ~{wordCount} words · 5 min read
                       </span>
                     )}
                   </div>
@@ -451,7 +450,7 @@ Could you explain how to practically apply this paper's findings and methodology
                             className="research-breakdown-copy"
                             onClick={() => copyFullBreakdown(paper)}
                           >
-                            {copiedId === paper.id ? "✓ Copied 500-Word Summary!" : "📋 Copy Summary"}
+                            {copiedId === paper.id ? "Copied 500-Word Summary!" : "Copy Summary"}
                           </button>
                           <button
                             type="button"
@@ -468,7 +467,7 @@ Could you explain how to practically apply this paper's findings and methodology
                           {/* 1. Introduction */}
                           <div className="research-section-item">
                             <div className="research-section-label">
-                              <span>📌</span> 1. Introduction & Theoretical Context
+                              <span><Icon name="pin" /></span> 1. Introduction & Theoretical Context
                             </div>
                             <div className="research-section-text">{b.introduction}</div>
                           </div>
@@ -476,7 +475,7 @@ Could you explain how to practically apply this paper's findings and methodology
                           {/* 2. Problem Statement */}
                           <div className="research-section-item problem">
                             <div className="research-section-label" style={{ color: "#b91c1c" }}>
-                              <span>⚠️</span> 2. Problem Statement & Research Dilemma
+                              <span><Icon name="warning" /></span> 2. Problem Statement & Research Dilemma
                             </div>
                             <div className="research-section-text">{b.problem}</div>
                           </div>
@@ -484,7 +483,7 @@ Could you explain how to practically apply this paper's findings and methodology
                           {/* 3. Key Aim & Objectives */}
                           <div className="research-section-item aim">
                             <div className="research-section-label" style={{ color: "#7c3aed" }}>
-                              <span>🎯</span> 3. Key Aim & Objectives
+                              <span><Icon name="goal" /></span> 3. Key Aim & Objectives
                             </div>
                             <div className="research-section-text">{b.aimAndObjectives}</div>
                           </div>
@@ -492,7 +491,7 @@ Could you explain how to practically apply this paper's findings and methodology
                           {/* 4. Methodology */}
                           <div className="research-section-item method">
                             <div className="research-section-label" style={{ color: "#2563eb" }}>
-                              <span>🔬</span> 4. Methodology & Empirical Design
+                              <span><Icon name="paper" /></span> 4. Methodology & Empirical Design
                             </div>
                             <div className="research-section-text">{b.methodology}</div>
                           </div>
@@ -500,7 +499,7 @@ Could you explain how to practically apply this paper's findings and methodology
                           {/* 5. Key Arguments */}
                           <div className="research-section-item arguments">
                             <div className="research-section-label" style={{ color: "#d97706" }}>
-                              <span>💡</span> 5. Key Arguments & Hypotheses
+                              <span><Icon name="idea" /></span> 5. Key Arguments & Hypotheses
                             </div>
                             <div className="research-section-text">{b.keyArguments}</div>
                           </div>
@@ -508,7 +507,7 @@ Could you explain how to practically apply this paper's findings and methodology
                           {/* 6. Findings */}
                           <div className="research-section-item findings">
                             <div className="research-section-label" style={{ color: "#059669" }}>
-                              <span>📊</span> 6. Findings & Empirical Results
+                              <span><Icon name="trend" /></span> 6. Findings & Empirical Results
                             </div>
                             <div className="research-section-text">{b.findings}</div>
                           </div>
@@ -516,7 +515,7 @@ Could you explain how to practically apply this paper's findings and methodology
                           {/* 7. Contribution & Why It Matters */}
                           <div className="research-section-item contribution">
                             <div className="research-section-label" style={{ color: "#0891b2" }}>
-                              <span>🌟</span> 7. Contribution to Field & Why It Matters
+                              <span><Icon name="star" /></span> 7. Contribution to Field & Why It Matters
                             </div>
                             <div className="research-section-text">
                               {b.contribution}
@@ -572,7 +571,7 @@ Could you explain how to practically apply this paper's findings and methodology
                         style={{ color: "#b91c1c", fontWeight: 700 }}
                         title="Download Open Access PDF"
                       >
-                        Download PDF ⬇
+                        Download PDF <Icon name="download" size={13} />
                       </a>
                     )}
 
@@ -583,7 +582,7 @@ Could you explain how to practically apply this paper's findings and methodology
                       onClick={() => toggleSave(paper)}
                       title="Save to your Radar Notebook & Library"
                     >
-                      {paper.isSaved ? "Saved ✓" : "Save Paper"}
+                      {paper.isSaved ? "Saved " : "Save Paper"}
                     </button>
 
                     {/* Cite Paper Modal Trigger */}
@@ -593,7 +592,7 @@ Could you explain how to practically apply this paper's findings and methodology
                       onClick={() => openCitationModal(paper)}
                       title="Generate citation in APA, Harvard, IEEE, BibTeX, MLA"
                     >
-                      📑 Cite
+                      <Icon name="document" /> Cite
                     </button>
 
                     {/* Ask AI Mentor */}
@@ -604,7 +603,7 @@ Could you explain how to practically apply this paper's findings and methodology
                       onClick={() => askRadarAboutPaper(paper)}
                       title="Ask Radar AI to explain methodology, practical applications, or research gaps"
                     >
-                      🤖 Ask Radar About This
+                      <Icon name="bot" /> Ask Radar About This
                     </button>
                   </div>
                 </div>
@@ -615,7 +614,7 @@ Could you explain how to practically apply this paper's findings and methodology
       ) : (
         /* Empty Initial State with Suggestions */
         <EmptyState
-          icon="📖"
+          icon="book"
           title="Search All Academic Topics"
           description="Type any topic in plain English—from single keywords like 'leadership', 'AI', 'SMEs' to full research titles. Radar only returns work it can verify, and always links you to the original."
         >
@@ -645,9 +644,7 @@ Could you explain how to practically apply this paper's findings and methodology
                 type="button"
                 onClick={() => setCitationPaper(null)}
                 style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "var(--text-muted)" }}
-              >
-                ✕
-              </button>
+              ><Icon name="close" /></button>
             </div>
 
             <div className="research-modal-body">
@@ -689,7 +686,7 @@ Could you explain how to practically apply this paper's findings and methodology
                   style={{ background: citationCopied ? "#059669" : "var(--cyan)", color: "#fff" }}
                   onClick={copyCitationToClipboard}
                 >
-                  {citationCopied ? "✓ Copied to Clipboard!" : "Copy Citation"}
+                  {citationCopied ? "Copied to Clipboard!" : "Copy Citation"}
                 </button>
               </div>
             </div>

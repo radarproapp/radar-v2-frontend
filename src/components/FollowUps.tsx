@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFollowUps, updateMe, type FollowUpSuggestion } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
+import { Icon } from "./Icon";
 
 /// A single, human follow-up Radar offers when it has a reason — an inferred interest, a shift in
 /// focus, or a profile gap. Applying it saves through the normal profile update; ignoring it is
@@ -65,9 +66,7 @@ export function FollowUps() {
           onClick={() => dismiss(item.id)}
           aria-label="Dismiss notice"
           title="Dismiss"
-        >
-          ✕
-        </button>
+        ><Icon name="close" /></button>
       </div>
 
       <div className="radar-noticed__prompt">{item.prompt}</div>

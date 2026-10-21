@@ -35,7 +35,7 @@ export function Saved() {
       ) : savedQuery.isLoading ? (
         <LoadingSkeleton variant="feed" count={3} />
       ) : items.length === 0 ? (
-        <EmptyState icon="🔖" title="Nothing saved yet." description="Save an article, paper, video or opportunity and it lands here.">
+        <EmptyState icon="save" title="Nothing saved yet." description="Save an article, paper, video or opportunity and it lands here.">
           <button className="btn btn--primary btn--sm" onClick={() => navigate("/feed")}>Browse the feed</button>
         </EmptyState>
       ) : (

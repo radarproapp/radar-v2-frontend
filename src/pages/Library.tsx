@@ -5,6 +5,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { ApiError, getLibraryCategories, getLibraryDocuments } from "../lib/api";
 import { categoryBg, categoryColor } from "../lib/library-categories";
+import { Icon } from "../components/Icon";
 
 const YEARS = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019];
 
@@ -100,7 +101,7 @@ export function Library() {
       ) : docsQuery.isError ? (
         <ErrorState title="Could not load library" description={errorMessage} onRetry={() => docsQuery.refetch()} />
       ) : documents.length === 0 ? (
-        <EmptyState icon="📚" title="No documents found" description="Try adjusting your search or category filter." />
+        <EmptyState icon="book" title="No documents found" description="Try adjusting your search or category filter." />
       ) : (
         <>
           <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginBottom: 14, fontWeight: 600 }}>
@@ -141,7 +142,7 @@ export function Library() {
               {doc.subtopic && <div style={{ fontSize: 12.5, color: "#6b7280", lineHeight: 1.5, marginBottom: 10 }}>{doc.subtopic}</div>}
 
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-                <span style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 500 }}>📍 {doc.region}</span>
+                <span style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 500 }}><Icon name="location" /> {doc.region}</span>
                 <a
                   href={doc.url}
                   target="_blank"
