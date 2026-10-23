@@ -12,7 +12,7 @@ import { WORKSPACES, isItemActive, workspaceForPath } from "./workspaces";
 /// belongs to it. Feed is inside Intelligence, where it always belonged.
 ///
 /// Ask is deliberately absent: it is a verb, available from anywhere, not a place to go.
-type OpenPanel = "switcher" | "account" | null;
+type OpenPanel = "switcher" | "account" | "subnav" | null;
 
 export function MainLayout({ children }: { children?: ReactNode } = {}) {
   const { pathname } = useLocation();
@@ -25,6 +25,7 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
   const lowerPath = pathname.toLowerCase();
   const showNav = !lowerPath.includes("/onboarding") && !lowerPath.includes("/login");
   const workspace = workspaceForPath(pathname);
+  const currentItem = workspace.items.find((item) => isItemActive(item, pathname, workspace.items));
   const initials = profile?.name?.trim()?.[0]?.toUpperCase() ?? "A";
 
   const go = (path: string) => {
@@ -169,18 +170,35 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
       )}
 
       <div className={showNav ? "r-app-content" : undefined}>
-        {/* Mobile sub-navigation for the current workspace. */}
+        {/* Mobile sub-navigation: where you are, and a way to the rest. */}
         {showNav && workspace.items.length > 1 && (
           <div className="r-subnav">
-            {workspace.items.map((item) => (
-              <button
-                key={item.path}
-                className={`r-subnav__item ${isItemActive(item, pathname, workspace.items) ? "active" : ""}`}
-                onClick={() => go(item.path)}
-              >
-                {item.label}
-              </button>
-            ))}
+            <button
+              className="r-subnav__toggle"
+              onClick={() => setOpenPanel((v) => (v === "subnav" ? null : "subnav"))}
+              aria-haspopup="menu"
+              aria-expanded={openPanel === "subnav"}
+            >
+              <Icon name="menu" size={16} />
+              <span className="r-subnav__current">{currentItem?.label ?? workspace.label}</span>
+              <Icon name="expand" size={13} />
+            </button>
+
+            {openPanel === "subnav" && (
+              <div className="r-subnav__sheet" role="menu">
+                {workspace.items.map((item) => (
+                  <button
+                    key={item.path}
+                    role="menuitem"
+                    className={`r-subnav__row ${isItemActive(item, pathname, workspace.items) ? "active" : ""}`}
+                    onClick={() => go(item.path)}
+                  >
+                    <Icon name={item.icon} size={15} />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
