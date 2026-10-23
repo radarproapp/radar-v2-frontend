@@ -765,6 +765,53 @@
   font-size: 13px;
 }
 
+/* ── The lesson's video, played here ────────────────────────────────────── */
+
+.path-player {
+  margin-top: 18px;
+}
+
+/* .video-embed already carries the 16:9 frame, poster and play button; only the caption below
+   it is new, so the player looks the same here as it does in the feed and the hub. */
+.path-player__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: -4px;
+}
+
+.path-player__title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.path-player__source {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* A row that swaps the player is a button, not a link, and must not inherit the browser's
+   button defaults while still matching the anchor rows beside it. */
+button.path-resource {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.path-resource__action {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cyan-deep);
+}
+
 /* ── Mobile ────────────────────────────────────────────────────────────────────────────────
 
    Radar's learners are students, graduates and professionals in Africa, where the phone is the
@@ -809,6 +856,23 @@
   .ask-record__status {
     flex-basis: 100%;
     order: 3;
+  }
+
+  /* Edge to edge on a phone, the way a player should be. The lesson card's padding would
+     otherwise waste ~32px of a 360px screen on the one element that needs the width most. */
+  .path-player {
+    margin-left: -16px;
+    margin-right: -16px;
+  }
+
+  .path-player .video-embed {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .path-player__meta {
+    padding: 0 16px;
   }
 }
 

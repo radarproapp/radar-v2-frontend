@@ -2,11 +2,11 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Icon } from "../components/Icon";
+import { PathResources } from "../components/PathResources";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { ErrorState } from "../components/ErrorState";
 import { ApiError, completeLesson, getActiveRoadmap } from "../lib/api";
 import { formatDuration, sumMinutes } from "../lib/duration";
-import type { LearningResourceType } from "../lib/types";
 import type { GrowthRoadmap, RoadmapLesson, RoadmapModule } from "../lib/types";
 
 /// The learning journey, in the shape a course player has: one lesson open, and the whole path
@@ -28,12 +28,6 @@ interface Selection {
 function stripStagePrefix(title: string): string {
   const match = /^(beginner|intermediate|advanced|application)\s*:\s*/i.exec(title);
   return match ? title.slice(match[0].length).trim() : title;
-}
-
-/// There is no "Video" resource type — the union is TutorialVideo, NewDevelopmentVideo and
-/// BlogPost, so comparing against "Video" is always false and every resource drew a document icon.
-function isVideo(type: LearningResourceType): boolean {
-  return type === "TutorialVideo" || type === "NewDevelopmentVideo";
 }
 
 function lessonCounts(module: RoadmapModule) {
@@ -295,30 +289,7 @@ export function LearnPath() {
                 </p>
               )}
 
-              {lessonResources.length > 0 && (
-                <div className="path-resources">
-                  <div className="path-resources__label">What to use for this</div>
-                  {lessonResources.map((resource) => (
-                    <a
-                      key={resource.id}
-                      className="path-resource"
-                      href={resource.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Icon name={isVideo(resource.type) ? "video" : "article"} size={15} />
-                      <span className="path-resource__text">
-                        <span className="path-resource__title">{resource.title}</span>
-                        <span className="path-resource__source">
-                          {resource.channelOrAuthor || resource.source}
-                          {resource.duration ? ` · ${resource.duration}` : ""}
-                        </span>
-                      </span>
-                      <Icon name="external" size={13} />
-                    </a>
-                  ))}
-                </div>
-              )}
+              <PathResources resources={lessonResources} />
 
               {saveError && (
                 <div role="alert" className="path-lesson__error">
@@ -361,29 +332,7 @@ export function LearnPath() {
                 a sharper answer about what you want to be able to do.
               </p>
 
-              {fallbackResources.length > 0 && (
-                <div className="path-resources">
-                  <div className="path-resources__label">What to use for this</div>
-                  {fallbackResources.map((resource) => (
-                    <a
-                      key={resource.id}
-                      className="path-resource"
-                      href={resource.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Icon name={isVideo(resource.type) ? "video" : "article"} size={15} />
-                      <span className="path-resource__text">
-                        <span className="path-resource__title">{resource.title}</span>
-                        <span className="path-resource__source">
-                          {resource.channelOrAuthor || resource.source}
-                        </span>
-                      </span>
-                      <Icon name="external" size={13} />
-                    </a>
-                  ))}
-                </div>
-              )}
+              <PathResources resources={fallbackResources} />
 
               <div className="path-lesson__actions">
                 <button className="btn btn--primary" onClick={() => navigate("/learn/build")}>
