@@ -638,6 +638,27 @@ export function getRoadmapProgress(roadmapId: string) {
 }
 
 /// Replaces the active roadmap with an AI-built pathway tailored to the profile.
+/// Builds a section from a document the learner uploaded.
+///
+/// Multipart, so it cannot go through request(), which forces a JSON content type.
+export async function addPathSectionFromDocument(file: File) {
+  const token = getToken();
+  const form = new FormData();
+  form.append("file", file);
+
+  const res = await fetch(`${API_BASE}/api/roadmaps/sections/from-document`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: form,
+  });
+
+  const isJson = res.headers.get("content-type")?.includes("application/json");
+  const body = isJson ? await res.json() : null;
+  if (!res.ok) throw new ApiError(res.status, body?.error ?? body?.title ?? res.statusText);
+
+  return body as { roadmap: GrowthRoadmap; detected: { subject: string; outcome?: string; level?: string } };
+}
+
 /// Adds one section to the path, built from what the learner answered.
 ///
 /// Deliberately not `generateLearningPathway`, which reads the profile and returns a whole

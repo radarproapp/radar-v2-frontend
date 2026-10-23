@@ -1,12 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Icon } from "../components/Icon";
 import { PathResources } from "../components/PathResources";
 import { GuidanceCards } from "../components/GuidanceCards";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, completeLesson, getActiveRoadmap } from "../lib/api";
+import { addPathSectionFromDocument, ApiError, completeLesson, getActiveRoadmap } from "../lib/api";
 import { formatDuration, sumMinutes } from "../lib/duration";
 import type { GrowthRoadmap, RoadmapLesson, RoadmapModule } from "../lib/types";
 
@@ -52,6 +52,20 @@ export function LearnPath() {
   const [opened, setOpened] = useState<Set<string> | null>(null);
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [docError, setDocError] = useState<string | null>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
+
+  /// Upload a document, and Radar works out what it teaches and builds a section from it.
+  const fromDocument = useMutation({
+    mutationFn: (file: File) => addPathSectionFromDocument(file),
+    onSuccess: ({ roadmap: built }) => {
+      setDocError(null);
+      queryClient.setQueryData(["roadmap", "active"], built);
+      queryClient.invalidateQueries({ queryKey: ["roadmap", "active"] });
+    },
+    onError: (e) =>
+      setDocError(e instanceof ApiError ? e.message : "Could not read that document."),
+  });
 
   const modules = useMemo(
     () => (roadmap?.modules ?? []).toSorted((a, b) => a.order - b.order),
@@ -212,9 +226,33 @@ export function LearnPath() {
         <button className="btn btn--primary" onClick={() => navigate("/learn/build")}>
           Build your path
         </button>
-        <button className="path-blank__alt" onClick={() => navigate("/ask?mode=upload")}>
-          Or start from a document you already have
+        <input
+          ref={docInputRef}
+          type="file"
+          accept=".pdf,.docx,.doc,.txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.rtf,.xml,.log"
+          style={{ display: "none" }}
+          onChange={(e) => {
+            const picked = e.target.files?.[0];
+            if (picked) fromDocument.mutate(picked);
+            e.target.value = "";
+          }}
+        />
+
+        <button
+          className="path-blank__alt"
+          onClick={() => docInputRef.current?.click()}
+          disabled={fromDocument.isPending}
+        >
+          {fromDocument.isPending
+            ? "Reading your document…"
+            : "Or start from a document you already have"}
         </button>
+
+        {docError && (
+          <p role="alert" className="path-blank__error">
+            {docError}
+          </p>
+        )}
 
         {/* The two actions above are already on screen, so those cards would be a second copy. */}
         <GuidanceCards exclude={["one-subject", "own-material"]} heading="What else Radar does" />
