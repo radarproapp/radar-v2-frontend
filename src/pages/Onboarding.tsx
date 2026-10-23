@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import { useAuth } from "../auth/AuthContext";
-import { completeOnboarding, register, setToken } from "../lib/api";
+import { completeOnboarding, register } from "../lib/api";
 import { INTEREST_GROUPS } from "../lib/interests";
 import type { PersonaType } from "../lib/types";
 
@@ -45,7 +45,7 @@ const MAX_SUBJECTS = 3;
 export function Onboarding() {
   const navigate = useNavigate();
   const { persona: personaParam } = useParams();
-  const { profile, refetchProfile } = useAuth();
+  const { profile, refetchProfile, signIn } = useAuth();
 
   const persona = PERSONA_FROM_ROUTE[(personaParam ?? "").toLowerCase()] ?? "Student";
   const isStudent = persona === "Student";
@@ -93,7 +93,9 @@ export function Onboarding() {
     setBusy(true);
     try {
       const auth = await register(name.trim(), email.trim(), password);
-      setToken(auth.token);
+      // signIn, not setToken: the latter only writes storage, so the auth context still reported
+      // isAuthenticated false and HomeGate sent a freshly onboarded user to the marketing page.
+      signIn(auth.token);
       setStep("subjects");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create the account.");
