@@ -638,6 +638,18 @@ export function getRoadmapProgress(roadmapId: string) {
 }
 
 /// Replaces the active roadmap with an AI-built pathway tailored to the profile.
+/// Adds one section to the path, built from what the learner answered.
+///
+/// Deliberately not `generateLearningPathway`, which reads the profile and returns a whole
+/// four-stage pathway — that is how a Computer Science student was handed "Foundations of
+/// Computer Science" without being asked a single question.
+export function addPathSection(subject: string, level: string, outcome?: string | null) {
+  return request<GrowthRoadmap>("/api/roadmaps/sections", {
+    method: "POST",
+    body: JSON.stringify({ subject, level, outcome: outcome || null }),
+  });
+}
+
 export function generateLearningPathway() {
   return request<GrowthRoadmap>("/api/roadmaps/generate", { method: "POST" });
 }

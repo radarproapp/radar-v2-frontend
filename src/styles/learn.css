@@ -8,313 +8,6 @@
    to find. These classes belong to two pages and nothing else reads them.
    =============================================== */
 
-/* ── The way in: bring your own material, or pick a subject ─────────────────────────────── */
-
-.learn-continue {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  margin-top: 20px;
-  padding: 13px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  background: var(--bg-card);
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  color: var(--text);
-  text-align: left;
-  transition:
-    border-color var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease);
-}
-
-.learn-continue:hover {
-  border-color: var(--cyan);
-  box-shadow: var(--shadow);
-}
-
-.learn-continue__icon {
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: var(--cyan-light);
-  color: var(--cyan-deep);
-}
-
-.learn-continue__text {
-  flex: 1;
-  min-width: 0;
-}
-
-.learn-continue__label {
-  display: block;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-
-.learn-continue__title {
-  display: block;
-  margin-top: 2px;
-  font-size: 14.5px;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.learn-continue__progress {
-  flex: 0 0 auto;
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--cyan-deep);
-}
-
-/* auto-fit, not three fixed columns: inside the sidebar-offset content width three fixed columns
-   squeeze each card to a third of a laptop screen and the descriptions stop being readable. */
-.learn-lanes {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
-  margin-top: 22px;
-}
-
-.learn-lane {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 7px;
-  padding: 18px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  background: var(--bg-card);
-  cursor: pointer;
-  text-align: left;
-  transition:
-    border-color var(--t-fast) var(--ease),
-    transform var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease);
-}
-
-.learn-lane:hover:not(:disabled) {
-  border-color: var(--cyan);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-
-.learn-lane:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.learn-lane__icon {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  margin-bottom: 4px;
-  border-radius: 11px;
-  background: var(--cyan-light);
-  color: var(--cyan-deep);
-}
-
-.learn-lane__title {
-  font-family: var(--font-display);
-  font-size: 15.5px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--text);
-}
-
-.learn-lane__desc {
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--text-muted);
-}
-
-.learn-lane__action {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 4px;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--cyan-deep);
-}
-
-.learn-explore__search {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 14px 0 12px;
-  padding: 0 13px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-pill);
-  background: var(--bg-card);
-  color: var(--text-faint);
-}
-
-.learn-explore__search:focus-within {
-  border-color: var(--cyan);
-}
-
-.learn-explore__input {
-  flex: 1;
-  min-width: 0;
-  padding: 11px 0;
-  border: none;
-  background: none;
-  outline: none;
-  color: var(--text);
-  font-family: inherit;
-  font-size: 14px;
-}
-
-.learn-explore__clear {
-  display: grid;
-  place-items: center;
-  padding: 4px;
-  border: none;
-  border-radius: 50%;
-  background: none;
-  cursor: pointer;
-  color: var(--text-muted);
-}
-
-.learn-explore__clear:hover {
-  background: var(--bg-hover);
-  color: var(--text);
-}
-
-/* Fourteen category chips wrap to four rows of chrome above the thing the learner came to look
-   at. They scroll instead. */
-.learn-chips {
-  display: flex;
-  gap: 7px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  margin-bottom: 16px;
-  scrollbar-width: none;
-}
-
-.learn-chips::-webkit-scrollbar {
-  display: none;
-}
-
-.learn-chip {
-  flex: 0 0 auto;
-  padding: 7px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-pill);
-  background: var(--bg-card);
-  cursor: pointer;
-  color: var(--text-dim);
-  font-size: 12.5px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.learn-chip:hover {
-  border-color: var(--border-strong);
-  color: var(--text);
-}
-
-.learn-chip.active {
-  border-color: transparent;
-  background: var(--navy);
-  color: #fff;
-  font-weight: 700;
-}
-
-.learn-subjects {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
-  gap: 9px;
-}
-
-.learn-subject {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 13px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  background: var(--bg-card);
-}
-
-.learn-subject:hover {
-  border-color: var(--border-strong);
-}
-
-.learn-subject__name {
-  min-width: 0;
-  font-size: 13.5px;
-  font-weight: 600;
-  line-height: 1.35;
-  color: var(--text);
-}
-
-.learn-subject__add {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex: 0 0 auto;
-  padding: 6px 11px;
-  border: 1px solid var(--cyan);
-  border-radius: var(--r-pill);
-  background: none;
-  cursor: pointer;
-  color: var(--cyan-deep);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.learn-subject__add:hover:not(:disabled) {
-  background: var(--cyan-light);
-}
-
-.learn-subject__add.added,
-.learn-subject__add:disabled {
-  border-color: var(--border);
-  background: none;
-  color: var(--text-muted);
-  cursor: default;
-}
-
-.learn-explore__error {
-  margin-bottom: 14px;
-  padding: 10px 12px;
-  border: 1px solid rgba(220, 38, 38, 0.25);
-  border-radius: var(--r-md);
-  background: rgba(220, 38, 38, 0.08);
-  font-size: 13px;
-}
-
-.learn-explore__done {
-  position: sticky;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 18px;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  background: var(--bg-card);
-  box-shadow: var(--shadow);
-  font-size: 13px;
-  font-weight: 600;
-}
-
 /* ── The journey: one lesson open, the whole path beside it ─────────────────────────────── */
 
 .path-head {
@@ -772,4 +465,390 @@
   border-radius: var(--r-md);
   background: rgba(220, 38, 38, 0.08);
   font-size: 13px;
+}
+
+/* ── The blank path, and the three questions that fill it ──────────────────────────────── */
+
+/* One thing on screen. The path used to arrive pre-generated from the learner's degree, so this
+   state did not exist; it exists now because an empty path is the honest answer before anyone
+   has been asked anything. */
+.path-blank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 62vh;
+  max-width: 460px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.path-blank__icon {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--cyan-light);
+  color: var(--cyan-deep);
+}
+
+.path-blank__title {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.path-blank__text {
+  margin: -4px 0 4px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.path-blank__alt {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.path-blank__alt:hover {
+  color: var(--text);
+}
+
+.build {
+  max-width: 580px;
+}
+
+.build__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 26px;
+}
+
+.build__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 7px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.build__back:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.build__count {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* Answers already given stay visible and clickable, so the learner can see what they are
+   building and change an earlier answer without starting again. */
+.build__answers {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.build__answer {
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--bg-hover);
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.build__answer:hover {
+  border-color: var(--cyan);
+  color: var(--cyan-deep);
+}
+
+.build__question {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3.6vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.22;
+  margin: 0;
+}
+
+.build__hint {
+  margin: 9px 0 22px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.build__search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 15px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--bg-card);
+  color: var(--text-faint);
+}
+
+.build__search:focus-within {
+  border-color: var(--cyan);
+}
+
+.build__input {
+  flex: 1;
+  min-width: 0;
+  padding: 13px 0;
+  border: none;
+  background: none;
+  outline: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.build__label {
+  margin: 24px 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.build__options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.build__options--stacked {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+.build__option {
+  padding: 10px 15px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--bg-card);
+  cursor: pointer;
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.build__option:hover {
+  border-color: var(--cyan);
+  background: var(--cyan-light);
+  color: var(--cyan-deep);
+}
+
+.build__level {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+
+.build__level:hover {
+  border-color: var(--cyan);
+  transform: translateY(-1px);
+}
+
+.build__level-label {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.build__level-desc {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.build__own {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 15px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-md);
+  background: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.build__own:hover {
+  border-color: var(--cyan);
+  color: var(--cyan-deep);
+}
+
+.build__empty {
+  margin-top: 18px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.build__textarea {
+  width: 100%;
+  padding: 14px 15px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+  outline: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.build__textarea:focus {
+  border-color: var(--cyan);
+}
+
+.build__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.build__error {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--r-md);
+  background: rgba(220, 38, 38, 0.08);
+  font-size: 13px;
+}
+
+/* ── Mobile ────────────────────────────────────────────────────────────────────────────────
+
+   Radar's learners are students, graduates and professionals in Africa, where the phone is the
+   device, not the fallback. Two things matter most here and neither is visual: a control you
+   cannot reliably hit is broken, and a page that scrolls sideways feels broken even when it is
+   not. ─────────────────────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 700px) {
+  /* The blank path centres in the viewport, but the tab bar sits on top of the bottom of it,
+     so the button can end up under the navigation on a short screen. */
+  .path-blank {
+    min-height: calc(70dvh - var(--tabbar-h));
+    gap: 12px;
+  }
+
+  .path-lesson {
+    padding: 18px 16px;
+  }
+
+  .path-head {
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  /* Full width rather than its 212px minimum, so the bar reads as a measure of the page
+     instead of a stray element floating beside the title. */
+  .path-progress {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .build__question {
+    line-height: 1.25;
+  }
+
+  /* The recording row is an icon, a sentence and a button. Below ~420px the sentence squeezes
+     the button to a sliver, so the button drops to its own line. */
+  .ask-record {
+    flex-wrap: wrap;
+  }
+
+  .ask-record__status {
+    flex-basis: 100%;
+    order: 3;
+  }
+}
+
+/* Touch targets.
+
+   A 15px checkbox is a fine mouse target and a poor finger one — the usual guidance is ~44px,
+   and a learner ticking off lessons does it dozens of times. Scoped to coarse pointers so the
+   desktop list stays compact rather than being loosened for everyone. */
+@media (pointer: coarse) {
+  .path-item {
+    padding-left: 16px;
+  }
+
+  .path-item__check {
+    width: 22px;
+    height: 22px;
+    margin: 11px 0;
+  }
+
+  .path-item__open {
+    min-height: 44px;
+  }
+
+  .path-section__head {
+    min-height: 48px;
+  }
+
+  .build__option,
+  .build__answer {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .path-content__add,
+  .path-blank__alt {
+    min-height: 44px;
+  }
+
+  .path-resource {
+    min-height: 52px;
+  }
 }

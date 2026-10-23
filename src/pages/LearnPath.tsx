@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Icon } from "../components/Icon";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
-import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { ApiError, completeLesson, getActiveRoadmap } from "../lib/api";
 import { formatDuration, sumMinutes } from "../lib/duration";
@@ -89,6 +88,11 @@ export function LearnPath() {
   }, [modules]);
 
   const activeModule = modules.find((m) => m.id === selection?.moduleId);
+  const firstModule = modules[0];
+  const fallbackResources = useMemo(
+    () => (firstModule?.resources ?? roadmap?.resources ?? []).slice(0, 6),
+    [firstModule, roadmap],
+  );
   const activeLesson = activeModule?.lessons?.find((l) => l.id === selection?.lessonId);
 
   /// The resources attached to the stage this lesson sits in. Not a catalogue — the Hub is the
@@ -186,16 +190,29 @@ export function LearnPath() {
     );
   }
 
+  // Empty, and left that way until the learner says what they want.
+  //
+  // This used to generate a four-stage pathway from the profile on first sight, so a Computer
+  // Science student arrived at a full curriculum nobody had asked them about. An empty path with
+  // one clear thing to do is not a worse first impression than a full one that guessed wrong — it
+  // is the only honest one, because at this point Radar genuinely does not know.
   if (!roadmap || modules.length === 0) {
     return (
-      <div className="r-page" style={{ maxWidth: 1180 }}>
-        <EmptyState
-          icon="explore"
-          title="You have not built a path yet"
-          description="Pick a subject, or bring a document you are already working with, and Radar lays out the sections."
-          actionLabel="Start a path"
-          onAction={() => navigate("/learn")}
-        />
+      <div className="r-page path-blank">
+        <div className="path-blank__icon">
+          <Icon name="explore" size={26} />
+        </div>
+        <h1 className="path-blank__title">Your path is empty</h1>
+        <p className="path-blank__text">
+          Tell Radar what you want to learn and it builds the first section. Three questions, then
+          you are reading.
+        </p>
+        <button className="btn btn--primary" onClick={() => navigate("/learn/build")}>
+          Build your path
+        </button>
+        <button className="path-blank__alt" onClick={() => navigate("/ask?mode=upload")}>
+          Or start from a document you already have
+        </button>
       </div>
     );
   }
@@ -324,11 +341,50 @@ export function LearnPath() {
                 )}
               </div>
             </>
-          ) : (
-            <p style={{ fontSize: 13.5, color: "var(--text-muted)" }}>
-              Choose a lesson from the path to begin.
-            </p>
-          )}
+          ) : firstModule ? (
+            // A section exists but has no lessons: Radar could not write them, and said so rather
+            // than filling the space with "Introduction to X". The curated resources are real, so
+            // they are what the learner gets.
+            <>
+              <div className="path-lesson__crumb">Section 1</div>
+              <h2 className="path-lesson__title">{stripStagePrefix(firstModule.title)}</h2>
+              <p className="path-lesson__nobody">
+                Radar could not write lessons for this section — rather than filling it with
+                generic headings, here is the material it found. You can rebuild the section with
+                a sharper answer about what you want to be able to do.
+              </p>
+
+              {fallbackResources.length > 0 && (
+                <div className="path-resources">
+                  <div className="path-resources__label">What to use for this</div>
+                  {fallbackResources.map((resource) => (
+                    <a
+                      key={resource.id}
+                      className="path-resource"
+                      href={resource.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Icon name={resource.type === "Video" ? "video" : "article"} size={15} />
+                      <span className="path-resource__text">
+                        <span className="path-resource__title">{resource.title}</span>
+                        <span className="path-resource__source">
+                          {resource.channelOrAuthor || resource.source}
+                        </span>
+                      </span>
+                      <Icon name="external" size={13} />
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              <div className="path-lesson__actions">
+                <button className="btn btn--primary" onClick={() => navigate("/learn/build")}>
+                  Build another section
+                </button>
+              </div>
+            </>
+          ) : null}
         </div>
 
         {/* ── The path ────────────────────────────────────────────── */}
@@ -361,7 +417,9 @@ export function LearnPath() {
 
                 {open && (
                   <ul className="path-lessons">
-                    {lessons.length === 0 && <li className="path-lessons__empty">No lessons in this section yet.</li>}
+                    {lessons.length === 0 && (
+                      <li className="path-lessons__empty">Lessons could not be written — see the resources.</li>
+                    )}
 
                     {lessons.map((lesson) => (
                       <li key={lesson.id}>
@@ -394,8 +452,8 @@ export function LearnPath() {
             );
           })}
 
-          <button className="path-content__add" onClick={() => navigate("/learn")}>
-            <Icon name="add" size={14} /> Add a subject
+          <button className="path-content__add" onClick={() => navigate("/learn/build")}>
+            <Icon name="add" size={14} /> Add a section
           </button>
         </aside>
       </div>

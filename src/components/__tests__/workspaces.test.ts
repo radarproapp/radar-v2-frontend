@@ -17,6 +17,7 @@ describe("workspaceForPath", () => {
 
   it("keeps nested learn routes inside Learn rather than falling back to the root", () => {
     expect(workspaceForPath("/learn/path").id).toBe("learn");
+    expect(workspaceForPath("/learn/build").id).toBe("learn");
     expect(workspaceForPath("/learn/hub").id).toBe("learn");
   });
 
@@ -37,15 +38,22 @@ describe("workspaceForPath", () => {
 });
 
 describe("isItemActive", () => {
-  // The bug this guards: a plain startsWith lit up both "Learn" (/learn) and "My path"
-  // (/learn/path) on the journey page. Two current rows, neither wrong on its own terms.
+  // The bug this guards: a plain startsWith lit up two sibling rows at once when one item's path
+  // was a prefix of another's. Only the most specific claim may win.
   it("marks exactly one item current on a nested route", () => {
-    expect(activeLabels(learn.items, "/learn/path")).toEqual(["My path"]);
     expect(activeLabels(learn.items, "/learn/hub")).toEqual(["Hub"]);
+    expect(activeLabels(intelligence.items, "/feed")).toEqual(["Feed"]);
   });
 
-  it("marks the entry screen current on the workspace home", () => {
-    expect(activeLabels(learn.items, "/learn")).toEqual(["Learn"]);
+  it("marks My path current on the workspace home", () => {
+    expect(activeLabels(learn.items, "/learn")).toEqual(["My path"]);
+  });
+
+  // The builder and the legacy /learn/path link both belong to My path, so the sidebar does not
+  // go blank while a learner is answering the three questions.
+  it("keeps My path current through the builder and the legacy path route", () => {
+    expect(activeLabels(learn.items, "/learn/build")).toEqual(["My path"]);
+    expect(activeLabels(learn.items, "/learn/path")).toEqual(["My path"]);
   });
 
   it("does not let the root claim every page", () => {
@@ -56,7 +64,7 @@ describe("isItemActive", () => {
   // Matching on segments, not characters: "/learn" must not claim a route that merely starts
   // with those letters.
   it("does not match a partial path segment", () => {
-    expect(isItemActive({ label: "Learn", path: "/learn", icon: "explore" }, "/learnhub")).toBe(false);
+    expect(isItemActive({ label: "My path", path: "/learn", icon: "checklist" }, "/learnhub")).toBe(false);
   });
 
   it("honours the extra paths an item declares", () => {
