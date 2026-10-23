@@ -244,7 +244,7 @@ export function LearnPath() {
           disabled={fromDocument.isPending}
         >
           {fromDocument.isPending
-            ? "Reading your document…"
+            ? "Reading your document… a long one can take a minute"
             : "Or start from a document you already have"}
         </button>
 
