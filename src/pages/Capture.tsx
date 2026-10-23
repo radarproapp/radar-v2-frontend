@@ -43,7 +43,7 @@ export function Capture() {
       setInput("");
       queryClient.invalidateQueries({ queryKey: ["capture", "recent"] });
     } catch (err) {
-      setCaptureError(err instanceof Error ? err.message : "Could not save your capture.");
+      setCaptureError(err instanceof Error ? err.message : "Could not capture that.");
     }
     setSaving(false);
   };
@@ -53,7 +53,7 @@ export function Capture() {
       <div className="r-page-head">
         <h1 className="r-page-title">Capture</h1>
         <p className="r-page-sub">
-          Anything you save gets the same treatment as everything else in Radar — a signal headline, why it matters,
+          Anything you capture gets the same treatment as everything else in Radar — a signal headline, why it matters,
           and a route into your roadmap.
         </p>
       </div>
@@ -93,7 +93,7 @@ export function Capture() {
             onClick={handleCapture}
             disabled={!input.trim() || saving}
           >
-            {saving ? "Saving…" : "Save"}
+            {saving ? "Reading…" : "Capture"}
           </button>
         </div>
       </div>
