@@ -12,14 +12,14 @@ import type { ContentItem, ContentType, FeedEmptyReason, Page } from "../lib/typ
 import { feedEmptyCopy } from "../lib/feed-empty";
 import { Icon, type IconName } from "../components/Icon";
 
-const FILTERS: [string, ContentType | null][] = [
-  ["All", null],
-  ["Policy", "PolicyPaper"],
-  ["Articles", "Article"],
-  ["Ideas", "Essay"],
-  ["Podcasts", "Podcast"],
-  ["Videos", "Video"],
-  ["Papers", "ResearchPaper"],
+const FILTERS: { label: string; type: ContentType | null; icon: IconName }[] = [
+  { label: "All", type: null, icon: "radar" },
+  { label: "Articles", type: "Article", icon: "article" },
+  { label: "Videos", type: "Video", icon: "video" },
+  { label: "Podcasts", type: "Podcast", icon: "podcast" },
+  { label: "Papers", type: "ResearchPaper", icon: "paper" },
+  { label: "Policy", type: "PolicyPaper", icon: "policy" },
+  { label: "Ideas", type: "Essay", icon: "idea" },
 ];
 
 const PAGE_SIZE = 20;
@@ -155,23 +155,47 @@ export function Feed() {
     }
   }, [feedQuery.data, activeFilter]);
 
-  return (
-    <div className="r-page">
-      <div className="r-page-head">
-        <h1 className="r-page-title">Intelligence Feed</h1>
-      </div>
+  const activeLabel = FILTERS.find((f) => f.type === activeFilter)?.label ?? "All";
 
-      <div className="feed-type-tabs">
-        {FILTERS.map(([label, type]) => (
+  return (
+    <div className="r-page feed-layout">
+      <aside className="feed-nav" aria-label="Content types">
+        <button className="feed-nav__back" onClick={() => navigate("/")}>
+          <Icon name="menu" size={14} /> Radar Intelligence
+        </button>
+
+        <div className="feed-nav__label">Feed</div>
+
+        {FILTERS.map(({ label, type, icon }) => (
           <button
             key={label}
-            className={`r-chip ${activeFilter === type ? "active" : ""}`}
+            className={`feed-nav__item ${activeFilter === type ? "active" : ""}`}
             onClick={() => setActiveFilter(type)}
           >
-            {label}
+            <Icon name={icon} size={15} />
+            <span>{label}</span>
           </button>
         ))}
-      </div>
+      </aside>
+
+      <div className="feed-main">
+        <div className="r-page-head">
+          <h1 className="r-page-title">{activeFilter === null ? "Intelligence Feed" : activeLabel}</h1>
+        </div>
+
+        {/* On a phone the column becomes one row of chips that scrolls, since a second sidebar
+            does not fit beside a sidebar. */}
+        <div className="feed-type-tabs">
+          {FILTERS.map(({ label, type }) => (
+            <button
+              key={label}
+              className={`r-chip ${activeFilter === type ? "active" : ""}`}
+              onClick={() => setActiveFilter(type)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
       {feedQuery.isLoading ? (
         <LoadingSkeleton variant="feed" count={4} />
@@ -315,6 +339,7 @@ export function Feed() {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }
