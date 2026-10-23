@@ -12,7 +12,7 @@ import type { ContentItem, ContentType, FeedEmptyReason, Page } from "../lib/typ
 import { feedEmptyCopy } from "../lib/feed-empty";
 import { Icon } from "../components/Icon";
 import type { IconName } from "../components/icon-map";
-import { FEED_TYPES, feedTypeFor } from "../components/feed-types";
+import { feedTypeFor } from "../components/feed-types";
 
 
 
@@ -163,17 +163,6 @@ export function Feed() {
 
         {/* On a phone the column becomes one row of chips that scrolls, since a second sidebar
             does not fit beside a sidebar. */}
-      <div className="feed-type-tabs">
-        {FEED_TYPES.map((entry) => (
-          <button
-            key={entry.label}
-            className={`r-chip ${entry.type === activeFilter ? "active" : ""}`}
-            onClick={() => setSearchParams(entry.slug ? { type: entry.slug } : {})}
-          >
-            {entry.label}
-          </button>
-        ))}
-      </div>
 
       {feedQuery.isLoading ? (
         <LoadingSkeleton variant="feed" count={4} />

@@ -32,6 +32,29 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
   // way of browsing the list, not of reading one thing.
   const onFeed = lowerPath === "/feed";
   const currentFeedSlug = new URLSearchParams(search).get("type")?.toLowerCase() ?? undefined;
+
+  /// What the navigation lists at this level, described once.
+  ///
+  /// The desktop sidebar and the mobile sheet both render this. They used to be written out
+  /// separately, which is how the feed ended up with a row of chips above a sidebar saying the
+  /// same seven words.
+  const navRows = onFeed
+    ? FEED_TYPES.map((entry) => ({
+        key: entry.label,
+        label: entry.label,
+        icon: entry.icon,
+        path: entry.slug ? `/feed?type=${entry.slug}` : "/feed",
+        active: entry.slug === currentFeedSlug,
+      }))
+    : workspace.items.map((item) => ({
+        key: item.path,
+        label: item.label,
+        icon: item.icon,
+        path: item.path,
+        active: isItemActive(item, pathname, workspace.items),
+      }));
+
+  const navLabel = navRows.find((row) => row.active)?.label ?? currentItem?.label ?? workspace.label;
   const initials = profile?.name?.trim()?.[0]?.toUpperCase() ?? "A";
 
   const go = (path: string) => {
@@ -105,40 +128,27 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
               )}
             </div>
 
-            {onFeed ? (
-              <div className="r-side__items">
-                <button className="r-side__back" onClick={() => go("/")}>
-                  <Icon name="menu" size={14} />
-                  <span>{workspace.label}</span>
-                </button>
-
-                <div className="r-side__label">Feed</div>
-
-                {FEED_TYPES.map((entry) => (
-                  <button
-                    key={entry.label}
-                    className={`r-side__item ${entry.slug === currentFeedSlug ? "active" : ""}`}
-                    onClick={() => go(entry.slug ? `/feed?type=${entry.slug}` : "/feed")}
-                  >
-                    <Icon name={entry.icon} size={15} />
-                    <span>{entry.label}</span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="r-side__items">
-                {workspace.items.map((item) => (
-                  <button
-                    key={item.path}
-                    className={`r-side__item ${isItemActive(item, pathname, workspace.items) ? "active" : ""}`}
-                    onClick={() => go(item.path)}
-                  >
-                    <Icon name={item.icon} size={15} />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
+            {onFeed && (
+              <button className="r-side__back" onClick={() => go("/")}>
+                <Icon name="menu" size={14} />
+                <span>{workspace.label}</span>
+              </button>
             )}
+
+            {onFeed && <div className="r-side__label">Feed</div>}
+
+            <div className="r-side__items">
+              {navRows.map((row) => (
+                <button
+                  key={row.key}
+                  className={`r-side__item ${row.active ? "active" : ""}`}
+                  onClick={() => go(row.path)}
+                >
+                  <Icon name={row.icon} size={15} />
+                  <span>{row.label}</span>
+                </button>
+              ))}
+            </div>
 
             <div style={{ flex: 1 }} />
 
@@ -198,8 +208,9 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
       )}
 
       <div className={showNav ? "r-app-content" : undefined}>
-        {/* Mobile sub-navigation: where you are, and a way to the rest. */}
-        {showNav && workspace.items.length > 1 && (
+        {/* Mobile: the same two levels, as a hamburger. A row of chips scrolled off the right
+            edge and, on the feed, repeated the sidebar word for word. */}
+        {showNav && navRows.length > 1 && (
           <div className="r-subnav">
             <button
               className="r-subnav__toggle"
@@ -208,21 +219,28 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
               aria-expanded={openPanel === "subnav"}
             >
               <Icon name="menu" size={16} />
-              <span className="r-subnav__current">{currentItem?.label ?? workspace.label}</span>
+              <span className="r-subnav__current">{navLabel}</span>
               <Icon name="expand" size={13} />
             </button>
 
             {openPanel === "subnav" && (
               <div className="r-subnav__sheet" role="menu">
-                {workspace.items.map((item) => (
+                {onFeed && (
+                  <button className="r-subnav__row" role="menuitem" onClick={() => go("/")}>
+                    <Icon name="menu" size={15} />
+                    <span>{workspace.label}</span>
+                  </button>
+                )}
+
+                {navRows.map((row) => (
                   <button
-                    key={item.path}
+                    key={row.key}
                     role="menuitem"
-                    className={`r-subnav__row ${isItemActive(item, pathname, workspace.items) ? "active" : ""}`}
-                    onClick={() => go(item.path)}
+                    className={`r-subnav__row ${row.active ? "active" : ""}`}
+                    onClick={() => go(row.path)}
                   >
-                    <Icon name={item.icon} size={15} />
-                    <span>{item.label}</span>
+                    <Icon name={row.icon} size={15} />
+                    <span>{row.label}</span>
                   </button>
                 ))}
               </div>
