@@ -587,6 +587,8 @@ export interface NextBestAction {
 }
 
 export interface LearnHubPayload {
+  /// Set when the learner has not built a path, so there is nothing to curate for yet.
+  emptyReason?: string | null;
   primarySkill: string;
   goal: string;
   currentStage: string;

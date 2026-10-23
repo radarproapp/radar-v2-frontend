@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Icon } from "../components/Icon";
 import { PathResources } from "../components/PathResources";
+import { GuidanceCards } from "../components/GuidanceCards";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { ErrorState } from "../components/ErrorState";
 import { ApiError, completeLesson, getActiveRoadmap } from "../lib/api";
@@ -214,6 +215,9 @@ export function LearnPath() {
         <button className="path-blank__alt" onClick={() => navigate("/ask?mode=upload")}>
           Or start from a document you already have
         </button>
+
+        {/* The two actions above are already on screen, so those cards would be a second copy. */}
+        <GuidanceCards exclude={["one-subject", "own-material"]} heading="What else Radar does" />
       </div>
     );
   }

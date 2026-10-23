@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
+import { GuidanceCards } from "../components/GuidanceCards";
 import { VideoEmbed } from "../components/VideoEmbed";
 import { AudioEmbed } from "../components/AudioEmbed";
 import {
@@ -135,8 +136,21 @@ export function LearnHub() {
           </div>
           <LoadingSkeleton variant="card" count={4} />
         </>
-      ) : !hubData ? (
-        <EmptyState icon="book" title="Learn Hub is empty" description="Radar is curating resources for your domain." />
+      ) : !hubData || hubData.emptyReason ? (
+        <div className="hub-blank">
+          <div className="path-blank__icon">
+            <Icon name="book" size={26} />
+          </div>
+          <h1 className="path-blank__title">Your Hub is empty</h1>
+          <p className="path-blank__text">
+            {hubData?.emptyReason ?? "Build a path first. The Hub fills with material for the sections you choose."}
+          </p>
+          <button className="btn btn--primary" onClick={() => navigate("/learn/build")}>
+            Build your path
+          </button>
+
+          <GuidanceCards exclude={["one-subject"]} heading="What else Radar does" />
+        </div>
       ) : (
         <>
           {/* Top Page Header & Navigation Breadcrumb */}

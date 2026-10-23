@@ -916,3 +916,107 @@ button.path-resource {
     min-height: 52px;
   }
 }
+
+/* ── Guidance cards ────────────────────────────────────────────────────────────────────────
+
+   Shown where a screen is honestly empty. Radar waits to be told what the learner wants rather
+   than guessing from their degree, which is right but explains nothing on its own. */
+
+.hub-blank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 48px 0 0;
+  max-width: 460px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.guide {
+  width: 100%;
+  margin-top: 40px;
+  text-align: left;
+}
+
+.guide__heading {
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+/* auto-fit rather than three fixed columns: these sit inside a narrow centred blank state on
+   one screen and the full content width on another, and must read well in both. */
+.guide__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(216px, 1fr));
+  gap: 10px;
+}
+
+.guide__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+
+.guide__card:hover {
+  border-color: var(--cyan);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.guide__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 2px;
+  border-radius: 9px;
+  background: var(--cyan-light);
+  color: var(--cyan-deep);
+}
+
+.guide__title {
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.guide__body {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.guide__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cyan-deep);
+}
+
+@media (pointer: coarse) {
+  .guide__card {
+    min-height: 44px;
+  }
+}
