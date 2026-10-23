@@ -850,19 +850,6 @@ export interface NoteChecklistItem {
 
 // ── Library ──────────────────────────────────────────────────────────────
 
-export interface LibraryDocument {
-  id: string;
-  title: string;
-  year: number;
-  publisher: string;
-  documentType: string;
-  region: string;
-  category: string;
-  subtopic: string;
-  url: string;
-  isAfrica: boolean;
-  addedAt: string;
-}
 
 // ── Compare ──────────────────────────────────────────────────────────────
 

@@ -10,7 +10,6 @@ import type {
   EventsSummary,
   GrowthRoadmap,
   LearnHubPayload,
-  LibraryDocument,
   MentorQuiz,
   MentorStudyPlan,
   MentorWorkReview,
@@ -898,51 +897,15 @@ export function getHome() {
   return request<HomeBrief>("/api/home");
 }
 
-// ── Research ─────────────────────────────────────────────────────────────
 
-export function searchResearch(query: string, yearFrom: number = 0, paperType?: string, page: number = 1, pageSize: number = 25) {
-  const params = new URLSearchParams({ q: query, yearFrom: String(yearFrom), page: String(page), pageSize: String(pageSize) });
-  if (paperType && paperType !== "all") params.set("paperType", paperType);
-  return request<ContentItem[]>(`/api/research/search?${params.toString()}`);
-}
 
-export function getPaperById(id: string) {
-  return request<ContentItem>(`/api/research/${encodeURIComponent(id)}`);
-}
 
-export function getPaperCitation(id: string, style: string = "APA") {
-  return request<{ paperId: string; style: string; citation: string }>(`/api/research/${encodeURIComponent(id)}/citation?style=${encodeURIComponent(style)}`);
-}
 
-export function explainPaperSimply(id: string) {
-  return request<{ paperId: string; explanation: string }>(`/api/research/${encodeURIComponent(id)}/explain`, {
-    method: "POST",
-  });
-}
 
-export function getPaperResearchGaps(id: string) {
-  return request<{ paperId: string; gaps: string }>(`/api/research/${encodeURIComponent(id)}/gaps`, {
-    method: "POST",
-  });
-}
 
-export function getRelatedPapers(id: string) {
-  return request<ContentItem[]>(`/api/research/${encodeURIComponent(id)}/related`);
-}
 
-// ── Library ──────────────────────────────────────────────────────────────
 
-export function getLibraryDocuments(category: string | null, year: number | null, search: string | null) {
-  const params = new URLSearchParams();
-  if (category) params.set("category", category);
-  if (year) params.set("year", String(year));
-  if (search) params.set("search", search);
-  return request<LibraryDocument[]>(`/api/library?${params.toString()}`);
-}
 
-export function getLibraryCategories() {
-  return request<string[]>("/api/library/categories");
-}
 
 // ── Compare ──────────────────────────────────────────────────────────────
 
