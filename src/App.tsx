@@ -28,7 +28,8 @@ const Capture = lazy(() => import("./pages/Capture").then((m) => ({ default: m.C
 const WeeklyBrief = lazy(() => import("./pages/WeeklyBrief").then((m) => ({ default: m.WeeklyBrief })));
 const SourcePage = lazy(() => import("./pages/SourcePage").then((m) => ({ default: m.SourcePage })));
 const TopicHub = lazy(() => import("./pages/TopicHub").then((m) => ({ default: m.TopicHub })));
-const Learn = lazy(() => import("./pages/Learn").then((m) => ({ default: m.Learn })));
+const LearnStart = lazy(() => import("./pages/LearnStart").then((m) => ({ default: m.LearnStart })));
+const LearnPath = lazy(() => import("./pages/LearnPath").then((m) => ({ default: m.LearnPath })));
 const LearnHub = lazy(() => import("./pages/LearnHub").then((m) => ({ default: m.LearnHub })));
 const GrowthTracker = lazy(() => import("./pages/GrowthTracker").then((m) => ({ default: m.GrowthTracker })));
 const ProjectStudio = lazy(() => import("./pages/ProjectStudio").then((m) => ({ default: m.ProjectStudio })));
@@ -113,7 +114,8 @@ export default function App() {
                 <Route path="/weekly" element={<RequireAuth><WeeklyBrief /></RequireAuth>} />
                 <Route path="/source/:sourceId" element={<RequireAuth><SourcePage /></RequireAuth>} />
                 <Route path="/topic/:topicId" element={<RequireAuth><TopicHub /></RequireAuth>} />
-                <Route path="/learn" element={<RequireAuth><Learn /></RequireAuth>} />
+                <Route path="/learn" element={<RequireAuth><LearnStart /></RequireAuth>} />
+                <Route path="/learn/path" element={<RequireAuth><LearnPath /></RequireAuth>} />
                 <Route path="/learn/hub" element={<RequireAuth><LearnHub /></RequireAuth>} />
                 <Route path="/progress" element={<RequireAuth><GrowthTracker /></RequireAuth>} />
                 <Route path="/projects" element={<RequireAuth><ProjectStudio /></RequireAuth>} />

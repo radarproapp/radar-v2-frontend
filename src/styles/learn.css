@@ -1,0 +1,775 @@
+/* ===============================================
+   RADAR LEARN
+
+   Two screens: the way in, and the journey.
+
+   Kept out of app.css deliberately. app.css is 4,000+ lines of accumulated page styles; adding
+   another 500 to the end of it makes the file harder to work in without making anything easier
+   to find. These classes belong to two pages and nothing else reads them.
+   =============================================== */
+
+/* ── The way in: bring your own material, or pick a subject ─────────────────────────────── */
+
+.learn-continue {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 20px;
+  padding: 13px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  color: var(--text);
+  text-align: left;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+
+.learn-continue:hover {
+  border-color: var(--cyan);
+  box-shadow: var(--shadow);
+}
+
+.learn-continue__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--cyan-light);
+  color: var(--cyan-deep);
+}
+
+.learn-continue__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.learn-continue__label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.learn-continue__title {
+  display: block;
+  margin-top: 2px;
+  font-size: 14.5px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.learn-continue__progress {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--cyan-deep);
+}
+
+/* auto-fit, not three fixed columns: inside the sidebar-offset content width three fixed columns
+   squeeze each card to a third of a laptop screen and the descriptions stop being readable. */
+.learn-lanes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.learn-lane {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+
+.learn-lane:hover:not(:disabled) {
+  border-color: var(--cyan);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.learn-lane:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.learn-lane__icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 4px;
+  border-radius: 11px;
+  background: var(--cyan-light);
+  color: var(--cyan-deep);
+}
+
+.learn-lane__title {
+  font-family: var(--font-display);
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.learn-lane__desc {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.learn-lane__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--cyan-deep);
+}
+
+.learn-explore__search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 14px 0 12px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--bg-card);
+  color: var(--text-faint);
+}
+
+.learn-explore__search:focus-within {
+  border-color: var(--cyan);
+}
+
+.learn-explore__input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 0;
+  border: none;
+  background: none;
+  outline: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.learn-explore__clear {
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.learn-explore__clear:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+/* Fourteen category chips wrap to four rows of chrome above the thing the learner came to look
+   at. They scroll instead. */
+.learn-chips {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 16px;
+  scrollbar-width: none;
+}
+
+.learn-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.learn-chip {
+  flex: 0 0 auto;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--bg-card);
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.learn-chip:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.learn-chip.active {
+  border-color: transparent;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 700;
+}
+
+.learn-subjects {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+  gap: 9px;
+}
+
+.learn-subject {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+}
+
+.learn-subject:hover {
+  border-color: var(--border-strong);
+}
+
+.learn-subject__name {
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.learn-subject__add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  padding: 6px 11px;
+  border: 1px solid var(--cyan);
+  border-radius: var(--r-pill);
+  background: none;
+  cursor: pointer;
+  color: var(--cyan-deep);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.learn-subject__add:hover:not(:disabled) {
+  background: var(--cyan-light);
+}
+
+.learn-subject__add.added,
+.learn-subject__add:disabled {
+  border-color: var(--border);
+  background: none;
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.learn-explore__error {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--r-md);
+  background: rgba(220, 38, 38, 0.08);
+  font-size: 13px;
+}
+
+.learn-explore__done {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── The journey: one lesson open, the whole path beside it ─────────────────────────────── */
+
+.path-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 6px 0 18px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.path-head__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3vw, 1.7rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.path-head__meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.path-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.path-progress {
+  flex: 0 0 auto;
+  min-width: 212px;
+}
+
+.path-progress__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.path-progress__label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.path-progress__value {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.path-progress__track {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--bg-hover);
+  overflow: hidden;
+}
+
+.path-progress__fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--cyan);
+  transition: width var(--t) var(--ease);
+}
+
+/* The lesson leads on a narrow screen and the path list follows it. On a wide screen the list
+   sits alongside and sticks, which is what makes a course navigable rather than a scroll. */
+.path-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .path-grid {
+    grid-template-columns: minmax(0, 1fr) 346px;
+  }
+
+  .path-content {
+    position: sticky;
+    top: 18px;
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+  }
+}
+
+.path-lesson {
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+}
+
+.path-lesson__crumb {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cyan-deep);
+}
+
+.path-lesson__title {
+  font-family: var(--font-display);
+  font-size: 1.32rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  margin: 7px 0 0;
+}
+
+.path-lesson__meta {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 11px;
+}
+
+.path-lesson__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: var(--r-pill);
+  background: var(--bg-hover);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.path-lesson__chip.done {
+  background: var(--cyan-light);
+  color: var(--cyan-deep);
+}
+
+.path-lesson__body {
+  margin-top: 16px;
+}
+
+.path-lesson__body p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.68;
+  color: var(--text-dim);
+}
+
+.path-lesson__nobody {
+  margin: 16px 0 0;
+  padding: 13px 15px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-md);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.path-resources {
+  margin-top: 20px;
+}
+
+.path-resources__label {
+  margin-bottom: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.path-resource {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 7px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-dim);
+  text-decoration: none;
+}
+
+.path-resource:hover {
+  border-color: var(--cyan);
+  color: var(--text);
+}
+
+.path-resource__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.path-resource__title {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.path-resource__source {
+  display: block;
+  margin-top: 1px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.path-lesson__error {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--r-md);
+  background: rgba(220, 38, 38, 0.08);
+  font-size: 13px;
+}
+
+.path-lesson__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.path-lesson__completed {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cyan-deep);
+}
+
+.path-content {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+  overflow: hidden;
+}
+
+.path-content__head {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-hover);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.path-section {
+  border-bottom: 1px solid var(--border);
+}
+
+.path-section__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  width: 100%;
+  padding: 13px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  text-align: left;
+}
+
+.path-section__head:hover {
+  background: var(--bg-hover);
+}
+
+.path-section__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.path-section__title {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.path-section__meta {
+  display: block;
+  margin-top: 3px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.path-lessons {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 6px;
+}
+
+.path-lessons__empty {
+  padding: 4px 16px 10px 40px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.path-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 16px 2px 20px;
+}
+
+.path-item:hover {
+  background: var(--bg-hover);
+}
+
+.path-item.current {
+  background: var(--cyan-light);
+  box-shadow: inset 3px 0 0 var(--cyan);
+}
+
+.path-item__check {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  accent-color: var(--cyan);
+  cursor: pointer;
+}
+
+.path-item__check:disabled {
+  cursor: default;
+}
+
+.path-item__open {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 9px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.path-item__title {
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+.path-item.current .path-item__title {
+  color: var(--cyan-deep);
+  font-weight: 700;
+}
+
+.path-item__time {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.path-content__add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 13px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--cyan-deep);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.path-content__add:hover {
+  background: var(--bg-hover);
+}
+
+/* ── Recording, on the Ask page ─────────────────────────────────────────────────────────── */
+
+.ask-record {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 10px;
+  padding: 13px 15px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+}
+
+.ask-record__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--cyan-light);
+  color: var(--cyan-deep);
+}
+
+.ask-record__status {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+.ask-record__pulse {
+  flex: 0 0 auto;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--red);
+  animation: ask-record-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ask-record-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+
+/* Honours a reduced-motion preference: a blinking dot is the kind of thing that preference
+   exists for, and the timer already shows the recording is live. */
+@media (prefers-reduced-motion: reduce) {
+  .ask-record__pulse { animation: none; }
+}
+
+.ask-record__error {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--r-md);
+  background: rgba(220, 38, 38, 0.08);
+  font-size: 13px;
+}

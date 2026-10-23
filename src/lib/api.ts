@@ -312,6 +312,37 @@ export function summarizeLink(url: string) {
   });
 }
 
+/// What the "bring your own material" lane can do in this deployment.
+///
+/// Recording needs a transcription key. Rather than offering the card and failing after someone
+/// has recorded a lecture, the entry screen asks first and disables it with a reason.
+export interface AskCapabilities {
+  upload: boolean;
+  link: boolean;
+  record: boolean;
+}
+
+export function getAskCapabilities() {
+  return request<AskCapabilities>("/api/ask/capabilities");
+}
+
+// Multipart, like summarizeFile — cannot go through request(), which forces a JSON content type.
+export async function transcribeAudio(blob: Blob, fileName = "recording.webm"): Promise<{ text: string }> {
+  const token = getToken();
+  const form = new FormData();
+  form.append("audio", blob, fileName);
+
+  const res = await fetch(`${API_BASE}/api/ask/transcribe`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: form,
+  });
+  const isJson = res.headers.get("content-type")?.includes("application/json");
+  const body = isJson ? await res.json() : null;
+  if (!res.ok) throw new ApiError(res.status, body?.error ?? body?.title ?? res.statusText);
+  return body as { text: string };
+}
+
 export interface SummarizeFileResponse {
   requiresSectionSelection?: boolean;
   fileName?: string;

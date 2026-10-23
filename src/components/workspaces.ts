@@ -50,7 +50,8 @@ export const WORKSPACES: Workspace[] = [
     icon: "course",
     home: "/learn",
     items: [
-      { label: "My path", path: "/learn", icon: "explore" },
+      { label: "Learn", path: "/learn", icon: "explore" },
+      { label: "My path", path: "/learn/path", icon: "checklist" },
       { label: "Hub", path: "/learn/hub", icon: "book" },
       { label: "Projects", path: "/projects", icon: "build", also: ["/showcase"] },
       { label: "Mentor", path: "/mentor", icon: "chat" },
@@ -79,12 +80,9 @@ export function workspaceForPath(pathname: string): Workspace {
 
   for (const workspace of WORKSPACES) {
     for (const item of workspace.items) {
-      const candidates = [item.path, ...(item.also ?? [])];
-      for (const candidate of candidates) {
-        const matches = candidate === "/" ? path === "/" : path.startsWith(candidate);
-        if (matches && (best === null || candidate.length > best.score)) {
-          best = { workspace, score: candidate.length };
-        }
+      const score = matchScore(item, path);
+      if (score >= 0 && (best === null || score > best.score)) {
+        best = { workspace, score };
       }
     }
   }
@@ -92,10 +90,32 @@ export function workspaceForPath(pathname: string): Workspace {
   return best?.workspace ?? WORKSPACES[0];
 }
 
-/// Whether a sidebar item should read as current.
-export function isItemActive(item: WorkspaceItem, pathname: string): boolean {
-  const path = pathname.toLowerCase();
-  if (item.path === "/") return path === "/";
+/// How specifically an item claims a path: the length of its longest matching prefix, or -1 for
+/// no match. Exported for the sibling comparison below and for the tests.
+function matchScore(item: WorkspaceItem, path: string): number {
+  if (item.path === "/") return path === "/" ? 1 : -1;
 
-  return [item.path, ...(item.also ?? [])].some((candidate) => path.startsWith(candidate));
+  let best = -1;
+  for (const candidate of [item.path, ...(item.also ?? [])]) {
+    // Segment-aware: "/learn" must not claim "/learnhub". Only an exact match or a match
+    // followed by a slash counts.
+    const isPrefix = path === candidate || path.startsWith(`${candidate}/`);
+    if (isPrefix && candidate.length > best) best = candidate.length;
+  }
+  return best;
+}
+
+/// Whether a sidebar item should read as current.
+///
+/// Scored against its siblings rather than matched on its own. A plain prefix test lit up both
+/// "Learn" (/learn) and "My path" (/learn/path) when the learner was on the latter — two
+/// highlighted rows, neither of them wrong on its own terms. The most specific claim wins, so
+/// only one row is ever current.
+export function isItemActive(item: WorkspaceItem, pathname: string, siblings?: WorkspaceItem[]): boolean {
+  const path = pathname.toLowerCase();
+  const score = matchScore(item, path);
+  if (score < 0) return false;
+
+  const others = siblings ?? workspaceForPath(pathname).items;
+  return !others.some((other) => other !== item && matchScore(other, path) > score);
 }

@@ -102,7 +102,7 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
               {workspace.items.map((item) => (
                 <button
                   key={item.path}
-                  className={`r-side__item ${isItemActive(item, pathname) ? "active" : ""}`}
+                  className={`r-side__item ${isItemActive(item, pathname, workspace.items) ? "active" : ""}`}
                   onClick={() => go(item.path)}
                 >
                   <Icon name={item.icon} size={15} />
@@ -175,7 +175,7 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
             {workspace.items.map((item) => (
               <button
                 key={item.path}
-                className={`r-subnav__item ${isItemActive(item, pathname) ? "active" : ""}`}
+                className={`r-subnav__item ${isItemActive(item, pathname, workspace.items) ? "active" : ""}`}
                 onClick={() => go(item.path)}
               >
                 {item.label}

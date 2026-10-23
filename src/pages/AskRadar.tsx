@@ -1,6 +1,16 @@
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ApiError, clearAskHistory, getAskHistory, streamAskRadarChat, summarizeFile, summarizeLink } from "../lib/api";
+import {
+  ApiError,
+  clearAskHistory,
+  getAskCapabilities,
+  getAskHistory,
+  streamAskRadarChat,
+  summarizeFile,
+  summarizeLink,
+  transcribeAudio,
+} from "../lib/api";
 import { plainText } from "../lib/text";
 import type { ChatMessage } from "../lib/types";
 import { Icon } from "../components/Icon";
@@ -18,9 +28,48 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+/// The four things this page does. "upload" is the word the Learn entry screen uses for the same
+/// thing this page calls "file"; the URL speaks the caller's language and maps here.
+type AskMode = "chat" | "file" | "link" | "record";
+
+const MODE_FROM_PARAM: Record<string, AskMode> = {
+  chat: "chat",
+  upload: "file",
+  file: "file",
+  link: "link",
+  record: "record",
+};
+
+const MODE_LABEL: Record<AskMode, string> = {
+  chat: "Ask Radar",
+  file: "Summarize file",
+  link: "Summarize link",
+  record: "Record",
+};
+
+/// Groq accepts webm, mp4, m4a, mp3, wav and ogg. Chrome records webm and Safari mp4, so the
+/// extension follows whatever the browser actually produced rather than being assumed.
+function extensionFor(mimeType: string): string {
+  if (mimeType.includes("mp4")) return "mp4";
+  if (mimeType.includes("ogg")) return "ogg";
+  if (mimeType.includes("wav")) return "wav";
+  return "webm";
+}
+
 export function AskRadar() {
+  // Arriving from the Learn entry screen, which links straight to the lane the learner chose.
+  // Read in the initialiser, not an effect: the right panel is then open on the first paint, and
+  // a learner who switches to chat afterwards is not dragged back by the URL still naming a mode.
+  const [searchParams] = useSearchParams();
   const [inputText, setInputText] = useState("");
-  const [summaryMode, setSummaryMode] = useState<"chat" | "file" | "link">("chat");
+  const [summaryMode, setSummaryMode] = useState<AskMode>(
+    () => MODE_FROM_PARAM[(searchParams.get("mode") ?? "").toLowerCase()] ?? "chat",
+  );
+  const [recording, setRecording] = useState(false);
+  const [recordedSeconds, setRecordedSeconds] = useState(0);
+  const [recordError, setRecordError] = useState<string | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [link, setLink] = useState("");
   const [thinking, setThinking] = useState(false);
@@ -29,6 +78,8 @@ export function AskRadar() {
   const [availableSections, setAvailableSections] = useState<string[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const capabilitiesQuery = useQuery({ queryKey: ["ask", "capabilities"], queryFn: getAskCapabilities });
 
   // Load the saved conversation once, so history survives reloads and devices.
   const queryClient = useQueryClient();
@@ -75,6 +126,89 @@ export function AskRadar() {
       setBusy(false);
     }
   };
+
+  // A long lecture is a lot of text. The chat endpoint is grounded in the profile and a prompt,
+  // not built to carry an hour of speech, so the transcript is capped and the cap is admitted
+  // rather than quietly dropping the end of someone's lecture.
+  const TRANSCRIPT_LIMIT = 12_000;
+
+  const stopTracks = () => {
+    recorderRef.current?.stream.getTracks().forEach((track) => track.stop());
+    recorderRef.current = null;
+  };
+
+  const startRecording = async () => {
+    setRecordError(null);
+
+    if (typeof MediaRecorder === "undefined") {
+      setRecordError("This browser cannot record audio.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      chunksRef.current = [];
+      recorderRef.current = recorder;
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+
+      recorder.onstop = async () => {
+        const mimeType = recorder.mimeType || "audio/webm";
+        const blob = new Blob(chunksRef.current, { type: mimeType });
+        stopTracks();
+        setRecording(false);
+
+        if (blob.size === 0) {
+          setRecordError("Nothing was recorded.");
+          return;
+        }
+
+        setBusy(true);
+        try {
+          const { text } = await transcribeAudio(blob, `recording.${extensionFor(mimeType)}`);
+          const clipped = text.length > TRANSCRIPT_LIMIT;
+          const body = clipped ? text.slice(0, TRANSCRIPT_LIMIT) : text;
+
+          await send(
+            `Here is a transcript of a lecture I recorded${clipped ? " (the first part of it)" : ""}. ` +
+              `Summarise the key points and tell me what to review:
+
+${body}`,
+          );
+        } catch (e) {
+          setRecordError(
+            e instanceof ApiError ? e.message : "The recording could not be transcribed. Try again, or type instead.",
+          );
+        } finally {
+          setBusy(false);
+        }
+      };
+
+      recorder.start();
+      setRecordedSeconds(0);
+      setRecording(true);
+    } catch {
+      // The only likely cause is a denied permission, and the browser has already said so in its
+      // own dialog; repeating the technical error would not help.
+      setRecordError("Radar could not reach your microphone. Check the permission and try again.");
+    }
+  };
+
+  const stopRecording = () => recorderRef.current?.stop();
+
+  // A running count, so the learner can see it is actually recording.
+  useEffect(() => {
+    if (!recording) return;
+    const timer = window.setInterval(() => setRecordedSeconds((s) => s + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [recording]);
+
+  // Leaving the page mid-recording must release the microphone, or the browser keeps showing the
+  // recording indicator over an app that is no longer listening.
+  useEffect(() => stopTracks, []);
 
   const summarizeFile_ = async (specificSection?: string | null) => {
     if (!file || busy) return;
@@ -241,12 +375,50 @@ export function AskRadar() {
       )}
 
       <div style={{ display: "flex", gap: 7, marginBottom: 10, flexWrap: "wrap" }}>
-        {(["chat", "file", "link"] as const).map((mode) => (
-          <button key={mode} className={`r-chip ${summaryMode === mode ? "active" : ""}`} onClick={() => setSummaryMode(mode)}>
-            {mode === "chat" ? "Ask Radar" : mode === "file" ? "Summarize file" : "Summarize link"}
-          </button>
-        ))}
+        {/* Record is only offered where it can work. Showing a chip that always fails teaches
+            people the feature is broken rather than that the key is missing. */}
+        {(["chat", "file", "link", "record"] as const)
+          .filter((mode) => mode !== "record" || capabilitiesQuery.data?.record)
+          .map((mode) => (
+            <button key={mode} className={`r-chip ${summaryMode === mode ? "active" : ""}`} onClick={() => setSummaryMode(mode)}>
+              {MODE_LABEL[mode]}
+            </button>
+          ))}
       </div>
+
+      {summaryMode === "record" && (
+        <div className="ask-record">
+          {recording ? (
+            <>
+              <span className="ask-record__pulse" aria-hidden="true" />
+              <span className="ask-record__status">
+                Recording · {Math.floor(recordedSeconds / 60)}:{String(recordedSeconds % 60).padStart(2, "0")}
+              </span>
+              <button className="btn btn--primary btn--sm" onClick={stopRecording}>
+                Stop and transcribe
+              </button>
+            </>
+          ) : (
+            <>
+              <span className="ask-record__icon">
+                <Icon name="mic" size={17} />
+              </span>
+              <span className="ask-record__status">
+                {busy ? "Transcribing…" : "Record a lecture, then Radar transcribes it and summarises the key points."}
+              </span>
+              <button className="btn btn--primary btn--sm" onClick={startRecording} disabled={busy}>
+                Start recording
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {recordError && (
+        <div role="alert" className="ask-record__error">
+          {recordError}
+        </div>
+      )}
 
       {summaryMode === "file" && (
         <div className={`ask-file-upload ${isDragging ? "ask-file-upload--active" : ""}`}>
