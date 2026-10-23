@@ -6,6 +6,7 @@ import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { ErrorState } from "../components/ErrorState";
 import { ApiError, completeLesson, getActiveRoadmap } from "../lib/api";
 import { formatDuration, sumMinutes } from "../lib/duration";
+import type { LearningResourceType } from "../lib/types";
 import type { GrowthRoadmap, RoadmapLesson, RoadmapModule } from "../lib/types";
 
 /// The learning journey, in the shape a course player has: one lesson open, and the whole path
@@ -27,6 +28,12 @@ interface Selection {
 function stripStagePrefix(title: string): string {
   const match = /^(beginner|intermediate|advanced|application)\s*:\s*/i.exec(title);
   return match ? title.slice(match[0].length).trim() : title;
+}
+
+/// There is no "Video" resource type — the union is TutorialVideo, NewDevelopmentVideo and
+/// BlogPost, so comparing against "Video" is always false and every resource drew a document icon.
+function isVideo(type: LearningResourceType): boolean {
+  return type === "TutorialVideo" || type === "NewDevelopmentVideo";
 }
 
 function lessonCounts(module: RoadmapModule) {
@@ -299,7 +306,7 @@ export function LearnPath() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Icon name={resource.type === "Video" ? "video" : "article"} size={15} />
+                      <Icon name={isVideo(resource.type) ? "video" : "article"} size={15} />
                       <span className="path-resource__text">
                         <span className="path-resource__title">{resource.title}</span>
                         <span className="path-resource__source">
@@ -365,7 +372,7 @@ export function LearnPath() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Icon name={resource.type === "Video" ? "video" : "article"} size={15} />
+                      <Icon name={isVideo(resource.type) ? "video" : "article"} size={15} />
                       <span className="path-resource__text">
                         <span className="path-resource__title">{resource.title}</span>
                         <span className="path-resource__source">
