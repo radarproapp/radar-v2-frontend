@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Deferred } from "../components/Deferred";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
@@ -10,17 +10,11 @@ import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ContentItem, ContentType, FeedEmptyReason, Page } from "../lib/types";
 import { feedEmptyCopy } from "../lib/feed-empty";
-import { Icon, type IconName } from "../components/Icon";
+import { Icon } from "../components/Icon";
+import type { IconName } from "../components/icon-map";
+import { FEED_TYPES, feedTypeFor } from "../components/feed-types";
 
-const FILTERS: { label: string; type: ContentType | null; icon: IconName }[] = [
-  { label: "All", type: null, icon: "radar" },
-  { label: "Articles", type: "Article", icon: "article" },
-  { label: "Videos", type: "Video", icon: "video" },
-  { label: "Podcasts", type: "Podcast", icon: "podcast" },
-  { label: "Papers", type: "ResearchPaper", icon: "paper" },
-  { label: "Policy", type: "PolicyPaper", icon: "policy" },
-  { label: "Ideas", type: "Essay", icon: "idea" },
-];
+
 
 const PAGE_SIZE = 20;
 
@@ -65,7 +59,11 @@ function fallbackWhySeeing(item: ContentItem): string {
 export function Feed() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [activeFilter, setActiveFilter] = useState<ContentType | null>(null);
+  // From the URL, not state: the sidebar sets the filter without the page handing it a setter,
+  // and a filtered feed becomes a link you can send to someone.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeType = feedTypeFor(searchParams.get("type"));
+  const activeFilter = activeType.type;
   const feedQueryKey = ["feed", activeFilter] as const;
 
   // Keyset pagination: the server hands back an opaque cursor and we keep following it, rather than
@@ -155,47 +153,27 @@ export function Feed() {
     }
   }, [feedQuery.data, activeFilter]);
 
-  const activeLabel = FILTERS.find((f) => f.type === activeFilter)?.label ?? "All";
+  const activeLabel = activeType.label;
 
   return (
-    <div className="r-page feed-layout">
-      <aside className="feed-nav" aria-label="Content types">
-        <button className="feed-nav__back" onClick={() => navigate("/")}>
-          <Icon name="menu" size={14} /> Radar Intelligence
-        </button>
-
-        <div className="feed-nav__label">Feed</div>
-
-        {FILTERS.map(({ label, type, icon }) => (
-          <button
-            key={label}
-            className={`feed-nav__item ${activeFilter === type ? "active" : ""}`}
-            onClick={() => setActiveFilter(type)}
-          >
-            <Icon name={icon} size={15} />
-            <span>{label}</span>
-          </button>
-        ))}
-      </aside>
-
-      <div className="feed-main">
-        <div className="r-page-head">
-          <h1 className="r-page-title">{activeFilter === null ? "Intelligence Feed" : activeLabel}</h1>
-        </div>
+    <div className="r-page">
+      <div className="r-page-head">
+        <h1 className="r-page-title">{activeType.type === null ? "Intelligence Feed" : activeLabel}</h1>
+      </div>
 
         {/* On a phone the column becomes one row of chips that scrolls, since a second sidebar
             does not fit beside a sidebar. */}
-        <div className="feed-type-tabs">
-          {FILTERS.map(({ label, type }) => (
-            <button
-              key={label}
-              className={`r-chip ${activeFilter === type ? "active" : ""}`}
-              onClick={() => setActiveFilter(type)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+      <div className="feed-type-tabs">
+        {FEED_TYPES.map((entry) => (
+          <button
+            key={entry.label}
+            className={`r-chip ${entry.type === activeFilter ? "active" : ""}`}
+            onClick={() => setSearchParams(entry.slug ? { type: entry.slug } : {})}
+          >
+            {entry.label}
+          </button>
+        ))}
+      </div>
 
       {feedQuery.isLoading ? (
         <LoadingSkeleton variant="feed" count={4} />
@@ -205,7 +183,7 @@ export function Feed() {
         <FeedEmptyState
           reason={feedQuery.data?.pages?.[0]?.emptyReason}
           onRefresh={() => feedQuery.refetch()}
-          onClearFilter={() => setActiveFilter(null)}
+          onClearFilter={() => setSearchParams({})}
           onRestoreDismissed={async () => {
             await restoreDismissedFeedItems();
             await feedQuery.refetch();
@@ -339,7 +317,6 @@ export function Feed() {
           </div>
         </>
       )}
-      </div>
     </div>
   );
 }

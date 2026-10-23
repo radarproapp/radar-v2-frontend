@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { Icon } from "./Icon";
 import { WORKSPACES, isItemActive, workspaceForPath } from "./workspaces";
+import { FEED_TYPES } from "./feed-types";
 
 /// The application shell: a workspace switcher, that workspace's own navigation, and the content.
 ///
@@ -15,7 +16,7 @@ import { WORKSPACES, isItemActive, workspaceForPath } from "./workspaces";
 type OpenPanel = "switcher" | "account" | "subnav" | null;
 
 export function MainLayout({ children }: { children?: ReactNode } = {}) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const { profile, signOut } = useAuth();
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
@@ -26,6 +27,11 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
   const showNav = !lowerPath.includes("/onboarding") && !lowerPath.includes("/login");
   const workspace = workspaceForPath(pathname);
   const currentItem = workspace.items.find((item) => isItemActive(item, pathname, workspace.items));
+
+  // The feed list only — a single item's page keeps the workspace nav, because the types are a
+  // way of browsing the list, not of reading one thing.
+  const onFeed = lowerPath === "/feed";
+  const currentFeedSlug = new URLSearchParams(search).get("type")?.toLowerCase() ?? undefined;
   const initials = profile?.name?.trim()?.[0]?.toUpperCase() ?? "A";
 
   const go = (path: string) => {
@@ -99,18 +105,40 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
               )}
             </div>
 
-            <div className="r-side__items">
-              {workspace.items.map((item) => (
-                <button
-                  key={item.path}
-                  className={`r-side__item ${isItemActive(item, pathname, workspace.items) ? "active" : ""}`}
-                  onClick={() => go(item.path)}
-                >
-                  <Icon name={item.icon} size={15} />
-                  <span>{item.label}</span>
+            {onFeed ? (
+              <div className="r-side__items">
+                <button className="r-side__back" onClick={() => go("/")}>
+                  <Icon name="menu" size={14} />
+                  <span>{workspace.label}</span>
                 </button>
-              ))}
-            </div>
+
+                <div className="r-side__label">Feed</div>
+
+                {FEED_TYPES.map((entry) => (
+                  <button
+                    key={entry.label}
+                    className={`r-side__item ${entry.slug === currentFeedSlug ? "active" : ""}`}
+                    onClick={() => go(entry.slug ? `/feed?type=${entry.slug}` : "/feed")}
+                  >
+                    <Icon name={entry.icon} size={15} />
+                    <span>{entry.label}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="r-side__items">
+                {workspace.items.map((item) => (
+                  <button
+                    key={item.path}
+                    className={`r-side__item ${isItemActive(item, pathname, workspace.items) ? "active" : ""}`}
+                    onClick={() => go(item.path)}
+                  >
+                    <Icon name={item.icon} size={15} />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div style={{ flex: 1 }} />
 
