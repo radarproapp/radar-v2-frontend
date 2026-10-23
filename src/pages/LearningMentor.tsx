@@ -59,9 +59,12 @@ function buildChatSuggestions(
   const goal = memory?.primaryGoal?.trim();
   const weak = memory?.weakAreas?.find((w) => w.trim().length > 0);
 
-  // The question the reviewer actually asked for: "how to become a cybersecurity expert".
-  const becoming = targetRole?.trim() || skill || goal;
-  if (becoming) out.push(`How do I become a ${becoming}?`);
+  // "How do I become a X?" needs a role. It was falling back to the subject, which produced
+  // "How do I become a Computer Science?" — the kind of sentence that tells a learner nobody
+  // read this before shipping it.
+  const role = targetRole?.trim();
+  if (role) out.push(`How do I become a ${role}?`);
+  else if (skill || goal) out.push(`What roles does ${skill || goal} lead to?`);
 
   // Act on recorded difficulty before anything else — this is the whole point of tracking it.
   if (weak) out.push(`I keep getting ${weak} wrong. Explain it differently.`);
@@ -361,13 +364,26 @@ export function LearningMentor() {
         </p>
       </div>
 
+      {/* Nothing measured and no path: say so, rather than naming a weak area nobody has. */}
+      {todayCard?.emptyReason && (
+        <div className="mentor-today-card mentor-today-card--empty">
+          <div className="mentor-today-badge">
+            <span><Icon name="idea" /></span> Nothing to recommend yet
+          </div>
+          <div className="mentor-today-why" style={{ marginTop: 6 }}>{todayCard.emptyReason}</div>
+          <button className="btn btn--primary btn--sm" style={{ marginTop: 14 }} onClick={() => navigate("/learn/build")}>
+            Build your path
+          </button>
+        </div>
+      )}
+
       {/* TODAY'S LEARNING CARD */}
-      {todayCard && (
+      {todayCard && !todayCard.emptyReason && (
         <div className="mentor-today-card">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10 }}>
             <div>
               <div className="mentor-today-badge">
-                <span><Icon name="energy" /></span> Today&apos;s Learning · 20 Minutes
+                <span><Icon name="energy" /></span> Today&apos;s Learning · {todayCard.estimatedMinutes} Minutes
               </div>
               <div className="mentor-today-title">{todayCard.topic}</div>
               <div className="mentor-today-why">{todayCard.why}</div>

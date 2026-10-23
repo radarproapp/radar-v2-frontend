@@ -736,6 +736,8 @@ export interface SpacedRevisionItem {
 }
 
 export interface DailyLearningCard {
+  /// Set when there is no path and nothing measured, so there is nothing to recommend.
+  emptyReason?: string | null;
   topic: string;
   skill: string;
   estimatedMinutes: number;

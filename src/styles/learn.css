@@ -1020,3 +1020,19 @@ button.path-resource {
     min-height: 44px;
   }
 }
+
+/* The mentor's card when there is nothing measured to recommend. Same frame as the real one, so
+   it reads as the same slot rather than an error, but without the urgency of a live task. */
+.mentor-today-card--empty {
+  background: var(--bg-card);
+  border: 1px dashed var(--border-strong);
+  color: var(--text-dim);
+}
+
+.mentor-today-card--empty .mentor-today-badge {
+  color: var(--text-muted);
+}
+
+.mentor-today-card--empty .mentor-today-why {
+  color: var(--text-muted);
+}
