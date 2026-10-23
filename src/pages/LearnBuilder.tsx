@@ -234,7 +234,7 @@ export function LearnBuilder() {
 
           {build.isPending && (
             <p className="build__hint" style={{ marginTop: 12 }}>
-              Radar is writing the lessons for this one section. It takes a few seconds.
+              Radar is writing the lessons for this section. This can take up to a minute.
             </p>
           )}
         </>
