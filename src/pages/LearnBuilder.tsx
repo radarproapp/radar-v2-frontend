@@ -216,7 +216,11 @@ export function LearnBuilder() {
           )}
 
           <div className="build__actions">
-            <button className="btn btn--primary" onClick={() => build.mutate()} disabled={build.isPending}>
+            <button
+              className="btn btn--primary"
+              onClick={() => build.mutate()}
+              disabled={build.isPending || outcome.trim().length === 0}
+            >
               {build.isPending ? "Building the section…" : "Build this section"}
             </button>
             {!build.isPending && (
@@ -231,6 +235,12 @@ export function LearnBuilder() {
               </button>
             )}
           </div>
+
+          {!build.isPending && outcome.trim().length === 0 && (
+            <p className="build__hint" style={{ marginTop: 12 }}>
+              Write what you want to be able to do, or skip — the section is built either way.
+            </p>
+          )}
 
           {build.isPending && (
             <p className="build__hint" style={{ marginTop: 12 }}>
