@@ -4,6 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 import { Icon } from "./Icon";
 import { WORKSPACES, isItemActive, workspaceForPath } from "./workspaces";
 import { FEED_TYPES } from "./feed-types";
+import { ProfileSwitcher } from "./ProfileSwitcher";
 
 /// The application shell: a workspace switcher, that workspace's own navigation, and the content.
 ///
@@ -91,6 +92,12 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
 
   const accountPanel = (
     <div className="r-nav-panel">
+      {/* Profiles sit above the account actions because switching is a change of who you are on
+          this account, not a setting. */}
+      <ProfileSwitcher onDone={() => setOpenPanel(null)} />
+
+      <div className="r-nav-panel__divider" />
+
       <button className="r-nav-panel__item" onClick={() => go("/settings")}>
         Settings
       </button>

@@ -1,43 +1,44 @@
 import type {
+  AiEngineStats,
   AnalyticsEventType,
-  Page,
   CaptureMode,
   CapturedItem,
+  ChallengeResult,
   ChatMessage,
   ContentItem,
   ContentReport,
   ContentType,
+  DailyLearningCard,
+  DailyOpportunityFeed,
   EventsSummary,
   GrowthRoadmap,
+  HomeBrief,
   LearnHubPayload,
   MentorQuiz,
   MentorStudyPlan,
   MentorWorkReview,
-  PersonalLearningMemory,
-  TopicMastery,
-  DailyLearningCard,
-  ChallengeResult,
-  SpacedRevisionItem,
-  AiEngineStats,
   NavigatorFocus,
   Note,
-  DailyOpportunityFeed,
   Opportunity,
-  OpportunityType,
   OpportunityTrackingStatus,
+  OpportunityType,
+  Page,
+  PersonaType,
+  PersonalLearningMemory,
   PolicyComparison,
   ProjectTemplate,
   ReportReason,
   SignalsSummary,
   SourceProfile,
   SourceReportSummary,
+  SpacedRevisionItem,
   StudioProject,
   SubscriptionPlan,
+  TopicMastery,
   TopicProfile,
-  UserProfile,
   UserInterestContext,
+  UserProfile,
   WeeklyBrief,
-  HomeBrief,
 } from "./types";
 
 /// Which API this build talks to.
@@ -264,6 +265,37 @@ export interface LearningRecord {
   confidence: number;
   summary: string;
   updatedAt: string;
+}
+
+/// The profiles on this account, and which one is in use.
+///
+/// Each carries its own path, feed, saved items and history — that was already true of the data
+/// model, since everything is keyed by profile id. Switching is therefore a change of context,
+/// not a filter, which is why the client has to drop every cached query when it happens.
+export interface ProfileSummary {
+  id: string;
+  label: string;
+  persona: string;
+  primaryGoal: string;
+  interests: string[];
+  onboardingComplete: boolean;
+  createdAt: string;
+  isActive: boolean;
+}
+
+export function getProfiles() {
+  return request<{ activeProfileId: string | null; profiles: ProfileSummary[] }>("/api/me/profiles");
+}
+
+export function createProfile(persona: PersonaType, label?: string) {
+  return request<{ id: string; label: string; persona: string; onboardingComplete: boolean }>("/api/me/profiles", {
+    method: "POST",
+    body: JSON.stringify({ persona, label: label ?? null }),
+  });
+}
+
+export function activateProfile(profileId: string) {
+  return request<void>(`/api/me/profiles/${profileId}/activate`, { method: "POST" });
 }
 
 export function getLearningRecord() {
