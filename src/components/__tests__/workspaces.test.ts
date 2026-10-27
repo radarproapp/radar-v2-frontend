@@ -81,6 +81,11 @@ describe("isItemActive", () => {
     expect(activeLabels(learn.items, "/research")).toEqual(["Hub"]);
   });
 
+  it("keeps Assess my work inside Learn", () => {
+    expect(workspaceForPath("/assess").id).toBe("learn");
+    expect(activeLabels(learn.items, "/assess")).toEqual(["Assess my work"]);
+  });
+
   it("marks Opportunities current on its own route", () => {
     expect(activeLabels(intelligence.items, "/opportunities")).toEqual(["Opportunities"]);
   });

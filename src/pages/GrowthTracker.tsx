@@ -156,6 +156,9 @@ export function GrowthTracker() {
             {learning.projectsCompleted > 0 && (
               <Tile value={learning.projectsCompleted} label="Projects completed" />
             )}
+            {learning.exercisesCompleted > 0 && (
+              <Tile value={learning.exercisesCompleted} label="Lab exercises done" />
+            )}
             {opportunities.applied > 0 && <Tile value={opportunities.applied} label="Applications" />}
             {opportunities.saved > 0 && <Tile value={opportunities.saved} label="Opportunities saved" />}
           </div>

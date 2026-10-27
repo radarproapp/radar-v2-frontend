@@ -466,6 +466,7 @@ export interface LearningResource {
   stepByStepBreakdown: TutorialStep[];
   practiceExerciseTitle?: string | null;
   practiceExercise?: string | null;
+  /// Reading a tutorial and doing its lab are different acts; this is the second one.
   isExerciseCompleted?: boolean;
   quizTopic?: string | null;
   keyConcepts?: string[];
@@ -555,6 +556,8 @@ export interface HubResourceItem {
   stepByStepBreakdown?: TutorialStep[];
   practiceExerciseTitle?: string | null;
   practiceExercise?: string | null;
+  /// Reading a tutorial and doing its lab are different acts; this is the second one.
+  isExerciseCompleted?: boolean;
   whatHappened?: string;
   whyItMatters?: string;
   nextMove?: string;
@@ -1042,6 +1045,8 @@ export interface UserGraph {
     /// Null when no quiz is complete — which is not the same as scoring nothing.
     averageQuizScore: number | null;
     projectsCompleted: number;
+    /// Hands-on labs done, which is the part that produces something to show.
+    exercisesCompleted: number;
     subjects: string[];
     weakAreas: string[];
   };
@@ -1100,4 +1105,49 @@ export interface QuizPerformance {
   missed: QuizMissed[];
   weakAreas: string[];
   nextMove: string | null;
+}
+
+// ── Document assessment ──────────────────────────────────────────────────
+// Reading your essay and saying what is wrong with it, as opposed to reading a textbook and
+// building a path from it. The kind is detected from the text and the criteria are shaped by it
+// and by the persona, so the reader can see what the judgement was against.
+
+export type DocumentKind =
+  | "Unknown"
+  | "Essay"
+  | "Report"
+  | "Cv"
+  | "CoverLetter"
+  | "ResearchProposal"
+  | "PersonalStatement"
+  | "BusinessPlan";
+
+/// Met, Partly, NotMet — or Unjudged when the model skipped a criterion, which is reported
+/// rather than hidden so the reader sees the whole rubric.
+export type CriterionVerdict = "Met" | "Partly" | "NotMet" | "Unjudged";
+
+export interface AssessmentCriterion {
+  name: string;
+  asks: string;
+  verdict: CriterionVerdict;
+  evidence: string;
+  fix?: string | null;
+}
+
+export interface DocumentAssessment {
+  id: string;
+  fileName: string;
+  /// False when Radar could not assess it. Nothing is shown rather than something invented.
+  wasAssessed: boolean;
+  notAssessedReason?: string | null;
+  kind: DocumentKind;
+  kindEvidence: string;
+  /// The persona the criteria were shaped for, so a wrong one is arguable.
+  assessedAs: PersonaType;
+  criteria: AssessmentCriterion[];
+  strengths: string[];
+  /// One, not a list. A reader given eight equal priorities has been given none.
+  mostValuableChange?: string | null;
+  assessedAt: string;
+  summary?: string | null;
 }

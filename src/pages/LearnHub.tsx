@@ -11,6 +11,7 @@ import { MediaPlayer } from "../components/MediaPlayer";
 import {
   ApiError,
   getLearnHub,
+  completeHubExercise,
   completeHubResource,
   toggleSaveHubResource,
 } from "../lib/api";
@@ -67,6 +68,33 @@ export function LearnHub() {
         delete next[resourceId];
         return next;
       });
+    }
+  };
+
+  /// Marks the lab done. Optimistic, like the resource toggle beside it.
+  ///
+  /// The whole chain behind this already worked — route, service, storage, and a flag on the
+  /// roadmap. There was simply no way to press it, which is why the storage sat unreachable
+  /// since the day it was written.
+  const handleToggleExercise = async (resourceId: string) => {
+    try {
+      await completeHubExercise(resourceId);
+      queryClient.setQueryData(["learn-hub", activeSubInterest], (old: typeof hubData) => {
+        if (!old) return old;
+        return {
+          ...old,
+          resources: old.resources.map((r) =>
+            r.id === resourceId ? { ...r, isExerciseCompleted: !r.isExerciseCompleted } : r,
+          ),
+        };
+      });
+      queryClient.invalidateQueries({ queryKey: ["roadmap", "active"] });
+      // The graph counts exercises, so it is stale the moment one is ticked.
+      queryClient.invalidateQueries({ queryKey: ["me", "graph"] });
+    } catch {
+      // Left undone rather than shown as done. The optimistic update above is reverted by the
+      // refetch, and claiming a lab is finished when the write failed is the worse error.
+      queryClient.invalidateQueries({ queryKey: ["learn-hub", activeSubInterest] });
     }
   };
 
@@ -406,6 +434,7 @@ export function LearnHub() {
                   item={res}
                   onToggleComplete={() => handleToggleComplete(res.id)}
                   onToggleSave={() => handleToggleSave(res.id)}
+                  onToggleExercise={() => handleToggleExercise(res.id)}
                   isCompleting={!!completing[res.id]}
                   onAskMentor={() => askMentorQuestion(res)}
                   onTestMe={() => triggerTestMe(res)}
@@ -427,6 +456,7 @@ interface HubResourceCardProps {
   item: HubResourceItem;
   onToggleComplete: () => void;
   onToggleSave: () => void;
+  onToggleExercise: () => void;
   isCompleting: boolean;
   onAskMentor: () => void;
   onTestMe: () => void;
@@ -438,6 +468,7 @@ function HubResourceCard({
   item,
   onToggleComplete,
   onToggleSave,
+  onToggleExercise,
   isCompleting,
   onAskMentor,
   onTestMe,
@@ -681,6 +712,16 @@ function HubResourceCard({
           <div className="learn-practice-box__desc">
             {item.practiceExercise}
           </div>
+
+          {/* The button that was missing. Everything behind it worked. */}
+          <button
+            className={`learn-practice-box__done ${item.isExerciseCompleted ? "is-done" : ""}`}
+            onClick={onToggleExercise}
+            aria-pressed={!!item.isExerciseCompleted}
+          >
+            <Icon name={item.isExerciseCompleted ? "done" : "check"} size={14} />
+            {item.isExerciseCompleted ? "Done — tap to undo" : "Mark exercise done"}
+          </button>
         </div>
       )}
 

@@ -560,3 +560,303 @@
     min-height: 44px;
   }
 }
+
+/* The button that was missing from the practice box. Everything behind it already worked. */
+.learn-practice-box__done {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  margin-top: 12px;
+  padding: 8px 14px;
+  border: 1px solid #d6a260;
+  border-radius: var(--r-pill);
+  background: var(--bg-card);
+  cursor: pointer;
+  color: #92400e;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.learn-practice-box__done:hover {
+  background: #fffaf2;
+}
+
+.learn-practice-box__done.is-done {
+  border-color: var(--cyan);
+  background: var(--cyan-light);
+  color: var(--cyan-deep);
+}
+
+@media (pointer: coarse) {
+  .learn-practice-box__done {
+    min-height: 44px;
+  }
+}
+
+/* ── Assess my work ────────────────────────────────────────────────────────────────────────
+
+   A judgement with its criteria on screen. The verdict colour and the verdict word say the same
+   thing, so one can never contradict the other. */
+
+.assess__drop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 22px;
+  margin-bottom: 22px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+}
+
+.assess__formats {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.assess__error {
+  padding: 11px 13px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--r-md);
+  background: rgba(220, 38, 38, 0.07);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.assess__rubric-label,
+.assess__section-label,
+.assess__priority-label {
+  margin-bottom: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.assess__kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.assess__kind {
+  min-height: 36px;
+  padding: 7px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--bg-card);
+  cursor: pointer;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.assess__kind:hover {
+  border-color: var(--cyan);
+}
+
+.assess__kind.active {
+  border-color: var(--cyan);
+  background: var(--cyan-light);
+  color: var(--cyan-deep);
+}
+
+.assess__rubric-note {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.assess__rubric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.assess__rubric-item:last-child {
+  border-bottom: none;
+}
+
+.assess__rubric-name {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.assess__rubric-asks {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.assess__result-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.assess__detected {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.assess__detected-why {
+  margin-top: 4px;
+  max-width: 52ch;
+  font-size: 12px;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.assess__summary {
+  flex-shrink: 0;
+  padding: 6px 11px;
+  border-radius: var(--r-pill);
+  background: var(--bg-hover);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-dim);
+}
+
+.assess__priority {
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  border-left: 3px solid var(--cyan);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  background: var(--cyan-light);
+}
+
+.assess__priority-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.assess__strengths {
+  margin-bottom: 24px;
+}
+
+.assess__strengths ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.assess__strengths li {
+  margin-bottom: 6px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+/* ── One criterion ───────────────────────────────────────────────────────────────────────── */
+
+.crit {
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+}
+
+.crit--met {
+  border-left-color: var(--cyan);
+}
+
+.crit--partly {
+  border-left-color: var(--amber);
+}
+
+.crit--notmet {
+  border-left-color: #dc2626;
+}
+
+.crit--unjudged {
+  border-left-color: var(--border-strong);
+  opacity: 0.75;
+}
+
+.crit__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 5px;
+}
+
+.crit__name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.crit__verdict {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.crit--met .crit__verdict {
+  color: var(--cyan-deep);
+}
+
+.crit--partly .crit__verdict {
+  color: #92400e;
+}
+
+.crit--notmet .crit__verdict {
+  color: #b91c1c;
+}
+
+.crit--unjudged .crit__verdict {
+  color: var(--text-faint);
+}
+
+.crit__asks {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.crit__evidence {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.crit__fix {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 9px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--cyan-deep);
+}
+
+@media (pointer: coarse) {
+  .assess__kind {
+    min-height: 44px;
+  }
+}

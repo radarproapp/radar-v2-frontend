@@ -9,6 +9,9 @@ import type {
   ContentItem,
   ContentReport,
   ContentType,
+  AssessmentCriterion,
+  DocumentAssessment,
+  DocumentKind,
   DailyLearningCard,
   DailyOpportunityFeed,
   EventsSummary,
@@ -517,6 +520,43 @@ export function recordPlayback(
   );
 }
 
+/// Assesses a document the user wrote.
+///
+/// Raw fetch rather than request(), which forces a JSON content type — multipart needs the
+/// browser to set the boundary itself, the same reason transcribeAudio bypasses it.
+///
+/// The kind is deliberately not a parameter: it is detected from the text, because a CV submitted
+/// with an essay selected comes back criticised as an essay.
+export async function assessDocument(file: File): Promise<DocumentAssessment> {
+  const token = getToken();
+  const form = new FormData();
+  form.append("file", file);
+
+  const res = await fetch(`${API_BASE}/api/documents/assess`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: form,
+  });
+
+  const isJson = res.headers.get("content-type")?.includes("application/json");
+  const body = isJson ? await res.json() : null;
+  if (!res.ok) throw new ApiError(res.status, body?.error ?? body?.title ?? res.statusText);
+
+  return body as DocumentAssessment;
+}
+
+export function getAssessments() {
+  return request<DocumentAssessment[]>("/api/documents/assessments");
+}
+
+/// The criteria a kind of document would be judged against, readable before uploading anything —
+/// a rubric somebody can see in advance is one they can write towards.
+export function getRubric(kind: DocumentKind) {
+  return request<{ kind: string; assessedAs: string; criteria: AssessmentCriterion[] }>(
+    `/api/documents/rubric/${kind}`,
+  );
+}
+
 export function getUserGraph() {
   return request<UserGraph>("/api/me/graph");
 }
@@ -758,6 +798,16 @@ export function getLearnHub(subInterest?: string, stage?: string) {
   if (stage) params.set("stage", stage);
   const q = params.toString();
   return request<LearnHubPayload>(`/api/learn-hub${q ? `?${q}` : ""}`);
+}
+
+/// Marks the hands-on exercise on a Hub resource as done, or undone.
+///
+/// The storage, the toggle and a route for this existed on the server all along. What did not was
+/// a flag on the resource a client could read, so nothing ever called any of it.
+export function completeHubExercise(resourceId: string) {
+  return request<void>(`/api/learn-hub/resources/${resourceId}/exercise/complete`, {
+    method: "POST",
+  });
 }
 
 export function completeHubResource(resourceId: string) {
