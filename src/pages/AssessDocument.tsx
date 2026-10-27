@@ -70,8 +70,11 @@ export function AssessDocument() {
     enabled: preview !== null,
   });
 
+  // Kept so a declared kind can be re-sent for the same file without choosing it again.
+  const [lastFile, setLastFile] = useState<File | null>(null);
+
   const assess = useMutation({
-    mutationFn: (file: File) => assessDocument(file),
+    mutationFn: ({ file, kind }: { file: File; kind?: DocumentKind }) => assessDocument(file, kind),
     onMutate: () => setError(null),
     onError: (e) =>
       setError(
@@ -100,7 +103,10 @@ export function AssessDocument() {
           style={{ display: "none" }}
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) assess.mutate(file);
+            if (file) {
+              setLastFile(file);
+              assess.mutate({ file });
+            }
             // Cleared so re-uploading the same file after a fix fires onChange again.
             e.target.value = "";
           }}
@@ -159,16 +165,37 @@ export function AssessDocument() {
       )}
 
       {/* Nothing is invented when it could not be assessed. */}
+      {/* Not a dead end. Detection is not reliable enough to be the only route — measured, the
+          same CV came back as a CV in full and as Unknown when shortened by a third — so if it
+          cannot tell, the reader says. Radar asking rather than guessing is the rule everywhere
+          else in the product; this is the same rule. */}
       {result && !result.wasAssessed && (
-        <EmptyState
-          icon="warning"
-          title="Not assessed"
-          description={result.notAssessedReason ?? "Radar could not assess this document."}
-        >
-          <button className="btn btn--primary" onClick={() => fileInput.current?.click()}>
-            Try another file
+        <section className="assess__unknown">
+          <EmptyState
+            icon="warning"
+            title={result.kind === "Unknown" ? "What is this?" : "Not assessed"}
+            description={result.notAssessedReason ?? "Radar could not assess this document."}
+          />
+
+          {result.kind === "Unknown" && lastFile && (
+            <div className="assess__kinds">
+              {PREVIEWABLE.map((entry) => (
+                <button
+                  key={entry.kind}
+                  className="assess__kind"
+                  onClick={() => assess.mutate({ file: lastFile, kind: entry.kind })}
+                  disabled={assess.isPending}
+                >
+                  {entry.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <button className="btn btn--text btn--sm" onClick={() => fileInput.current?.click()}>
+            Or try another file
           </button>
-        </EmptyState>
+        </section>
       )}
 
       {result?.wasAssessed && (
@@ -176,7 +203,7 @@ export function AssessDocument() {
           <div className="assess__result-head">
             <div>
               <div className="assess__detected">
-                Read as a{" "}
+                {result.kindWasDeclared ? "Assessed as a" : "Read as a"}{" "}
                 <strong>
                   {PREVIEWABLE.find((e) => e.kind === result.kind)?.label.toLowerCase() ??
                     result.kind}
@@ -217,9 +244,30 @@ export function AssessDocument() {
             ))}
           </div>
 
-          <button className="btn btn--text btn--sm" onClick={() => fileInput.current?.click()}>
-            <Icon name="upload" size={13} /> Assess a revision
-          </button>
+          <div className="assess__after">
+            <button className="btn btn--text btn--sm" onClick={() => fileInput.current?.click()}>
+              <Icon name="upload" size={13} /> Assess a revision
+            </button>
+
+            {/* A wrong detection is correctable without re-uploading. */}
+            {!result.kindWasDeclared && lastFile && (
+              <details className="assess__wrong">
+                <summary>Not a {PREVIEWABLE.find((e) => e.kind === result.kind)?.label.toLowerCase() ?? result.kind}?</summary>
+                <div className="assess__kinds">
+                  {PREVIEWABLE.filter((e) => e.kind !== result.kind).map((entry) => (
+                    <button
+                      key={entry.kind}
+                      className="assess__kind"
+                      onClick={() => assess.mutate({ file: lastFile, kind: entry.kind })}
+                      disabled={assess.isPending}
+                    >
+                      {entry.label}
+                    </button>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
         </section>
       )}
     </div>

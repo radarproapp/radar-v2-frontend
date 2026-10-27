@@ -1142,6 +1142,10 @@ export interface DocumentAssessment {
   notAssessedReason?: string | null;
   kind: DocumentKind;
   kindEvidence: string;
+  /// True when the reader said what it is rather than Radar working it out. Detection is not
+  /// reliable enough to be the only route — the same CV came back Cv in full and Unknown when
+  /// shortened by a third.
+  kindWasDeclared: boolean;
   /// The persona the criteria were shaped for, so a wrong one is arguable.
   assessedAs: PersonaType;
   criteria: AssessmentCriterion[];

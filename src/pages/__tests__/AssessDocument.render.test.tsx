@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { AssessDocument } from "../AssessDocument";
 import { renderPage } from "../../test/harness";
 import * as api from "../../lib/api";
@@ -31,6 +31,7 @@ function assessment(overrides: Partial<DocumentAssessment> = {}): DocumentAssess
     notAssessedReason: null,
     kind: "Essay",
     kindEvidence: "Opens with a thesis paragraph followed by cited argument.",
+    kindWasDeclared: false,
     assessedAs: "Student" as never,
     criteria: [
       {
@@ -137,8 +138,11 @@ describe("AssessDocument", () => {
     renderPage(<AssessDocument />);
     upload();
 
-    expect(await screen.findByText("Not assessed")).toBeTruthy();
+    // Titled as a question now, because the reader can answer it.
+    expect(await screen.findByText("What is this?")).toBeTruthy();
     expect(screen.getByText(/could not tell what kind of document/i)).toBeTruthy();
+    // And crucially: no criteria are shown, because none were applied.
+    expect(screen.queryByText("Against the criteria")).toBeNull();
   });
 
   // Why it read the document as it did, so a wrong guess is arguable rather than mysterious.
@@ -164,5 +168,60 @@ describe("AssessDocument", () => {
     expect(
       await screen.findByText(/only a few characters/i, {}, { timeout: 3000 }),
     ).toBeTruthy();
+  });
+
+  /// An unidentified document is a question, not a dead end.
+  ///
+  /// Detection is not reliable enough to be the only route: measured on staging, the same CV came
+  /// back as Cv in full and as Unknown when shortened by a third. Being told Radar cannot tell
+  /// what your own CV is, with nothing to do about it, is honest and useless.
+  it("asks what the document is rather than giving up", async () => {
+    withPersona("Student");
+    const assessSpy = vi.spyOn(api, "assessDocument").mockResolvedValue(
+      assessment({
+        wasAssessed: false,
+        kind: "Unknown",
+        notAssessedReason: "Radar could not work out what kind of document this is.",
+        criteria: [],
+      }),
+    );
+
+    renderPage(<AssessDocument />);
+    upload();
+
+    expect(await screen.findByText("What is this?")).toBeTruthy();
+
+    // Saying what it is re-sends the same file with the kind, rather than asking for it again.
+    fireEvent.click(screen.getByRole("button", { name: "CV" }));
+
+    // Awaited: mutate() schedules the call, so asserting synchronously catches only the upload.
+    await waitFor(() =>
+      expect(assessSpy).toHaveBeenLastCalledWith(expect.any(File), "Cv"),
+    );
+  });
+
+  // A declared kind is labelled differently, because it is worth more: the criteria are certainly
+  // the right ones rather than probably.
+  it("says when the reader supplied the kind", async () => {
+    withPersona("Student");
+    vi.spyOn(api, "assessDocument").mockResolvedValue(
+      assessment({ kindWasDeclared: true, kindEvidence: "You told Radar what this is." }),
+    );
+
+    renderPage(<AssessDocument />);
+    upload();
+
+    expect(await screen.findByText(/assessed as a/i)).toBeTruthy();
+  });
+
+  // A wrong detection is correctable without re-uploading.
+  it("offers a correction when it detected the kind itself", async () => {
+    withPersona("Student");
+    vi.spyOn(api, "assessDocument").mockResolvedValue(assessment());
+
+    renderPage(<AssessDocument />);
+    upload();
+
+    expect(await screen.findByText(/not a essay\?|not an essay\?/i)).toBeTruthy();
   });
 });

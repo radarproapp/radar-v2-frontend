@@ -527,10 +527,15 @@ export function recordPlayback(
 ///
 /// The kind is deliberately not a parameter: it is detected from the text, because a CV submitted
 /// with an essay selected comes back criticised as an essay.
-export async function assessDocument(file: File): Promise<DocumentAssessment> {
+export async function assessDocument(file: File, kind?: DocumentKind): Promise<DocumentAssessment> {
   const token = getToken();
   const form = new FormData();
   form.append("file", file);
+
+  // Supplied only when the reader has told us. Sending a kind skips detection, which is the
+  // recovery path for the times detection cannot tell — being told Radar does not know what your
+  // own CV is would otherwise be a dead end.
+  if (kind) form.append("kind", kind);
 
   const res = await fetch(`${API_BASE}/api/documents/assess`, {
     method: "POST",
