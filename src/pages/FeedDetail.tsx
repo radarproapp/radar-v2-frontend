@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { ErrorState } from "../components/ErrorState";
 import { useAuth } from "../auth/AuthContext";
-import { addTopicToActiveRoadmap, ApiError, getFeedItem, getPersonalizedWhy, logEvent, rateWhy, reportFeedItem, saveFeedItem, unsaveFeedItem } from "../lib/api";
+import { ApiError, getFeedItem, getPersonalizedWhy, logEvent, rateWhy, reportFeedItem, saveFeedItem, unsaveFeedItem } from "../lib/api";
 import { VideoEmbed } from "../components/VideoEmbed";
 import { AudioEmbed } from "../components/AudioEmbed";
 import { humanize } from "../lib/date";
@@ -101,7 +101,6 @@ export function FeedDetail() {
 
   const itemQuery = useQuery({ queryKey: ["feed", "item", itemId], queryFn: () => getFeedItem(itemId) });
   const [activePersona, setActivePersona] = useState<string | undefined>(undefined);
-  const [addedToRoadmap, setAddedToRoadmap] = useState(false);
   const [whyRated, setWhyRated] = useState<boolean | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportSubmitted, setReportSubmitted] = useState(false);
@@ -157,16 +156,20 @@ export function FeedDetail() {
     }
   };
 
-  const addToRoadmap = async () => {
-    if (!item || addedToRoadmap) return;
-    setAddedToRoadmap(true);
-    try {
-      // Unenriched (freshly ingested) content often has no Topic yet — fall back to the title.
-      await addTopicToActiveRoadmap(item.topic || item.title);
-      logEvent("AddToRoadmap", { contentItemId: item.id });
-    } catch {
-      setAddedToRoadmap(false);
-    }
+  /// Hands the subject to the builder rather than appending a module here.
+  ///
+  /// POST /api/roadmaps/topics created a module with Lessons = [] and Level = "Intermediate" —
+  /// an empty section at a level nobody stated. The builder asks the two questions that make a
+  /// section correctly levelled instead of guessing them, which is the same rule the rest of
+  /// Learn runs on: Radar asks, it does not infer.
+  ///
+  /// The topic, not the title. A headline produces a section about one news story rather than
+  /// about the thing the story is an instance of, so with no topic there is nothing to learn
+  /// here and the button is not offered.
+  const learnThis = () => {
+    if (!item?.topic) return;
+    logEvent("AddToRoadmap", { contentItemId: item.id });
+    navigate(`/learn/build?subject=${encodeURIComponent(item.topic)}`);
   };
 
   if (itemQuery.isError) {
@@ -320,11 +323,13 @@ export function FeedDetail() {
       <div className="item-detail-section" style={{ borderLeft: "3px solid var(--cyan)", paddingLeft: 16, marginBottom: 20 }}>
         {nextMoveText && <div className="item-detail-section-label">YOUR NEXT MOVE</div>}
         {nextMoveText && renderNextMoveSteps(nextMoveText)}
-        <div style={{ marginTop: 14 }}>
-          <button className="btn btn--primary btn--sm" onClick={addToRoadmap} disabled={addedToRoadmap}>
-            {addedToRoadmap ? "Added to roadmap " : "+ Add to roadmap"}
-          </button>
-        </div>
+        {item.topic && (
+          <div style={{ marginTop: 14 }}>
+            <button className="btn btn--primary btn--sm" onClick={learnThis}>
+              Learn {item.topic} →
+            </button>
+          </div>
+        )}
       </div>
 
       {whyQuery.data?.whatToKnow && whyQuery.data.whatToKnow !== item.whatHappened && (
@@ -448,9 +453,11 @@ export function FeedDetail() {
           <span className="item-detail-learn-loop-tag">8 papers</span>
           <span className="item-detail-learn-loop-tag">1 project</span>
         </div>
-        <button className="btn btn--sm" style={{ background: "var(--cyan-bright)", color: "#0d2b2d", borderColor: "transparent" }} onClick={addToRoadmap}>
-          {addedToRoadmap ? "Added" : "Add to roadmap"}
-        </button>
+        {item.topic && (
+          <button className="btn btn--sm" style={{ background: "var(--cyan-bright)", color: "#0d2b2d", borderColor: "transparent" }} onClick={learnThis}>
+            Learn this
+          </button>
+        )}
       </div>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

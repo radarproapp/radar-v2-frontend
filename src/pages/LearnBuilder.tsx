@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Icon } from "../components/Icon";
 import { useAuth } from "../auth/AuthContext";
@@ -34,8 +34,15 @@ export function LearnBuilder() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
 
-  const [step, setStep] = useState<Step>("subject");
-  const [subject, setSubject] = useState("");
+  // ?subject= arrives from "Learn this" on a feed card: the learner has already answered the
+  // first question by pressing it, so asking again would be asking them to retype what they
+  // just chose. The two follow-ups still get asked, because they are what makes the path
+  // correctly levelled rather than generic.
+  const [params] = useSearchParams();
+  const handed = params.get("subject")?.trim() ?? "";
+
+  const [step, setStep] = useState<Step>(handed ? "level" : "subject");
+  const [subject, setSubject] = useState(handed);
   const [level, setLevel] = useState<Level | null>(null);
   const [outcome, setOutcome] = useState("");
   const [search, setSearch] = useState("");
@@ -89,16 +96,25 @@ export function LearnBuilder() {
     else navigate("/learn");
   };
 
-  const stepNumber = STEPS.indexOf(step) + 1;
-
   return (
     <div className="r-page build">
       <div className="build__bar">
         <button className="build__back" onClick={back} disabled={build.isPending}>
           <Icon name="menu" size={14} /> Back
         </button>
+        {/* One box, then two follow-ups — not question 1 of 3.
+            
+            The guide asks for a single prominent box and then "a short follow-up question only
+            when necessary". Level and outcome are necessary: they are why a 1,287-page Java
+            textbook came back as five correctly-levelled sections instead of one generic one.
+            But counting them as thirds of a form makes the first ask look like the start of
+            paperwork, which is the thing a deleted six-step flow already taught us. */}
         <span className="build__count">
-          Question {stepNumber} of {STEPS.length}
+          {step === "subject"
+            ? "Starts with one answer"
+            : step === "level"
+              ? "One quick follow-up"
+              : "Last one"}
         </span>
       </div>
 
@@ -122,17 +138,25 @@ export function LearnBuilder() {
 
       {step === "subject" && (
         <>
-          <h1 className="build__question">What do you want to learn?</h1>
-          <p className="build__hint">One subject. You can add more sections later.</p>
+          {/* The guide's wording, including "or achieve". A learner who knows they want to pass
+              an exam or get through a certification but could not name the subject behind it was
+              being asked the wrong question — and the search box, which only matched a catalogue
+              of subjects, read as though a subject were the only valid answer. Free text was
+              always accepted; nothing said so until the second line. */}
+          <h1 className="build__question">What do you want to learn or achieve?</h1>
+          <p className="build__hint">
+            A subject, a skill, or the thing you are working towards — your own words are fine.
+            You can add more sections later.
+          </p>
 
           <div className="build__search">
             <Icon name="search" size={16} />
             <input
               className="build__input"
-              placeholder="Search subjects"
+              placeholder="e.g. Cybersecurity, or pass the CCNA"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              aria-label="Search subjects"
+              aria-label="What you want to learn or achieve"
               autoFocus
             />
           </div>

@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
-import { addTopicToActiveRoadmap, captureItem, getRecentCaptures, logEvent } from "../lib/api";
+import { captureItem, getRecentCaptures, logEvent } from "../lib/api";
 import type { CaptureMode, CapturedItem } from "../lib/types";
 import { Icon } from "../components/Icon";
 
@@ -10,22 +11,19 @@ const MODES: CaptureMode[] = ["Link", "Note", "Voice", "Photo"];
 
 export function Capture() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [input, setInput] = useState("");
   const [activeMode, setActiveMode] = useState<CaptureMode>("Link");
   const [saving, setSaving] = useState(false);
   const [justCaptured, setJustCaptured] = useState<CapturedItem | null>(null);
   const [captureError, setCaptureError] = useState<string | null>(null);
-  const [roadmapState, setRoadmapState] = useState<"idle" | "saving" | "added">("idle");
-
-  const addCaptureToRoadmap = async (topic: string) => {
-    setRoadmapState("saving");
-    try {
-      await addTopicToActiveRoadmap(topic);
-      setRoadmapState("added");
-    } catch {
-      setRoadmapState("idle");
-      setCaptureError("Could not add that to your roadmap. Try again.");
-    }
+  /// The same route the feed takes: hand the subject to the builder.
+  ///
+  /// This called POST /api/roadmaps/topics, which appended a module with no lessons at a level
+  /// nobody stated. Two questions in the builder are the difference between a section titled
+  /// after your capture and a section you can actually work through.
+  const learnCapture = (topic: string) => {
+    navigate(`/learn/build?subject=${encodeURIComponent(topic)}`);
   };
 
   const recentQuery = useQuery({ queryKey: ["capture", "recent"], queryFn: getRecentCaptures });
@@ -39,7 +37,6 @@ export function Capture() {
       const item = await captureItem(activeMode, input.trim());
       logEvent("CaptureCreated", { metadata: { mode: activeMode } });
       setJustCaptured(item);
-      setRoadmapState("idle");
       setInput("");
       queryClient.invalidateQueries({ queryKey: ["capture", "recent"] });
     } catch (err) {
@@ -132,10 +129,9 @@ export function Capture() {
               {justCaptured.topic && (
                 <button
                   className="btn btn--primary btn--sm"
-                  onClick={() => addCaptureToRoadmap(justCaptured.topic!)}
-                  disabled={roadmapState !== "idle"}
+                  onClick={() => learnCapture(justCaptured.topic!)}
                 >
-                  {roadmapState === "added" ? "Added to roadmap " : roadmapState === "saving" ? "Adding…" : `+ Add ${justCaptured.topic} to roadmap`}
+                  {`Learn ${justCaptured.topic} →`}
                 </button>
               )}
               {justCaptured.mode === "Link" && (

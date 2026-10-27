@@ -562,13 +562,11 @@ export function resolveReport(id: string) {
 }
 
 // ── Roadmap ──────────────────────────────────────────────────────────────
-
-export function addTopicToActiveRoadmap(topic: string) {
-  return request<void>("/api/roadmaps/active/topics", {
-    method: "POST",
-    body: JSON.stringify({ topic }),
-  });
-}
+//
+// addTopicToActiveRoadmap is gone. POST /api/roadmaps/active/topics appends a module with no
+// lessons at a level nobody stated, so the feed, the brief and the capture page all hand the
+// subject to /learn/build instead and let it ask the two questions that make a section
+// workable. The endpoint still exists; nothing in the app calls it.
 
 // ── Capture ──────────────────────────────────────────────────────────────
 

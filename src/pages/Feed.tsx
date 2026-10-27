@@ -295,6 +295,24 @@ export function Feed() {
                       >
                         Not relevant
                       </button>
+
+                      {/* The shortest route from "this is interesting" to a path about it.
+                          
+                          Only when the item has a topic. The alternative is handing Learn an
+                          article headline as a subject, which produces a section about one news
+                          story rather than about the thing the story is an instance of. */}
+                      {item.topic && (
+                        <button
+                          className="btn btn--text btn--sm"
+                          onClick={() => {
+                            logEvent("Open", { contentItemId: item.id, position });
+                            navigate(`/learn/build?subject=${encodeURIComponent(item.topic!)}`);
+                          }}
+                          title={`Build a learning path on ${item.topic}`}
+                        >
+                          Learn this
+                        </button>
+                      )}
                       <span className="feed-card__read-time">
                         {item.estimatedReadTime ?? item.estimatedWatchTime ?? "3 min read"}
                       </span>
