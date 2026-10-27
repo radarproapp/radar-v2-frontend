@@ -276,6 +276,20 @@ export function FeedDetail() {
         <div className="item-detail-section">
           <div className="item-detail-section-label">WHAT HAPPENED</div>
           <p>{item.whatHappened || item.aiSummary}</p>
+
+          {/* Where the summary came from.
+              
+              A summary written from a transcript and one written from a two-line RSS description
+              read the same on screen, and only one of them is a summary of the thing you are
+              about to spend forty minutes on. Shown for media only, where the gap is widest and
+              the time cost of trusting it is highest. */}
+          {(item.type === "Video" || item.type === "Podcast") && (
+            <div className="item-detail-provenance">
+              {item.transcriptText
+                ? "Summarised from the full transcript"
+                : "Summarised from the published description — no transcript available for this one"}
+            </div>
+          )}
         </div>
       )}
 

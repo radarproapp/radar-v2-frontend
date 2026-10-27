@@ -1801,3 +1801,13 @@ button.path-resource {
     padding-left: 11px;
   }
 }
+
+/* Where a media summary came from. Quiet, because it is a caveat and not a headline — but
+   present, because a transcript-backed summary and a description-backed one are different
+   things and read identically without it. */
+.item-detail-provenance {
+  margin-top: 9px;
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--text-faint);
+}
