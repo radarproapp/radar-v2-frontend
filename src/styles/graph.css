@@ -1061,3 +1061,15 @@
     min-height: 44px;
   }
 }
+
+/* Video resume. Offered before pressing play, so picking up mid-way is a choice rather than a
+   surprise. */
+.video-player__resume {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cyan-deep);
+}

@@ -5,7 +5,7 @@ import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { ErrorState } from "../components/ErrorState";
 import { useAuth } from "../auth/AuthContext";
 import { ApiError, getFeedItem, getPersonalizedWhy, logEvent, rateWhy, reportFeedItem, saveFeedItem, unsaveFeedItem } from "../lib/api";
-import { VideoEmbed } from "../components/VideoEmbed";
+import { VideoPlayer } from "../components/VideoPlayer";
 import { MediaPlayer } from "../components/MediaPlayer";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
@@ -275,7 +275,16 @@ export function FeedDetail() {
         </div>
       )}
 
-      {item.type === "Video" && <VideoEmbed url={item.url} title={item.title} />}
+      {/* Resumes where it stopped, like the podcast player beside it. A plain embed cannot
+          report its position, which is why video was the one that forgot. */}
+      {item.type === "Video" && (
+        <VideoPlayer
+          contentItemId={item.id}
+          url={item.url}
+          title={item.title}
+          initial={playback}
+        />
+      )}
       {item.type === "Podcast" && (
         <MediaPlayer
           contentItemId={item.id}
