@@ -48,5 +48,18 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_VERCEL_ENV': JSON.stringify(vercelEnv),
       'import.meta.env.VITE_GIT_BRANCH': JSON.stringify(branch),
     },
+
+    // Render tests need a DOM. Until this was here there were none, across 38 pages — which is
+    // how a player with no transport controls and a profile page of nine hardcoded zeros both
+    // sat behind a passing suite.
+    //
+    // Only the files that need it pay for jsdom: the lib tests are pure functions and starting a
+    // DOM for them would slow the suite for nothing.
+    test: {
+      environmentMatchGlobs: [
+        ['**/__tests__/*.render.test.tsx', 'jsdom'],
+      ],
+      setupFiles: ['./src/test/setup.ts'],
+    },
   }
 })
