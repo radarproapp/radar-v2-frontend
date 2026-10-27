@@ -9,10 +9,16 @@ function activeLabels(items: typeof learn.items, pathname: string): string[] {
 }
 
 describe("workspaceForPath", () => {
-  it("resolves the three workspaces from their homes", () => {
+  it("resolves the two workspaces from their homes", () => {
     expect(workspaceForPath("/").id).toBe("intelligence");
     expect(workspaceForPath("/learn").id).toBe("learn");
-    expect(workspaceForPath("/opportunities").id).toBe("opportunities");
+  });
+
+  // Two products, not three. Opportunities is something Radar finds for you, which is the job
+  // Intelligence does — it was never a third thing to switch to.
+  it("puts Opportunities inside Intelligence", () => {
+    expect(WORKSPACES).toHaveLength(2);
+    expect(workspaceForPath("/opportunities").id).toBe("intelligence");
   });
 
   it("keeps nested learn routes inside Learn rather than falling back to the root", () => {
@@ -65,6 +71,10 @@ describe("isItemActive", () => {
   // with those letters.
   it("does not match a partial path segment", () => {
     expect(isItemActive({ label: "My path", path: "/learn", icon: "checklist" }, "/learnhub")).toBe(false);
+  });
+
+  it("marks Opportunities current on its own route", () => {
+    expect(activeLabels(intelligence.items, "/opportunities")).toEqual(["Opportunities"]);
   });
 
   it("honours the extra paths an item declares", () => {

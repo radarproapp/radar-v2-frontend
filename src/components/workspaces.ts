@@ -1,11 +1,15 @@
 import type { IconName } from "./Icon";
 
-/// The three things Radar is for, and what lives inside each.
+/// The two things Radar is for, and what lives inside each.
 ///
-/// Until now the navigation listed eleven destinations side by side, including "Radar
+/// Until recently the navigation listed eleven destinations side by side, including "Radar
 /// Intelligence" and "Feed" — the same idea twice — so the menu itself could not say what the
-/// product was. These are the three jobs the personas actually have: know what is happening,
-/// become capable and prove it, get the place.
+/// product was. Grouping them gave three jobs; the product owner's guide names two products, and
+/// Opportunities was never a third one. It is a thing Radar finds for you, which is what
+/// Intelligence is: know what is happening, and become capable enough to act on it.
+///
+/// Nothing was lost in moving it. The pipeline, the deadline tracking and the matching all came
+/// with it; it is reached from the Intelligence sidebar the way Feed already is.
 ///
 /// Everything a user *adds* — saved items, captures, notes, uploads — sits under Intelligence
 /// rather than in a drawer of its own. Following a subject and uploading a document are the same
@@ -19,7 +23,7 @@ export interface WorkspaceItem {
 }
 
 export interface Workspace {
-  id: "intelligence" | "learn" | "opportunities";
+  id: "intelligence" | "learn";
   label: string;
   tagline: string;
   icon: IconName;
@@ -37,6 +41,7 @@ export const WORKSPACES: Workspace[] = [
     items: [
       { label: "Today", path: "/", icon: "star" },
       { label: "Feed", path: "/feed", icon: "article", also: ["/source", "/topic"] },
+      { label: "Opportunities", path: "/opportunities", icon: "job" },
       { label: "Weekly brief", path: "/weekly", icon: "deadline" },
       { label: "Saved", path: "/saved", icon: "save" },
       { label: "Captures", path: "/capture", icon: "inbox" },
@@ -56,14 +61,6 @@ export const WORKSPACES: Workspace[] = [
       { label: "Mentor", path: "/mentor", icon: "chat" },
       { label: "Progress", path: "/progress", icon: "trend" },
     ],
-  },
-  {
-    id: "opportunities",
-    label: "Opportunities",
-    tagline: "Find your next place",
-    icon: "job",
-    home: "/opportunities",
-    items: [{ label: "All opportunities", path: "/opportunities", icon: "job" }],
   },
 ];
 
