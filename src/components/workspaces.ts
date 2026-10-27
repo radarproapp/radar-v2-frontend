@@ -56,7 +56,7 @@ export const WORKSPACES: Workspace[] = [
     home: "/learn",
     items: [
       { label: "My path", path: "/learn", icon: "checklist", also: ["/learn/path", "/learn/build"] },
-      { label: "Hub", path: "/learn/hub", icon: "book" },
+      { label: "Hub", path: "/learn/hub", icon: "book", also: ["/research"] },
       { label: "Projects", path: "/projects", icon: "build", also: ["/showcase"] },
       { label: "Mentor", path: "/mentor", icon: "chat" },
       { label: "Progress", path: "/progress", icon: "trend" },

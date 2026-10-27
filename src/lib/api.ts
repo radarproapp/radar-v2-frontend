@@ -5,6 +5,7 @@ import type {
   CapturedItem,
   ChallengeResult,
   ChatMessage,
+  CitationStyle,
   ContentItem,
   ContentReport,
   ContentType,
@@ -1112,4 +1113,54 @@ export function getAdminReports() {
 
 export function resolveAdminReport(id: string) {
   return request<void>(`/api/admin/reports/${id}/resolve`, { method: "POST" });
+}
+
+// ── Research discovery ───────────────────────────────────────────────────
+// Every result comes from OpenAlex, which means every result has a DOI a reader can resolve.
+// A hand-written catalogue used to be returned ahead of these; six of its eight DOIs were 404
+// at doi.org, and a citation endpoint would format any of them into a reference list. Nothing
+// here is hard-coded, and an empty result is the honest answer when nothing matches.
+
+export function searchResearch(params: {
+  q: string;
+  yearFrom?: number;
+  paperType?: string;
+  page?: number;
+  pageSize?: number;
+}) {
+  const query = new URLSearchParams({ q: params.q });
+  if (params.yearFrom) query.set("yearFrom", String(params.yearFrom));
+  if (params.paperType && params.paperType !== "all") query.set("paperType", params.paperType);
+  if (params.page) query.set("page", String(params.page));
+  query.set("pageSize", String(params.pageSize ?? 20));
+
+  return request<ContentItem[]>(`/api/research/search?${query.toString()}`);
+}
+
+export function getPaper(id: string) {
+  return request<ContentItem>(`/api/research/${encodeURIComponent(id)}`);
+}
+
+export function getPaperCitation(id: string, style: CitationStyle) {
+  return request<{ paperId: string; style: string; citation: string }>(
+    `/api/research/${encodeURIComponent(id)}/citation?style=${style}`,
+  );
+}
+
+export function explainPaper(id: string) {
+  return request<{ paperId: string; explanation: string }>(
+    `/api/research/${encodeURIComponent(id)}/explain`,
+    { method: "POST" },
+  );
+}
+
+export function findResearchGaps(id: string) {
+  return request<{ paperId: string; gaps: string }>(
+    `/api/research/${encodeURIComponent(id)}/gaps`,
+    { method: "POST" },
+  );
+}
+
+export function getRelatedPapers(id: string) {
+  return request<ContentItem[]>(`/api/research/${encodeURIComponent(id)}/related`);
 }

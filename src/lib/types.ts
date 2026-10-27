@@ -994,3 +994,6 @@ export interface HomeBrief {
   closingSoon?: HomeOpportunity[];
   stats: UserStats;
 }
+
+/// The styles GET /api/research/{id}/citation accepts.
+export type CitationStyle = "APA" | "MLA" | "Chicago" | "Harvard" | "IEEE";

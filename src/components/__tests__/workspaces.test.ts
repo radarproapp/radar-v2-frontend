@@ -73,6 +73,14 @@ describe("isItemActive", () => {
     expect(isItemActive({ label: "My path", path: "/learn", icon: "checklist" }, "/learnhub")).toBe(false);
   });
 
+  // Research Discovery is reached from the Hub and has no sidebar row of its own, so the Hub
+  // claims the route. Without that, workspaceForPath falls back to Intelligence and a learner
+  // searching the literature watches the Learn sidebar disappear.
+  it("keeps the Learn sidebar on the research page, with Hub current", () => {
+    expect(workspaceForPath("/research").id).toBe("learn");
+    expect(activeLabels(learn.items, "/research")).toEqual(["Hub"]);
+  });
+
   it("marks Opportunities current on its own route", () => {
     expect(activeLabels(intelligence.items, "/opportunities")).toEqual(["Opportunities"]);
   });

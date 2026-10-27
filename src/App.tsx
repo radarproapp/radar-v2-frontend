@@ -39,6 +39,7 @@ const AskRadar = lazy(() => import("./pages/AskRadar").then((m) => ({ default: m
 const Notebook = lazy(() => import("./pages/Notebook").then((m) => ({ default: m.Notebook })));
 const NoteEditor = lazy(() => import("./pages/NoteEditor").then((m) => ({ default: m.NoteEditor })));
 const Opportunities = lazy(() => import("./pages/Opportunities").then((m) => ({ default: m.Opportunities })));
+const Research = lazy(() => import("./pages/Research").then((m) => ({ default: m.Research })));
 const Compare = lazy(() => import("./pages/Compare").then((m) => ({ default: m.Compare })));
 const Plans = lazy(() => import("./pages/Plans").then((m) => ({ default: m.Plans })));
 const Settings = lazy(() => import("./pages/Settings").then((m) => ({ default: m.Settings })));
@@ -127,6 +128,7 @@ export default function App() {
                 <Route path="/notebook" element={<RequireAuth><Notebook /></RequireAuth>} />
                 <Route path="/notebook/:noteId" element={<RequireAuth><NoteEditor /></RequireAuth>} />
                 <Route path="/opportunities" element={<RequireAuth><Opportunities /></RequireAuth>} />
+                <Route path="/research" element={<RequireAuth><Research /></RequireAuth>} />
                 <Route path="/compare" element={<RequireAuth><Compare /></RequireAuth>} />
                 <Route path="/compare/:comparisonId" element={<RequireAuth><Compare /></RequireAuth>} />
                 <Route path="/plans" element={<RequireAuth><Plans /></RequireAuth>} />

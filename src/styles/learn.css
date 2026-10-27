@@ -1437,3 +1437,367 @@ button.path-resource {
     min-height: 44px;
   }
 }
+
+/* ── Research Discovery ────────────────────────────────────────────────────────────────────
+
+   A search box and a list of papers. Deliberately plainer than the feed: a result list where
+   every row carries a resolvable DOI should read like a bibliography, not like a card stack
+   competing for a click. */
+
+.research__sub {
+  margin: 6px 0 0;
+  max-width: 62ch;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.research__search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.research__field {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--bg-card);
+  color: var(--text-faint);
+}
+
+.research__field:focus-within {
+  border-color: var(--cyan);
+}
+
+.research__input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 0;
+  border: none;
+  background: none;
+  outline: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14.5px;
+}
+
+.research__clear {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg-hover);
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.research__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.research__suggestions {
+  margin-bottom: 24px;
+}
+
+.research__suggestions-label,
+.research__count {
+  margin-bottom: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.research__suggestions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.research__chip {
+  padding: 7px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--bg-card);
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.research__chip:hover {
+  border-color: var(--cyan);
+  color: var(--cyan-deep);
+}
+
+/* ── One paper ───────────────────────────────────────────────────────────────────────────── */
+
+.paper {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.paper__head {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.paper__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.paper__head:hover .paper__title {
+  color: var(--cyan-deep);
+}
+
+.paper__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 7px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.paper__venue {
+  font-style: italic;
+}
+
+.paper__type {
+  text-transform: capitalize;
+}
+
+.paper__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 9px;
+  color: var(--text-faint);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.paper__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 9px;
+}
+
+.paper__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-family: var(--font-body);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.paper__link:hover {
+  color: var(--cyan-deep);
+  text-decoration: underline;
+}
+
+.paper__link--oa {
+  color: var(--cyan-deep);
+  font-weight: 700;
+}
+
+.paper__body {
+  margin-top: 16px;
+  padding-left: 14px;
+  border-left: 2px solid var(--border);
+}
+
+.paper__abstract {
+  margin: 0 0 16px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+.paper__section {
+  margin-bottom: 14px;
+}
+
+.paper__section-label {
+  margin-bottom: 3px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.paper__section-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+.paper__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.paper__cite {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.paper__style {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.paper__result {
+  margin-top: 12px;
+  padding: 13px 15px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-1);
+}
+
+.paper__result--error {
+  border-color: rgba(220, 38, 38, 0.25);
+  background: rgba(220, 38, 38, 0.07);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.paper__result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.paper__result-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* Hanging indent, because a citation is read as a citation. */
+.paper__citation {
+  margin: 0;
+  padding-left: 1.6em;
+  text-indent: -1.6em;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.paper__result-text {
+  margin: 7px 0 0;
+  font-size: 13.5px;
+  line-height: 1.68;
+  color: var(--text-dim);
+  white-space: pre-wrap;
+}
+
+/* ── The way in, from the Hub's Research stream ──────────────────────────────────────────── */
+
+.hub-research-cta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin-bottom: 22px;
+  padding: 17px 19px;
+  border: 1px solid var(--cyan);
+  border-radius: var(--r-lg);
+  background: var(--cyan-light);
+  cursor: pointer;
+  text-align: left;
+  color: var(--cyan-deep);
+}
+
+.hub-research-cta:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.hub-research-cta__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--bg-card);
+}
+
+.hub-research-cta__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.hub-research-cta__title {
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.hub-research-cta__desc {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+@media (max-width: 640px) {
+  .research__search {
+    flex-wrap: wrap;
+  }
+
+  .research__search .btn {
+    width: 100%;
+  }
+
+  .paper__body {
+    padding-left: 11px;
+  }
+}

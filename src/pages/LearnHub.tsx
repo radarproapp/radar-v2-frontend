@@ -365,6 +365,26 @@ export function LearnHub() {
             })}
           </div>
 
+          {/* The Research stream lists what Radar has ingested. Searching the literature is a
+              different act — you arrive with a question rather than a filter — so it is a
+              destination rather than another card in this list. It keeps the Learn sidebar,
+              with Hub current. */}
+          {activeIntent === "Research" && (
+            <button className="hub-research-cta" onClick={() => navigate("/research")}>
+              <span className="hub-research-cta__icon">
+                <Icon name="paper" size={20} />
+              </span>
+              <span className="hub-research-cta__text">
+                <span className="hub-research-cta__title">Search the literature</span>
+                <span className="hub-research-cta__desc">
+                  OpenAlex, by topic or question. Every result has a DOI that resolves, and
+                  open-access copies are linked where they exist.
+                </span>
+              </span>
+              <Icon name="next" size={16} />
+            </button>
+          )}
+
           {/* 4 & 9. CURATED RESOURCE CARDS WITH FORMAT-SPECIFIC BREAKDOWN */}
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
