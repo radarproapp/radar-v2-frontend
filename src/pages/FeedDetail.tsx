@@ -6,7 +6,7 @@ import { ErrorState } from "../components/ErrorState";
 import { useAuth } from "../auth/AuthContext";
 import { ApiError, getFeedItem, getPersonalizedWhy, logEvent, rateWhy, reportFeedItem, saveFeedItem, unsaveFeedItem } from "../lib/api";
 import { VideoEmbed } from "../components/VideoEmbed";
-import { AudioEmbed } from "../components/AudioEmbed";
+import { MediaPlayer } from "../components/MediaPlayer";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ReportReason } from "../lib/types";
@@ -108,7 +108,10 @@ export function FeedDetail() {
   const [reportNote, setReportNote] = useState("");
   const [reportSubmitting, setReportSubmitting] = useState(false);
 
-  const item = itemQuery.data;
+  // The response carries the resume point alongside the item now, so the player can open where
+  // the reader left off rather than at zero.
+  const item = itemQuery.data?.item;
+  const playback = itemQuery.data?.playback ?? null;
   const whyQuery = useQuery({
     queryKey: ["feed", "why", itemId],
     queryFn: () => getPersonalizedWhy(itemId),
@@ -273,7 +276,15 @@ export function FeedDetail() {
       )}
 
       {item.type === "Video" && <VideoEmbed url={item.url} title={item.title} />}
-      {item.type === "Podcast" && <AudioEmbed url={item.audioUrl} title={item.title} />}
+      {item.type === "Podcast" && (
+        <MediaPlayer
+          contentItemId={item.id}
+          url={item.audioUrl}
+          title={item.title}
+          chapters={item.chapters}
+          initial={playback}
+        />
+      )}
 
       {(item.whatHappened || item.aiSummary) && (
         <div className="item-detail-section">

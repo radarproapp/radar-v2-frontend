@@ -7,7 +7,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { GuidanceCards } from "../components/GuidanceCards";
 import { VideoEmbed } from "../components/VideoEmbed";
-import { AudioEmbed } from "../components/AudioEmbed";
+import { MediaPlayer } from "../components/MediaPlayer";
 import {
   ApiError,
   getLearnHub,
@@ -518,7 +518,11 @@ function HubResourceCard({
 
       {isPodcast && (
         <div style={{ margin: "14px 0" }}>
-          {item.mediaUrl && <AudioEmbed url={item.mediaUrl} title={item.title} />}
+          {/* The same player as the brief, so a Hub resource is resumable and counted too.
+              Without this, listening in the Hub was invisible to the graph. */}
+          {item.mediaUrl && (
+            <MediaPlayer contentItemId={item.id} url={item.mediaUrl} title={item.title} />
+          )}
           {!item.mediaUrl && item.url && (
             <a href={item.url} target="_blank" rel="noreferrer" className="btn btn--sm" style={{ textDecoration: "none" }}>
               <Icon name="podcast" /> Listen to Full Episode on {item.source} ↗

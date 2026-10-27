@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import { QuizPerformanceSummary } from "../components/QuizPerformanceSummary";
 import {
   createStudyPlan,
   getActiveStudyPlan,
@@ -19,6 +20,7 @@ import {
   completeSpacedRevision
 } from "../lib/api";
 import type {
+  QuizPerformance,
   ChatMessage,
   MentorQuiz,
   MentorStudyPlan,
@@ -125,6 +127,9 @@ export function LearningMentor() {
 
   // Quiz & Practice
   const [quiz, setQuiz] = useState<MentorQuiz | null>(null);
+  // Arrives with every quiz response rather than being fetched separately, and is counted from
+  // stored answers — so it is here even with the cloud brain unavailable.
+  const [performance, setPerformance] = useState<QuizPerformance | null>(null);
   const [quizTopic, setQuizTopic] = useState("");
   const [quizDifficulty, setQuizDifficulty] = useState("Adaptive");
   const [quizGenerating, setQuizGenerating] = useState(false);
@@ -262,8 +267,9 @@ export function LearningMentor() {
     if (!topic.trim()) return;
     setQuizGenerating(true);
     try {
-      const q = await generateQuiz(topic.trim(), 5, diff);
+      const { quiz: q, performance } = await generateQuiz(topic.trim(), 5, diff);
       setQuiz(q);
+      setPerformance(performance);
       setSelectedAnswer(null);
     } finally {
       setQuizGenerating(false);
@@ -273,8 +279,10 @@ export function LearningMentor() {
   // Submit Answer
   const submitAnswer = async () => {
     if (!quiz || selectedAnswer === null) return;
-    const updated = await submitQuizAnswer(quiz.id, quiz.currentQuestionIndex, selectedAnswer);
+    const { quiz: updated, performance: summary } = await submitQuizAnswer(
+      quiz.id, quiz.currentQuestionIndex, selectedAnswer);
     setQuiz(updated);
+    setPerformance(summary);
     // Refresh masteries
     getTopicMasteries().then(setMasteries).catch(() => {});
   };
@@ -725,6 +733,16 @@ export function LearningMentor() {
               <div style={{ fontSize: 13.5, color: "var(--text-muted)", marginBottom: 18 }}>
                 Score: {Math.round((quiz.score / quiz.questions.length) * 100)}% · Mastery score updated in your learning memory.
               </div>
+
+              {/* The breakdown. The score says four out of six; this says both wrong answers
+                  were problem-solving questions on one subtopic, which is the part that makes
+                  the next attempt different. All of it was already on each question as
+                  CognitiveLevel and Subtopic, and nothing read it. */}
+              {performance && (
+                <div style={{ textAlign: "left", margin: "0 auto 22px", maxWidth: 600 }}>
+                  <QuizPerformanceSummary performance={performance} />
+                </div>
+              )}
 
               {/* NEXT MOVE BANNER */}
               {quiz.nextMove && (

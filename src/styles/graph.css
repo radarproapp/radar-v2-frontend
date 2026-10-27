@@ -1,0 +1,562 @@
+/* Player, quiz performance, and the graph.
+
+   A separate file because learn.css had grown past the point where anybody could find anything
+   in it, and these three surfaces arrived together. */
+
+/* ── The player ────────────────────────────────────────────────────────────────────────────
+
+   A player rather than a wrapped browser audio element. Big transport, a scrub bar wide enough
+   to hit, speed where a thumb reaches it, and chapters when the episode declared them. */
+
+.player {
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+}
+
+.player__resumed {
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cyan-deep);
+}
+
+.player__scrub {
+  position: relative;
+  height: 6px;
+  margin-bottom: 14px;
+  border-radius: var(--r-pill);
+  background: var(--bg-hover);
+  cursor: pointer;
+}
+
+/* A six-pixel bar is hard to hit. The target extends above and below without moving it. */
+.player__scrub::before {
+  content: "";
+  position: absolute;
+  inset: -11px 0;
+}
+
+.player__scrub:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 4px;
+}
+
+.player__scrub-fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--cyan);
+}
+
+.player__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.player__play {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 50%;
+  background: var(--navy);
+  cursor: pointer;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.player__play:hover {
+  background: var(--cyan-deep);
+}
+
+.player__skip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 44px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.player__skip:hover {
+  border-color: var(--cyan);
+  color: var(--cyan-deep);
+}
+
+.player__clock {
+  flex: 1;
+  min-width: 90px;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.player__speed {
+  min-width: 48px;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.player__speed:hover {
+  border-color: var(--cyan);
+  color: var(--cyan-deep);
+}
+
+.player__chapters {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.player__chapters-label,
+.quizperf__group-label,
+.graph-section__label {
+  margin-bottom: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.player__chapter {
+  display: flex;
+  align-items: baseline;
+  gap: 11px;
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 9px;
+  border: none;
+  border-radius: var(--r-md);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.player__chapter:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.player__chapter:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.player__chapter-time {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--cyan-deep);
+}
+
+.player__chapter-title {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+/* ── Quiz performance ──────────────────────────────────────────────────────────────────────
+
+   The score says four out of six. This says which four. */
+
+.quizperf {
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-1);
+}
+
+.quizperf__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.quizperf__score {
+  font-family: var(--font-display);
+  font-size: 2.3rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+}
+
+.quizperf__score-of {
+  font-size: 1.2rem;
+  color: var(--text-faint);
+}
+
+.quizperf__score-label {
+  margin-top: 5px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.quizperf__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.quizperf__group {
+  margin-bottom: 18px;
+}
+
+.quizperf__band {
+  margin-bottom: 9px;
+}
+
+.quizperf__band-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.quizperf__band-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.quizperf__band-count {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+.quizperf__bar,
+.graph-row__bar {
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--bg-hover);
+  overflow: hidden;
+}
+
+.quizperf__bar-fill,
+.graph-row__bar-fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--cyan);
+}
+
+.quizperf__weak,
+.quizperf__missed {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.quizperf__weak-row,
+.graph-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.quizperf__weak-chip,
+.graph-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--bg-card);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.quizperf__weak-chip,
+.graph-chip--weak {
+  border-color: rgba(220, 38, 38, 0.3);
+  background: rgba(220, 38, 38, 0.07);
+  color: #b91c1c;
+}
+
+.graph-chip__count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+.quizperf__weak-note,
+.graph-section__note {
+  margin: 9px 0 0;
+  font-size: 11.5px;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--text-faint);
+}
+
+.quizperf__miss {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.quizperf__miss:last-child {
+  border-bottom: none;
+}
+
+.quizperf__miss-q {
+  margin-bottom: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.quizperf__miss-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.quizperf__miss-yours,
+.quizperf__miss-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+}
+
+.quizperf__miss-yours {
+  color: #b91c1c;
+  text-decoration: line-through;
+}
+
+.quizperf__miss-right {
+  color: var(--cyan-deep);
+  font-weight: 700;
+}
+
+.quizperf__miss-why {
+  margin: 0 0 7px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.quizperf__miss-tag {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ── The graph ─────────────────────────────────────────────────────────────────────────────
+
+   Every number traces to a row somebody created by doing something. Tiles with nothing behind
+   them are omitted rather than drawn as zero: the page this replaced showed nine zeros to
+   everybody, because the counters it read were never written to. */
+
+.graph-hero {
+  padding: 24px 26px;
+  margin-bottom: 18px;
+  border-radius: var(--r-xl);
+  background: var(--navy);
+  color: #fff;
+}
+
+.graph-hero__label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--cyan-bright);
+}
+
+.graph-hero__value {
+  margin: 8px 0 4px;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 9vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--cyan-bright);
+}
+
+.graph-hero__note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.graph-hero__most {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  margin-top: 18px;
+  padding: 13px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--r-lg);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+
+.graph-hero__most:hover {
+  border-color: var(--cyan-bright);
+}
+
+.graph-hero__most-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.graph-hero__most-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.graph-hero__most-meta {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.graph-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 26px;
+}
+
+.graph-tile {
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+}
+
+.graph-tile__value {
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--cyan-deep);
+}
+
+.graph-tile__label {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.graph-tile__hint {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.graph-section {
+  margin-bottom: 26px;
+}
+
+.graph-row {
+  margin-bottom: 11px;
+}
+
+.graph-row__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.graph-row__name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.graph-row__value {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+.graph-months {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 110px;
+}
+
+.graph-month {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+}
+
+.graph-month__bar-wrap {
+  display: flex;
+  align-items: flex-end;
+  flex: 1;
+  width: 100%;
+}
+
+.graph-month__bar {
+  width: 100%;
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+  background: var(--cyan);
+}
+
+.graph-month__label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-faint);
+}
+
+.graph-foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+@media (pointer: coarse) {
+  .player__chapter,
+  .player__skip,
+  .player__speed {
+    min-height: 44px;
+  }
+}

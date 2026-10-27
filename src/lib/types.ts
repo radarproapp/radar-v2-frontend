@@ -997,3 +997,107 @@ export interface HomeBrief {
 
 /// The styles GET /api/research/{id}/citation accepts.
 export type CitationStyle = "APA" | "MLA" | "Chicago" | "Harvard" | "IEEE";
+
+// ── The graph ────────────────────────────────────────────────────────────
+// Derived server-side on every request from analytics events, playback rows, roadmaps, quizzes
+// and applications. UserStats declared most of these fields and nothing ever wrote to them, so
+// the Growth Tracker showed nine tiles of zero to everybody — hence computed, not counted.
+
+export interface PlaybackProgress {
+  positionSeconds: number;
+  durationSeconds: number;
+  secondsPlayed: number;
+  completedAt: string | null;
+}
+
+export interface GraphItem {
+  id: string;
+  title: string;
+  source: string | null;
+  topic: string | null;
+  type: ContentType;
+  secondsPlayed: number;
+}
+
+export interface UserGraph {
+  firstActivityAt: string | null;
+  lastActivityAt: string | null;
+  /// False for a new account, so the page offers something to do instead of a wall of noughts.
+  hasActivity: boolean;
+
+  listening: {
+    secondsPlayed: number;
+    episodesStarted: number;
+    episodesFinished: number;
+    videosStarted: number;
+    videosFinished: number;
+    mostPlayed: GraphItem | null;
+  };
+
+  learning: {
+    pathSections: number;
+    lessonsCompleted: number;
+    lessonsTotal: number;
+    quizzesTaken: number;
+    /// Null when no quiz is complete — which is not the same as scoring nothing.
+    averageQuizScore: number | null;
+    projectsCompleted: number;
+    subjects: string[];
+    weakAreas: string[];
+  };
+
+  opportunities: {
+    saved: number;
+    applied: number;
+    byStatus: Record<string, number>;
+  };
+
+  reading: {
+    itemsOpened: number;
+    itemsSaved: number;
+    papersOpened: number;
+    notesWritten: number;
+    capturesMade: number;
+  };
+
+  topTopics: { topic: string; interactions: number; secondsPlayed: number }[];
+  topSources: { source: string; opens: number }[];
+  months: { month: string; interactions: number; secondsPlayed: number }[];
+}
+
+// ── Quiz performance ─────────────────────────────────────────────────────
+
+export interface QuizBand {
+  name: string;
+  correct: number;
+  answered: number;
+  /// Null when nothing in this band was answered, rather than a misleading zero.
+  percent: number | null;
+}
+
+export interface QuizMissed {
+  question: string;
+  yourAnswer: string | null;
+  correctAnswer: string | null;
+  explanation: string | null;
+  subtopic: string | null;
+  cognitiveLevel: string;
+}
+
+export interface QuizPerformance {
+  quizId: string;
+  topic: string;
+  difficulty: string;
+  answered: number;
+  correct: number;
+  total: number;
+  /// Null until something has been answered.
+  scorePercent: number | null;
+  isComplete: boolean;
+  byCognitiveLevel: QuizBand[];
+  bySubtopic: QuizBand[];
+  byQuestionType: QuizBand[];
+  missed: QuizMissed[];
+  weakAreas: string[];
+  nextMove: string | null;
+}

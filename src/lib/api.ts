@@ -26,7 +26,9 @@ import type {
   Page,
   PersonaType,
   PersonalLearningMemory,
+  PlaybackProgress,
   PolicyComparison,
+  QuizPerformance,
   ProjectTemplate,
   ReportReason,
   SignalsSummary,
@@ -38,6 +40,7 @@ import type {
   TopicMastery,
   TopicProfile,
   UserInterestContext,
+  UserGraph,
   UserProfile,
   WeeklyBrief,
 } from "./types";
@@ -492,8 +495,30 @@ export function getFeed(type: ContentType | null, options: GetFeedOptions = {}) 
   return request<Page<ContentItem>>(`/api/feed?${params.toString()}`);
 }
 
+/// The item, plus where the reader got to if it is a video or a podcast.
+///
+/// Both in one response rather than two: a player that starts at zero and jumps once a follow-up
+/// request lands is worse than one that waits a moment and opens in the right place.
 export function getFeedItem(id: string) {
-  return request<ContentItem>(`/api/feed/${id}`);
+  return request<{ item: ContentItem; playback: PlaybackProgress | null }>(`/api/feed/${id}`);
+}
+
+/// One heartbeat of playback.
+///
+/// playedDeltaSeconds is a delta, never a running total. The server clamps it to two intervals
+/// and keeps the sum, so a paused tab left open and a scrub to the end both add nothing.
+export function recordPlayback(
+  id: string,
+  body: { positionSeconds: number; durationSeconds: number; playedDeltaSeconds: number },
+) {
+  return request<{ positionSeconds: number; secondsPlayed: number; completedAt: string | null }>(
+    `/api/feed/${id}/progress`,
+    { method: "PUT", body: JSON.stringify(body) },
+  );
+}
+
+export function getUserGraph() {
+  return request<UserGraph>("/api/me/graph");
 }
 
 export function saveFeedItem(id: string) {
@@ -756,15 +781,25 @@ export function streamMentorChat(message: string, history: ChatMessage[], onChun
   return streamChat("/api/mentor/chat/stream", message, history, onChunk, signal);
 }
 
+/// A quiz and its performance summary, in one envelope.
+///
+/// The summary rides with every response rather than hanging off an endpoint the client has to
+/// remember to call, and it is counted from stored answers rather than generated — so it still
+/// arrives when the model does not.
+export interface QuizResponse {
+  quiz: MentorQuiz;
+  performance: QuizPerformance;
+}
+
 export function generateQuiz(topic: string, questionCount: number = 5, difficulty: string = "Adaptive") {
-  return request<MentorQuiz>("/api/mentor/quiz", {
+  return request<QuizResponse>("/api/mentor/quiz", {
     method: "POST",
     body: JSON.stringify({ topic, questionCount, difficulty }),
   });
 }
 
 export function submitQuizAnswer(quizId: string, questionIndex: number, answerIndex: number, textAnswer?: string) {
-  return request<MentorQuiz>(`/api/mentor/quiz/${quizId}/answer`, {
+  return request<QuizResponse>(`/api/mentor/quiz/${quizId}/answer`, {
     method: "POST",
     body: JSON.stringify({ questionIndex, answerIndex, textAnswer }),
   });
