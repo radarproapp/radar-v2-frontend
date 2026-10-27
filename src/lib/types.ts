@@ -418,6 +418,32 @@ export interface TopicProfile {
 
 // ── Roadmap / Learn ──────────────────────────────────────────────────────
 
+export type LessonResourceKind = "Video" | "Article";
+
+/// Where a summary came from, which decides what it is worth.
+///
+/// "Description" means written from the title and channel, because there are no transcripts — the
+/// transcription keys are unset. "Publisher" means the summary the item already had when Radar
+/// ingested it.
+export type SummarySource = "Transcript" | "Description" | "Publisher";
+
+export interface LessonResource {
+  id: string;
+  kind: LessonResourceKind;
+  title: string;
+  url: string;
+  embedUrl: string | null;
+  thumbnailUrl: string | null;
+  source: string;
+  duration: string | null;
+  publishedAt: string | null;
+  /// Empty rather than invented when it could not be written.
+  summary: string;
+  summarySource: SummarySource;
+  /// Set for articles from Radar's own corpus, so the client can link into the brief.
+  contentItemId: string | null;
+}
+
 export interface RoadmapLesson {
   id: string;
   title: string;
@@ -425,6 +451,8 @@ export interface RoadmapLesson {
   order: number;
   isCompleted: boolean;
   estimatedTime: string | null;
+  /// Five videos and two articles for this lesson. Fewer is normal and not padded.
+  resources?: LessonResource[];
 }
 
 export type LearningResourceType = "TutorialVideo" | "NewDevelopmentVideo" | "BlogPost";

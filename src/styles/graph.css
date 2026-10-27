@@ -894,3 +894,170 @@
 .assess__wrong .assess__kinds {
   margin-top: 10px;
 }
+
+/* ── Lesson material ──────────────────────────────────────────────────────────────────────
+
+   Five videos and two reads for one lesson, each with what is in it. The summary sits with the
+   item rather than behind a tap, because choosing what to watch is the decision it informs. */
+
+.material {
+  margin: 22px 0;
+}
+
+.material__section {
+  margin-bottom: 26px;
+}
+
+.material__label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 11px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.material__count {
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--r-pill);
+  background: var(--bg-hover);
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.material__now {
+  margin-bottom: 16px;
+}
+
+.material__now-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 10px 0 8px;
+}
+
+.material__now-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.material__now-source {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.material__summary {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+/* Quiet, because it is a caveat — but present, because a summary of a blurb and a summary of
+   forty minutes read identically without it. */
+.material__provenance {
+  margin: 5px 0 0;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--text-faint);
+}
+
+.material__nosummary {
+  margin: 0;
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--text-faint);
+}
+
+.material__item {
+  border-bottom: 1px solid var(--border);
+}
+
+.material__item:last-child {
+  border-bottom: none;
+}
+
+.material__item-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 11px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  text-decoration: none;
+}
+
+.material__item-head:disabled {
+  cursor: default;
+}
+
+.material__item-head:hover:not(:disabled) .material__item-title {
+  color: var(--cyan-deep);
+}
+
+.material__thumb {
+  flex-shrink: 0;
+  width: 84px;
+  height: 48px;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+  background: var(--bg-hover);
+}
+
+.material__item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.material__item-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.material__item-source {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.material__out {
+  color: var(--text-faint);
+}
+
+.material__out:hover {
+  color: var(--cyan-deep);
+}
+
+.material__item-body {
+  padding: 0 0 12px;
+}
+
+@media (max-width: 560px) {
+  .material__thumb {
+    width: 62px;
+    height: 36px;
+  }
+}
+
+@media (pointer: coarse) {
+  .material__item-head {
+    min-height: 44px;
+  }
+}

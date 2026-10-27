@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Icon } from "../components/Icon";
+import { LessonMaterial } from "../components/LessonMaterial";
 import { PathResources } from "../components/PathResources";
 import { GuidanceCards } from "../components/GuidanceCards";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
@@ -331,7 +332,14 @@ export function LearnPath() {
                 </p>
               )}
 
-              <PathResources resources={lessonResources} />
+              {/* The lesson's own five videos and two reads, when it has them. Paths built
+                  before resources moved from the stage to the lesson fall back to the stage list,
+                  so an existing path does not lose its material on the way. */}
+              {(activeLesson.resources ?? []).length > 0 ? (
+                <LessonMaterial resources={activeLesson.resources!} />
+              ) : (
+                <PathResources resources={lessonResources} />
+              )}
 
               {saveError && (
                 <div role="alert" className="path-lesson__error">
