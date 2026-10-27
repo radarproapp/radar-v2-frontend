@@ -1,5 +1,4 @@
 import { lazy } from "react";
-import { Navigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { MainLayout } from "../components/MainLayout";
 import { MarketingLayout } from "../components/MarketingLayout";
@@ -35,7 +34,9 @@ export function HomeGate() {
     );
   }
 
-  if (!profile.onboardingComplete) return <Navigate to="/onboarding" replace />;
+  // Personalisation is required for the feed to work, and it is asked for on Today rather
+  // than here. Redirecting someone to a form before they have seen Radar is exactly what the
+  // six-step onboarding did, and why it was deleted.
 
   return (
     <MainLayout>

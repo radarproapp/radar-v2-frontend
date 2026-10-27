@@ -17,6 +17,8 @@ export interface Page<T> {
 
 export type FeedEmptyReason =
   | "NotEmpty"
+  /// Radar has plenty; it has no basis for choosing any of it until the three boxes are answered.
+  | "NotPersonalisedYet"
   | "NoContentAtAll"
   | "NoneOfThisType"
   | "EverythingDismissed"
@@ -181,6 +183,11 @@ export interface UserProfile {
   persona: PersonaType;
   primaryGoal: string;
   interests: string[];
+  /// Box 2. A list, because people have several: find a job, learn a skill, win a scholarship.
+  /// primaryGoal stays as the single goal a learning path is built around.
+  goals: string[];
+  /// Derived server-side: at least one interest and one goal. The feed stays empty until true.
+  isPersonalised: boolean;
   region: string;
   city: string;
   problems: string[];

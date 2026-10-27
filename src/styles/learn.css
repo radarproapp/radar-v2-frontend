@@ -1151,3 +1151,289 @@ button.path-resource {
   font-size: 12px;
   color: var(--text-muted);
 }
+
+/* ── Personalisation ───────────────────────────────────────────────────────────────────────
+
+   Three boxes, asked where the user can see what they are for. The guide asks them immediately
+   after login; we ask on the feed that is not yet theirs, which is the moment the question
+   answers itself. */
+
+.personalise {
+  max-width: 620px;
+}
+
+.personalise__head {
+  margin-bottom: 28px;
+}
+
+.personalise__icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 14px;
+  border-radius: 50%;
+  background: var(--cyan-light);
+  color: var(--cyan-deep);
+}
+
+.personalise__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.personalise__text {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.personalise__categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.personalise__category {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 13px 15px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+  cursor: pointer;
+  text-align: left;
+}
+
+.personalise__category:hover {
+  border-color: var(--cyan);
+}
+
+.personalise__category.active {
+  border-color: var(--cyan);
+  background: var(--cyan-light);
+}
+
+.personalise__category-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.personalise__category.active .personalise__category-label {
+  color: var(--cyan-deep);
+}
+
+.personalise__category-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.personalise__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.personalise__needs {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.personalise__error {
+  margin-top: 18px;
+  padding: 10px 12px;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--r-md);
+  background: rgba(220, 38, 38, 0.08);
+  font-size: 13px;
+}
+
+/* ── One box ─────────────────────────────────────────────────────────────────────────────── */
+
+.tagbox {
+  position: relative;
+  margin-bottom: 26px;
+}
+
+.tagbox__label {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.tagbox__hint {
+  margin: 4px 0 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.tagbox__chosen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 9px;
+}
+
+.tagbox__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  background: var(--cyan-light);
+  cursor: pointer;
+  color: var(--cyan-deep);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.tagbox__chip:hover {
+  border-color: var(--cyan);
+}
+
+.tagbox__field {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--bg-card);
+  color: var(--text-faint);
+}
+
+.tagbox__field:focus-within {
+  border-color: var(--cyan);
+}
+
+.tagbox__input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 0;
+  border: none;
+  background: none;
+  outline: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14.5px;
+}
+
+.tagbox__suggestions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  margin-top: 6px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-lg);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.tagbox__suggestion {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 11px;
+  border: none;
+  border-radius: var(--r-md);
+  background: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 13.5px;
+  text-align: left;
+}
+
+.tagbox__suggestion:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+/* Your own words, offered rather than hidden behind knowing to press Enter. */
+.tagbox__suggestion--own {
+  color: var(--cyan-deep);
+  font-weight: 700;
+}
+
+/* ── The prompt on an unpersonalised feed ────────────────────────────────────────────────── */
+
+.personalise-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 24px;
+  margin-bottom: 26px;
+  border: 1px solid var(--cyan);
+  border-radius: var(--r-lg);
+  background: var(--cyan-light);
+}
+
+.personalise-prompt.compact {
+  padding: 18px;
+  gap: 8px;
+}
+
+.personalise-prompt__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  color: var(--cyan-deep);
+}
+
+.personalise-prompt__title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  margin: 0;
+  color: var(--text);
+}
+
+.personalise-prompt__text {
+  margin: 0;
+  max-width: 48ch;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+/* Labelled as a sample, so two items are never mistaken for a feed. */
+.feed-sample-label {
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+@media (pointer: coarse) {
+  .tagbox__suggestion,
+  .tagbox__chip,
+  .personalise__category {
+    min-height: 44px;
+  }
+}

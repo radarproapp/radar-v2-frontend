@@ -11,6 +11,7 @@ import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ContentItem, ContentType, FeedEmptyReason, Page } from "../lib/types";
 import { feedEmptyCopy } from "../lib/feed-empty";
 import { Icon } from "../components/Icon";
+import { PersonalisePrompt } from "../components/PersonalisePrompt";
 import type { IconName } from "../components/icon-map";
 import { feedTypeFor } from "../components/feed-types";
 
@@ -155,14 +156,27 @@ export function Feed() {
 
   const activeLabel = activeType.label;
 
+  // Said by the server even when the sample is non-empty: two general items are not a feed, and
+  // only the server knows whether the profile has been personalised.
+  const notPersonalised = feedQuery.data?.pages?.[0]?.emptyReason === "NotPersonalisedYet";
+
   return (
     <div className="r-page">
       <div className="r-page-head">
-        <h1 className="r-page-title">{activeType.type === null ? "Intelligence Feed" : activeLabel}</h1>
+        {/* "Latest" when nothing has been personalised, because that is what it is. A heading
+            promising relevance over a list ranked on nothing teaches a new user that Radar does
+            not know them, and the lesson is hard to undo. */}
+        <h1 className="r-page-title">
+          {notPersonalised ? "Latest" : activeType.type === null ? "Intelligence Feed" : activeLabel}
+        </h1>
       </div>
 
-        {/* On a phone the column becomes one row of chips that scrolls, since a second sidebar
-            does not fit beside a sidebar. */}
+      {notPersonalised && (
+        <>
+          <PersonalisePrompt />
+          <div className="feed-sample-label">A sample of what Radar carries</div>
+        </>
+      )}
 
       {feedQuery.isLoading ? (
         <LoadingSkeleton variant="feed" count={4} />

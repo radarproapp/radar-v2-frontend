@@ -267,6 +267,25 @@ export interface LearningRecord {
   updatedAt: string;
 }
 
+/// The three boxes: what you follow, what you want, what you are looking for.
+///
+/// Interests and goals are both required — the feed is ranked on them, and without either there
+/// is nothing to rank by. Opportunity preferences are optional.
+export function personalise(input: {
+  interests: string[];
+  goals: string[];
+  opportunityPreferences: string[];
+  persona?: PersonaType;
+}) {
+  return request<{
+    isPersonalised: boolean;
+    interests: string[];
+    goals: string[];
+    opportunityPreferences: string[];
+    persona: string;
+  }>("/api/me/personalise", { method: "POST", body: JSON.stringify(input) });
+}
+
 /// The profiles on this account, and which one is in use.
 ///
 /// Each carries its own path, feed, saved items and history — that was already true of the data

@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { FollowUps } from "../components/FollowUps";
 import { HomeBriefView } from "../components/HomeBriefView";
+import { PersonalisePrompt } from "../components/PersonalisePrompt";
 import { isWeeklyBriefUnlocked } from "../lib/schedule";
 
 /// The signed-in home screen.
@@ -20,6 +21,28 @@ export function Today() {
   const { profile } = useAuth();
 
   const firstName = profile?.name?.split(" ")[0] || "there";
+
+  // Asked here, on the first screen after signing in, and nothing else is shown until it is
+  // answered.
+  //
+  // Not a redirect to a form: a six-step questionnaire before anyone had seen Radar was answered
+  // carelessly or abandoned, which is why it was deleted. This is the same three questions on the
+  // screen that explains why they are being asked.
+  //
+  // The brief is withheld rather than degraded. HomeBriefView computes "what matters to you
+  // today" from the profile, and from an empty one every sentence it produces is invented.
+  // FollowUps goes too — it exists to confirm interests Radar has inferred from behaviour, and
+  // there is no behaviour yet.
+  if (profile && !profile.isPersonalised) {
+    return (
+      <div className="r-page">
+        <div className="r-page-head">
+          <h1 className="r-page-title">Welcome, {firstName}</h1>
+        </div>
+        <PersonalisePrompt />
+      </div>
+    );
+  }
 
   return (
     <>
