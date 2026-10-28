@@ -98,6 +98,9 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
 
       <div className="r-nav-panel__divider" />
 
+      <button className="r-nav-panel__item" onClick={() => go("/profiles")}>
+        Switch profile
+      </button>
       <button className="r-nav-panel__item" onClick={() => go("/settings")}>
         Settings
       </button>

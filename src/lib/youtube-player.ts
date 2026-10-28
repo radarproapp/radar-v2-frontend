@@ -28,6 +28,10 @@ interface YouTubeApi {
     element: HTMLElement | string,
     options: {
       videoId: string;
+      /// The iframe the API creates replaces the node it was given and carries none of its
+      /// classes, so its size has to be stated here rather than left to CSS.
+      width?: string | number;
+      height?: string | number;
       playerVars?: Record<string, string | number>;
       events?: {
         onReady?: (event: { target: YouTubePlayer }) => void;

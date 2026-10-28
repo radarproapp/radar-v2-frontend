@@ -41,6 +41,10 @@ const NoteEditor = lazy(() => import("./pages/NoteEditor").then((m) => ({ defaul
 const Opportunities = lazy(() => import("./pages/Opportunities").then((m) => ({ default: m.Opportunities })));
 const Research = lazy(() => import("./pages/Research").then((m) => ({ default: m.Research })));
 const AssessDocument = lazy(() => import("./pages/AssessDocument").then((m) => ({ default: m.AssessDocument })));
+const Profiles = lazy(() => import("./pages/Profiles").then((m) => ({ default: m.Profiles })));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword").then((m) => ({ default: m.ForgotPassword })));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy").then((m) => ({ default: m.PrivacyPolicy })));
+const TermsOfService = lazy(() => import("./pages/TermsOfService").then((m) => ({ default: m.TermsOfService })));
 const Compare = lazy(() => import("./pages/Compare").then((m) => ({ default: m.Compare })));
 const Plans = lazy(() => import("./pages/Plans").then((m) => ({ default: m.Plans })));
 const Settings = lazy(() => import("./pages/Settings").then((m) => ({ default: m.Settings })));
@@ -93,6 +97,10 @@ export default function App() {
               <Route path="/" element={<HomeGate />} />
               <Route path="/login" element={<Login />} />
               <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ForgotPassword />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
               <Route path="/onboarding" element={<OnboardingSelection />} />
               <Route path="/onboarding/:persona" element={<Onboarding />} />
               <Route path="/entry" element={<EntryScreens />} />
@@ -131,6 +139,7 @@ export default function App() {
                 <Route path="/opportunities" element={<RequireAuth><Opportunities /></RequireAuth>} />
                 <Route path="/research" element={<RequireAuth><Research /></RequireAuth>} />
                 <Route path="/assess" element={<RequireAuth><AssessDocument /></RequireAuth>} />
+                <Route path="/profiles" element={<RequireAuth><Profiles /></RequireAuth>} />
                 <Route path="/compare" element={<RequireAuth><Compare /></RequireAuth>} />
                 <Route path="/compare/:comparisonId" element={<RequireAuth><Compare /></RequireAuth>} />
                 <Route path="/plans" element={<RequireAuth><Plans /></RequireAuth>} />

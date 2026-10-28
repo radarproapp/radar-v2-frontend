@@ -25,9 +25,8 @@ export function EditProfile() {
   const navigate = useNavigate();
   const { profile, refetchProfile } = useAuth();
   const [name, setName] = useState("");
+  // Display only: switching is done from the profiles page, not by editing this one.
   const [persona, setPersona] = useState<PersonaType>("Student");
-  // Remembered so a save can tell a persona switch from an ordinary edit.
-  const [originalPersona, setOriginalPersona] = useState<PersonaType>("Student");
   const [primaryGoal, setPrimaryGoal] = useState("");
   const [region, setRegion] = useState("");
   const [city, setCity] = useState("");
@@ -69,7 +68,6 @@ export function EditProfile() {
     if (!profile) return;
     setName(profile.name);
     setPersona(profile.persona);
-    setOriginalPersona(profile.persona);
     setPrimaryGoal(profile.primaryGoal);
     setRegion(profile.region);
     setCity(profile.city);
@@ -105,7 +103,10 @@ export function EditProfile() {
     setSaving(true);
     try {
       await updateMe({
-        name, persona, primaryGoal, region, city, interests, interestContexts, dominantInterests,
+        // persona is deliberately absent. The server treats a persona in this payload as a
+        // switch, clears the persona answers and reopens onboarding — which is how editing an
+        // unrelated field could wipe the profile it was editing.
+        name, primaryGoal, region, city, interests, interestContexts, dominantInterests,
         problems: splitList(problems),
         currentIntent,
         targetRole,
@@ -120,7 +121,7 @@ export function EditProfile() {
       // Switching persona changes which questions Radar should have asked, so send the user
       // through that persona's onboarding rather than back to a home screen built from answers
       // that belonged to someone else. The server has already reopened onboarding.
-      navigate(persona !== originalPersona ? ONBOARDING_ROUTES[persona] ?? "/onboarding" : "/");
+      navigate("/");
     } finally {
       setSaving(false);
     }
@@ -153,15 +154,30 @@ export function EditProfile() {
         <input type="email" className="r-input" value={profile.email} disabled title="Email can't be changed here" style={{ opacity: 0.6, cursor: "not-allowed" }} />
       </div>
 
+      {/* Persona is shown, not edited here.
+          
+          This used to be a row of chips that changed the persona on *this* profile. The server
+          then cleared the persona answers and reopened onboarding — so a student who tried
+          Graduate had overwritten their student profile, and there was nothing left to switch
+          back to. Which is exactly what it felt like: once you were a graduate, you could not go
+          back.
+          
+          Each persona is its own profile, with its own path, feed and history. Switching is a
+          change of which one is active, not an edit to the one you are in. */}
       <div style={{ marginBottom: 18 }}>
         <label style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-dim)", display: "block", marginBottom: 6 }}>Persona</label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {PERSONAS.map(([value, label]) => (
-            <button key={value} className={`r-chip ${persona === value ? "active" : ""}`} onClick={() => setPersona(value)}>
-              {label}
-            </button>
-          ))}
+
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <span className="r-chip active">{PERSONAS.find(([p]) => p === persona)?.[1] ?? persona}</span>
+          <button className="btn btn--text btn--sm" onClick={() => navigate("/profiles")}>
+            Switch or add a profile
+          </button>
         </div>
+
+        <p style={{ fontSize: 11.5, color: "var(--text-muted)", margin: "8px 0 0", lineHeight: 1.5 }}>
+          Each persona is a separate profile with its own path and history. Changing it here used
+          to overwrite this one — switching keeps both.
+        </p>
       </div>
 
       <div style={{ marginBottom: 18 }}>

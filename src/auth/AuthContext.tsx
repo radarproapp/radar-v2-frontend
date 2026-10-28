@@ -54,7 +54,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading: hasToken && profileQuery.isLoading,
       signIn,
       signOut,
-      refetchProfile: () => queryClient.invalidateQueries({ queryKey: ["me"] }),
+      // refetchQueries, not invalidateQueries. Invalidate marks a query stale and resolves
+      // immediately; the caller awaiting it gets no guarantee the new profile has arrived. That
+      // is why personalising navigated home and the home screen still believed the profile was
+      // unpersonalised, and asked the three questions again.
+      refetchProfile: () => queryClient.refetchQueries({ queryKey: ["me"] }),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [hasToken, profileQuery.data, profileQuery.isLoading],

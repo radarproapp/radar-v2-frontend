@@ -58,8 +58,8 @@ export function MarketingLayout({ children }: { children?: ReactNode } = {}) {
               </div>
               <div className="mkt-footer__col">
                 <div className="mkt-footer__col-title">Company</div>
-                <a href="#privacy">Privacy policy</a>
-                <a href="#terms">Terms of service</a>
+                <Link to="/privacy">Privacy policy</Link>
+                <Link to="/terms">Terms of service</Link>
                 <a href="#contact">Contact</a>
               </div>
             </div>

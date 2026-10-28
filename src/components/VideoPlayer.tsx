@@ -88,6 +88,12 @@ export function VideoPlayer({ contentItemId, url, title, initial }: VideoPlayerP
       const api = await loadYouTubeApi();
 
       player.current = new api.Player(mount.current, {
+        // The API replaces the element it is given, so the new iframe does not inherit the class
+        // that was sizing it. Without these it renders at the default 300x150 inside a container
+        // expecting it to fill — which is how swapping the plain embed for this player stopped
+        // videos displaying at all.
+        width: "100%",
+        height: "100%",
         videoId: source.id,
         playerVars: {
           rel: 0,
@@ -214,8 +220,11 @@ export function VideoPlayer({ contentItemId, url, title, initial }: VideoPlayerP
   return (
     <div className="video-player">
       <div className="video-embed video-embed--frame">
-        {/* The API replaces this node with its own iframe. */}
-        <div ref={mount} className="video-embed__media" />
+        {/* The sizing lives on the wrapper, because the API replaces the node inside it and the
+            replacement carries none of its classes. */}
+        <div className="video-embed__media">
+          <div ref={mount} />
+        </div>
       </div>
     </div>
   );

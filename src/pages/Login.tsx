@@ -1,4 +1,5 @@
-import { useState, type KeyboardEvent } from "react";
+import { useState } from "react";
+import { PasswordField } from "../components/PasswordField";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { ApiError, login } from "../lib/api";
@@ -25,10 +26,6 @@ export function Login() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && canSubmit) void handleSignIn();
   };
 
   return (
@@ -58,14 +55,19 @@ export function Login() {
               className="r-input"
               style={{ marginBottom: 10 }}
             />
-            <input
-              type="password"
-              placeholder="Password"
+            <PasswordField
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="r-input"
+              onChange={setPassword}
+              autoComplete="current-password"
+              onEnter={() => canSubmit && void handleSignIn()}
             />
+
+            {/* A failed login with no way to recover is a lost user. */}
+            <div style={{ textAlign: "right", marginTop: 8 }}>
+              <Link to="/forgot-password" style={{ fontSize: 12.5, color: "var(--cyan-deep)", fontWeight: 600 }}>
+                Forgot password?
+              </Link>
+            </div>
 
             {error && (
               <div

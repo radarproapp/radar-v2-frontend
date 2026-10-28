@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Icon } from "../components/Icon";
+import { PasswordField } from "../components/PasswordField";
 import { useAuth } from "../auth/AuthContext";
 import { completeOnboarding, register } from "../lib/api";
 import { INTEREST_GROUPS } from "../lib/interests";
@@ -189,12 +190,10 @@ export function Onboarding() {
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
           />
-          <input
-            className="r-input"
-            type="password"
-            placeholder="Password (at least 8 characters)"
+          <PasswordField
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={setPassword}
+            placeholder="Password (at least 8 characters)"
             autoComplete="new-password"
           />
           <button className="btn btn--primary" onClick={createAccount} disabled={busy}>

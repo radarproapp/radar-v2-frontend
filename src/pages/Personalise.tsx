@@ -50,9 +50,13 @@ export function Personalise() {
         persona: persona ?? undefined,
       }),
     onSuccess: async () => {
-      // The feed was empty because of what this just answered; every cached query that depended
-      // on the old profile is now wrong.
-      queryClient.clear();
+      // Everything computed from the old profile is now wrong — but ["me"] is dropped last, not
+      // first. queryClient.clear() removed it along with the rest, so the refetch below had no
+      // query left to refetch and resolved instantly; the navigation then landed on a home screen
+      // still holding the unpersonalised profile, which asked the three questions again. Which is
+      // exactly what it looked like: answering them returned you to them.
+      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== "me" });
+
       await refetchProfile();
       navigate("/");
     },

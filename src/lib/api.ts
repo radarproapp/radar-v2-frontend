@@ -212,6 +212,25 @@ export interface UpdateProfileRequest {
   };
 }
 
+/// Starts a password reset.
+///
+/// Answers identically whether or not the address has an account — a different answer would make
+/// this a way to find out who has signed up. canSend reports whether an email provider is
+/// configured at all.
+export function forgotPassword(email: string) {
+  return request<{ message: string; canSend: boolean }>("/api/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function resetPassword(token: string, newPassword: string) {
+  return request<{ message: string }>("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ token, newPassword }),
+  });
+}
+
 export function getMe() {
   return request<UserProfile>("/api/me");
 }
