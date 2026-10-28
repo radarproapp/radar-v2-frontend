@@ -448,7 +448,10 @@ export interface LessonResource {
   contentItemId: string | null;
   /// Why this was kept, in the judge's words. Empty when it was kept without one — the card
   /// then shows the summary alone rather than a reason nobody actually gave.
-  whyRelevant: string;
+  ///
+  /// Optional because paths built before the check predate the field, and declaring it required
+  /// would be the type system asserting something about those payloads that is not true.
+  whyRelevant?: string;
 }
 
 export interface RoadmapLesson {
