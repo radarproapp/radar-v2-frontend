@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Deferred } from "../components/Deferred";
@@ -117,6 +117,26 @@ export function Feed() {
     } catch {
       patchItem(item.id, { isSaved: !nextSaved });
     }
+  };
+
+  /// Steering the feed rather than removing one item from it.
+  ///
+  /// Section 6 asks for four controls and three existed: save, not relevant, and the implicit
+  /// signal of opening something. The whole path behind these two was already built — the event
+  /// type, the mapping in MongoAnalyticsService, and a weight in BehavioralSignalService — and
+  /// nothing had ever sent one from the feed, so the only steer a reader could give was negative.
+  ///
+  /// The item stays where it is. "Less like this" is about the subject, not this article, and
+  /// making it vanish would make it indistinguishable from "not relevant" — which already exists
+  /// and does mean remove.
+  const [steered, setSteered] = useState<Record<string, "more" | "less">>({});
+
+  const steer = (item: ContentItem, position: number, direction: "more" | "less") => {
+    setSteered((prev) => ({ ...prev, [item.id]: direction }));
+    logEvent(direction === "more" ? "MoreLikeThis" : "LessLikeThis", {
+      contentItemId: item.id,
+      position,
+    });
   };
 
   const dismissItem = (item: ContentItem, position: number) => {
@@ -287,6 +307,24 @@ export function Feed() {
                         title={item.isSaved ? "Saved" : "Save for later"}
                       >
                         {item.isSaved ? "Saved " : "Save"}
+                      </button>
+                      <button
+                        className="btn btn--text btn--sm"
+                        onClick={() => steer(item, position, "more")}
+                        aria-pressed={steered[item.id] === "more"}
+                        disabled={steered[item.id] === "more"}
+                        title={`More about ${item.topic}`}
+                      >
+                        More like this
+                      </button>
+                      <button
+                        className="btn btn--text btn--sm"
+                        onClick={() => steer(item, position, "less")}
+                        aria-pressed={steered[item.id] === "less"}
+                        disabled={steered[item.id] === "less"}
+                        title={`Less about ${item.topic}`}
+                      >
+                        Less like this
                       </button>
                       <button
                         className="btn btn--text btn--sm"
