@@ -37,11 +37,34 @@ function Summary({ resource }: { resource: LessonResource }) {
   );
 }
 
-export function LessonMaterial({ resources }: { resources: LessonResource[] }) {
+/// Why this is in the lesson, in the words of the check that admitted it.
+///
+/// Nothing is written here on its behalf. A resource kept without a reason shows none, because a
+/// sentence Radar invented about why something matters — attributed to a judgement that never
+/// produced one — is the small fabrication the rest of the product refuses to make.
+function WhyKept({ resource }: { resource: LessonResource }) {
+  if (!resource.whyRelevant) return null;
+
+  return <p className="material__why">{resource.whyRelevant}</p>;
+}
+
+export function LessonMaterial({
+  resources,
+  note = "",
+}: {
+  resources: LessonResource[];
+  note?: string;
+}) {
   const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  if (resources.length === 0) return null;
+  // An empty list is a result, not an absence. The server already tells apart a library that
+  // holds nothing for this lesson, a check that could not be made, and one still running —
+  // rendering all three as the same blank space threw that away, and it meant a provider outage
+  // emptying every lesson on the platform would have looked exactly like a thin corpus.
+  if (resources.length === 0) {
+    return note ? <p className="material__note">{note}</p> : null;
+  }
 
   const videos = resources.filter((r) => r.kind === "Video");
   const articles = resources.filter((r) => r.kind === "Article");
@@ -74,6 +97,7 @@ export function LessonMaterial({ resources }: { resources: LessonResource[] }) {
                 </span>
               </div>
 
+              <WhyKept resource={current} />
               <Summary resource={current} />
             </div>
           )}
@@ -117,6 +141,7 @@ export function LessonMaterial({ resources }: { resources: LessonResource[] }) {
                 </button>
 
                 <div className="material__item-body">
+                  <WhyKept resource={video} />
                   <Summary resource={video} />
                 </div>
               </article>
@@ -165,12 +190,16 @@ export function LessonMaterial({ resources }: { resources: LessonResource[] }) {
               )}
 
               <div className="material__item-body">
+                <WhyKept resource={article} />
                 <Summary resource={article} />
               </div>
             </article>
           ))}
         </section>
       )}
+
+      {/* After the material, not instead of it: this case is "some arrived, more is coming". */}
+      {note && <p className="material__note">{note}</p>}
     </div>
   );
 }

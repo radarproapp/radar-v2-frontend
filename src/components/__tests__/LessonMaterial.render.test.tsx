@@ -23,6 +23,7 @@ function video(overrides: Partial<LessonResource> = {}): LessonResource {
     summary: "Walks through how ARP replies are forged on a switched network.",
     summarySource: "Description",
     contentItemId: null,
+    whyRelevant: "",
     ...overrides,
   };
 }
@@ -129,5 +130,57 @@ describe("LessonMaterial", () => {
     renderPage(<LessonMaterial resources={[article({ contentItemId: null })]} />);
 
     expect(screen.getByRole("link").getAttribute("href")).toBe("https://example.com/arp");
+  });
+
+  /// An empty lesson is a result, and which result it is matters.
+  ///
+  /// Three different facts used to render as the same blank space: the library holds nothing that
+  /// teaches this lesson, Radar could not check, and Radar is still gathering. The second is a
+  /// fault — and with it invisible, a provider outage that emptied every lesson on the platform
+  /// would have looked exactly like a thin corpus.
+  it("says why there is nothing, rather than showing blank space", () => {
+    renderPage(
+      <LessonMaterial
+        resources={[]}
+        note="Radar could not check these against the lesson just now, so none are shown."
+      />,
+    );
+
+    expect(screen.getByText(/could not check/i)).toBeTruthy();
+  });
+
+  it("still renders nothing for a lesson that predates the check", () => {
+    const { container } = renderPage(<LessonMaterial resources={[]} note="" />);
+
+    expect(container.querySelector(".material__note")).toBeNull();
+  });
+
+  /// Partly gathered is its own state: what arrived is shown, and the rest is promised honestly
+  /// rather than the lesson looking finished with two items.
+  it("shows what it has alongside a note when more is still coming", () => {
+    renderPage(
+      <LessonMaterial resources={[article()]} note="Radar is still looking for videos." />,
+    );
+
+    expect(screen.getByText(/still looking for videos/i)).toBeTruthy();
+    expect(screen.getByText("Why ARP has no authentication")).toBeTruthy();
+  });
+
+  it("shows why a resource was kept, in the words of the check that kept it", () => {
+    renderPage(
+      <LessonMaterial resources={[article({ whyRelevant: "explains the forged reply step by step" })]} />,
+    );
+
+    expect(screen.getByText("explains the forged reply step by step")).toBeTruthy();
+  });
+
+  /// Kept without a reason shows none. A sentence Radar wrote about why something matters,
+  /// attributed to a judgement that never produced one, is a fabrication however small.
+  it("invents no reason when the check did not give one", () => {
+    const { container } = renderPage(
+      <LessonMaterial resources={[article({ whyRelevant: "" })]} />,
+    );
+
+    expect(container.querySelector(".material__why")).toBeNull();
   });
 });

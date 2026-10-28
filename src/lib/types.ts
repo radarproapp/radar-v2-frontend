@@ -446,6 +446,9 @@ export interface LessonResource {
   summarySource: SummarySource;
   /// Set for articles from Radar's own corpus, so the client can link into the brief.
   contentItemId: string | null;
+  /// Why this was kept, in the judge's words. Empty when it was kept without one — the card
+  /// then shows the summary alone rather than a reason nobody actually gave.
+  whyRelevant: string;
 }
 
 export interface RoadmapLesson {
@@ -457,6 +460,11 @@ export interface RoadmapLesson {
   estimatedTime: string | null;
   /// Five videos and two articles for this lesson. Fewer is normal and not padded.
   resources?: LessonResource[];
+  /// Why there is nothing here, or why there is not everything yet. Empty when the lesson is
+  /// complete. The server distinguishes "the library has nothing for this" from "Radar could not
+  /// check" and from "still gathering" — rendering all three as blank space is what let a
+  /// provider outage look exactly like a thin corpus.
+  resourceNote?: string;
 }
 
 export type LearningResourceType = "TutorialVideo" | "NewDevelopmentVideo" | "BlogPost";

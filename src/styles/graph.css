@@ -1252,3 +1252,28 @@
 .pwfield__toggle:hover {
   color: var(--cyan-deep);
 }
+
+/* Why a resource is in a lesson, written by the check that admitted it.
+   Above the summary, because it answers "should I spend time on this" and the summary answers
+   "what is in it" — and the first question comes first. */
+.material__why {
+  margin: 0 0 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--action);
+}
+
+/* What is not here, and why.
+   Reads as a statement rather than an error, because the usual case is a true one: Radar's
+   library genuinely holds nothing that teaches this lesson, and saying so is more use than two
+   articles that share a word with the title. The fault case says something different, which is
+   the entire reason this element exists. */
+.material__note {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-left: 2px solid var(--line);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  background: var(--surface-sunken, transparent);
+}

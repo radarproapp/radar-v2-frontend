@@ -335,8 +335,11 @@ export function LearnPath() {
               {/* The lesson's own five videos and two reads, when it has them. Paths built
                   before resources moved from the stage to the lesson fall back to the stage list,
                   so an existing path does not lose its material on the way. */}
-              {(activeLesson.resources ?? []).length > 0 ? (
-                <LessonMaterial resources={activeLesson.resources!} />
+              {(activeLesson.resources ?? []).length > 0 || activeLesson.resourceNote ? (
+                <LessonMaterial
+                  resources={activeLesson.resources ?? []}
+                  note={activeLesson.resourceNote ?? ""}
+                />
               ) : (
                 <PathResources resources={lessonResources} />
               )}
