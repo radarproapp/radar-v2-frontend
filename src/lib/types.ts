@@ -1163,7 +1163,8 @@ export type DocumentKind =
   | "CoverLetter"
   | "ResearchProposal"
   | "PersonalStatement"
-  | "BusinessPlan";
+  | "BusinessPlan"
+  | "SocialMediaContent";
 
 /// Met, Partly, NotMet — or Unjudged when the model skipped a criterion, which is reported
 /// rather than hidden so the reader sees the whole rubric.

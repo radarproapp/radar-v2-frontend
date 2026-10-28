@@ -26,6 +26,7 @@ const PREVIEWABLE: { kind: DocumentKind; label: string }[] = [
   { kind: "PersonalStatement", label: "Personal statement" },
   { kind: "ResearchProposal", label: "Research proposal" },
   { kind: "BusinessPlan", label: "Business plan" },
+  { kind: "SocialMediaContent", label: "Social media content" },
 ];
 
 const VERDICT_LABEL: Record<string, string> = {
