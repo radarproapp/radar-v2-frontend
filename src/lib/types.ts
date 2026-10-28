@@ -143,6 +143,10 @@ export interface NotificationPrefs {
   weeklyBrief: boolean;
   opportunityDeadlines: boolean;
   roadmapReminders: boolean;
+  /// Off until asked for, unlike the weekly one. Daily is the most aggressive cadence a product
+  /// can choose, and opting somebody in on their behalf is how a sending domain ends up in spam
+  /// folders — which costs the password reset too.
+  dailyDigest: boolean;
 }
 
 export interface UserStats {

@@ -71,6 +71,10 @@ export function Settings() {
         <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: "18px 20px" }}>
           {(
             [
+              // Daily first because it is the one that actually sends today, and the only one
+              // that is off until asked for. The subtitle says what it will not do, because
+              // "daily" otherwise reads as a message every morning regardless.
+              ["dailyDigest", "Daily update", "Only on days something new arrives in what you follow"],
               ["weeklyBrief", "Weekly Intelligence Brief", "Monday morning"],
               ["opportunityDeadlines", "Opportunity deadlines", "7 days and 48 hours before close"],
               ["roadmapReminders", "Roadmap reminders", "A nudge when a module stalls"],

@@ -23,6 +23,7 @@ import type {
   MentorWorkReview,
   NavigatorFocus,
   Note,
+  NotificationPrefs,
   Opportunity,
   OpportunityTrackingStatus,
   OpportunityType,
@@ -205,11 +206,7 @@ export interface UpdateProfileRequest {
   geography?: string[];
   decisionNeeds?: string[];
   personaDetails?: Record<string, string>;
-  notifications?: {
-    weeklyBrief: boolean;
-    opportunityDeadlines: boolean;
-    roadmapReminders: boolean;
-  };
+  notifications?: NotificationPrefs;
 }
 
 /// Starts a password reset.
@@ -228,6 +225,29 @@ export function resetPassword(token: string, newPassword: string) {
   return request<{ message: string }>("/api/auth/reset-password", {
     method: "POST",
     body: JSON.stringify({ token, newPassword }),
+  });
+}
+
+/// Turns off whichever message the token names.
+///
+/// No auth header: the link has to work for somebody not signed in, on a device that never has
+/// been. The token is a signature over the profile and the kind, so it cannot be edited into
+/// somebody else's.
+export function unsubscribe(token: string) {
+  return request<{ message: string }>("/api/notifications/unsubscribe", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
+export function getNotificationPrefs() {
+  return request<NotificationPrefs>("/api/notifications/preferences");
+}
+
+export function updateNotificationPrefs(prefs: NotificationPrefs) {
+  return request<NotificationPrefs>("/api/notifications/preferences", {
+    method: "PUT",
+    body: JSON.stringify(prefs),
   });
 }
 
