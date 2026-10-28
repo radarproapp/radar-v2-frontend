@@ -115,7 +115,7 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
   );
 
   return (
-    <div style={{ minHeight: "100dvh" }}>
+    <div className="r-shell">
       {showNav && (
         <>
           {/* Desktop sidebar */}

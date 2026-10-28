@@ -182,7 +182,69 @@ a:hover { color: var(--cyan-deep); }
   .r-app-content { margin-left: var(--rail-w); }
 }
 @media (max-width: 859px) {
-  .r-app-content { padding-bottom: var(--tabbar-h); }
+  /* The tab bar is --tabbar-h PLUS the home indicator inset, so reserving --tabbar-h alone
+     left the last item of every scrollable page sitting behind it on any iPhone with a home
+     indicator. The bar's own padding-bottom made it taller; nothing told the content. */
+  .r-app-content {
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   iOS SAFE AREAS
+
+   index.html asks for two things that put content underneath the hardware:
+   viewport-fit=cover, and apple-mobile-web-app-status-bar-style=black-translucent. Together
+   they mean the page is drawn edge to edge and the status bar floats on top of it rather than
+   pushing it down. That is the right choice — it is what makes an installed Radar look like an
+   app rather than a web page — but it is only right if something accounts for the space.
+
+   Nothing did. One rule in the whole stylesheet mentioned a safe area, and it was the tab bar's
+   bottom padding. So on a notched iPhone the first line of every screen sat under the clock,
+   and in landscape the left edge ran under the notch itself.
+
+   Applied at the shell rather than to each sticky header: there are six of those and they are
+   not the only things that reach the top of the viewport.
+   ═══════════════════════════════════════════════ */
+
+.r-shell {
+  min-height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+@media (min-width: 860px) {
+  /* The sidebar is fixed and spans the full height, so it clears its own insets. */
+  .r-side {
+    padding-top: calc(16px + env(safe-area-inset-top));
+    padding-left: calc(12px + env(safe-area-inset-left));
+  }
+}
+
+.r-tabbar {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* ── Typing must not zoom the page ──────────────
+   iOS Safari zooms the viewport whenever a focused field has a font smaller than 16px, and it
+   does not zoom back out on blur. Every field on the site was 14px: body sets 14px and
+   "button, input, textarea, select { font: inherit }" hands that to all of them. So tapping any
+   search box or text area left the whole interface magnified and clipped, which is what a broken
+   resolution looks like from the outside.
+
+   Mobile widths only; the desktop sizes are deliberate and no desktop browser does this. */
+@media (max-width: 859px) {
+  input,
+  textarea,
+  select,
+  .ask-input-field,
+  .r-note-title-input,
+  .r-note-body-input,
+  .r-note-check-input {
+    font-size: 16px;
+  }
 }
 
 /* ═══════════════════════════════════════════════
