@@ -107,6 +107,22 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
       <button className="r-nav-panel__item" onClick={() => go("/profile/edit")}>
         Your profile
       </button>
+
+      <div className="r-nav-panel__divider" />
+
+      {/* The policy and the terms, reachable from inside the product.
+          Both pages have existed and both routes have worked; the only links to them were in the
+          marketing footer, which nobody who is signed in ever sees. So from a learner's side they
+          were not unclickable, they were unreachable - and the Privacy Policy commits in section
+          3.8 to being available, which is a commitment about being findable, not about existing
+          at a URL. */}
+      <button className="r-nav-panel__item" onClick={() => go("/privacy")}>
+        Privacy policy
+      </button>
+      <button className="r-nav-panel__item" onClick={() => go("/terms")}>
+        Terms of service
+      </button>
+
       <div className="r-nav-panel__divider" />
       <button className="r-nav-panel__item danger" onClick={handleSignOut}>
         Sign out

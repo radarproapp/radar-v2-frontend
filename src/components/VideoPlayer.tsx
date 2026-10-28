@@ -49,6 +49,11 @@ export function VideoPlayer({ contentItemId, url, title, initial }: VideoPlayerP
   const source = parseVideoUrl(url);
   const resumeFrom = initial?.positionSeconds ?? 0;
 
+  // parseVideoUrl returns a new object every render, so the effect below depends on these rather
+  // than on `source` — otherwise the player would be torn down and rebuilt on every render.
+  const sourceKind = source?.kind;
+  const videoId = source && source.kind === "youtube" ? source.id : undefined;
+
   const report = useCallback(
     (position: number, duration: number, delta: number) => {
       void recordPlayback(contentItemId, {
@@ -79,54 +84,78 @@ export function VideoPlayer({ contentItemId, url, title, initial }: VideoPlayerP
   }, [report]);
 
   // Built only once the user asks, so a page of videos does not create a player per row.
-  const start = async () => {
-    if (!source || source.kind !== "youtube" || !mount.current) return;
+  const start = () => setStarted(true);
 
-    setStarted(true);
+  /// Created after the mount point exists, not during the click that asks for it.
+  ///
+  /// This used to build the player inside the click handler, guarded on `mount.current`. But the
+  /// mount node is only rendered once `started` is true, so on the first click the ref was still
+  /// null, the guard returned before `setStarted`, and nothing happened — and nothing ever would,
+  /// because the state that renders the node was the state the guard prevented. Clicking a video
+  /// did nothing at all.
+  ///
+  /// Asking and building are now separate: the click sets the state, the state renders the mount,
+  /// and this builds into it on the render after that.
+  useEffect(() => {
+    if (!started || player.current || !mount.current) return;
+    if (sourceKind !== "youtube" || !videoId) return;
 
-    try {
-      const api = await loadYouTubeApi();
+    let cancelled = false;
 
-      player.current = new api.Player(mount.current, {
-        // The API replaces the element it is given, so the new iframe does not inherit the class
-        // that was sizing it. Without these it renders at the default 300x150 inside a container
-        // expecting it to fill — which is how swapping the plain embed for this player stopped
-        // videos displaying at all.
-        width: "100%",
-        height: "100%",
-        videoId: source.id,
-        playerVars: {
-          rel: 0,
-          autoplay: 1,
-          // Resume handled here rather than with a start= param, because that would also reset
-          // the position every time React re-rendered the embed.
-          start: Math.floor(resumeFrom),
-        },
-        events: {
-          onReady: (event) => {
-            lastReportedAt.current = event.target.getCurrentTime();
+    void (async () => {
+      try {
+        const api = await loadYouTubeApi();
+
+        // The user may have navigated away while the script loaded.
+        if (cancelled || !mount.current) return;
+
+        player.current = new api.Player(mount.current, {
+          // The API replaces the element it is given, so the new iframe does not inherit the class
+          // that was sizing it. Without these it renders at the default 300x150 inside a container
+          // expecting it to fill — which is how swapping the plain embed for this player stopped
+          // videos displaying at all.
+          width: "100%",
+          height: "100%",
+          videoId,
+          playerVars: {
+            rel: 0,
+            autoplay: 1,
+            // Resume handled here rather than with a start= param, because that would also reset
+            // the position every time React re-rendered the embed.
+            start: Math.floor(resumeFrom),
           },
-          onStateChange: (event) => {
-            if (event.data === YT_PLAYING) {
+          events: {
+            onReady: (event) => {
               lastReportedAt.current = event.target.getCurrentTime();
-              setPlaying(true);
-              return;
-            }
+            },
+            onStateChange: (event) => {
+              if (event.data === YT_PLAYING) {
+                lastReportedAt.current = event.target.getCurrentTime();
+                setPlaying(true);
+                return;
+              }
 
-            if (event.data === YT_PAUSED || event.data === YT_ENDED) {
-              setPlaying(false);
-              flush();
-            }
+              if (event.data === YT_PAUSED || event.data === YT_ENDED) {
+                setPlaying(false);
+                flush();
+              }
+            },
           },
-        },
-      });
-    } catch {
-      // The API did not load — an extension, a blocked domain, a flaky network. The plain embed
-      // below still plays; it just will not remember the position, and saying so beats a blank
-      // rectangle.
-      setFailed(true);
-    }
-  };
+        });
+      } catch {
+        // The API did not load — an extension, a blocked domain, a flaky network. The plain embed
+        // below still plays; it just will not remember the position, and saying so beats a blank
+        // rectangle.
+        setFailed(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // flush and resumeFrom are read at construction time and intentionally not re-run on.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [started, sourceKind, videoId]);
 
   useEffect(() => {
     if (!playing) return;
