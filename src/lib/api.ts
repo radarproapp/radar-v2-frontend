@@ -91,6 +91,52 @@ export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+/**
+ * Whether a 401 means the session we were holding has ended.
+ *
+ * Not every 401 does, and treating them alike breaks two things. A 401 from the sign-in endpoints
+ * means the password was wrong — the right response is to show that on the form, not to tear down
+ * a session that was never established. And a 401 on a call made without a token is just "you
+ * need to sign in", which the route guard already handles.
+ *
+ * What is left is the case that matters: we sent a token and the server refused it. That used to be
+ * almost unreachable, because a token only stopped working when it expired thirty days later. Now
+ * a password reset ends every session on the account immediately, so this can happen while
+ * somebody is part-way through using the app.
+ */
+export function endsTheSession(status: number, path: string, sentToken: boolean): boolean {
+  if (status !== 401) return false;
+  if (!sentToken) return false;
+
+  // Covers /api/auth/login, /register, /forgot-password, /reset-password and the admin login.
+  return !path.includes("/auth/");
+}
+
+type SessionEndedListener = () => void;
+
+let sessionEndedListeners: SessionEndedListener[] = [];
+
+/**
+ * Registers a listener for the server refusing our token, and returns the unsubscribe.
+ *
+ * A listener rather than a direct call into auth state, because this module is imported by
+ * everything and must not import React or the auth context back — and because the thing that has
+ * to react to it is React state, which only the provider can set.
+ */
+export function onSessionEnded(listener: SessionEndedListener): () => void {
+  sessionEndedListeners = [...sessionEndedListeners, listener];
+
+  return () => {
+    sessionEndedListeners = sessionEndedListeners.filter((l) => l !== listener);
+  };
+}
+
+function noteSessionEnded(status: number, path: string, sentToken: boolean): void {
+  if (!endsTheSession(status, path, sentToken)) return;
+
+  for (const listener of sessionEndedListeners) listener();
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
   const headers = new Headers(options.headers);
@@ -105,6 +151,12 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const body = isJson ? await res.json() : null;
 
   if (!res.ok) {
+    // Before the throw, so it happens whether or not the caller handles the error. Every page
+    // renders its own message for a failed query, so without this a refused token shows up as
+    // "Could not load the feed." on a screen the app still believes is signed in — with no way
+    // out except a manual reload.
+    noteSessionEnded(res.status, path, token !== null);
+
     const message = body?.error ?? body?.title ?? res.statusText;
     throw new ApiError(res.status, message);
   }
@@ -127,7 +179,10 @@ async function streamChat(path: string, message: string, history: ChatMessage[],
     signal,
   });
 
-  if (!res.ok || !res.body) throw new ApiError(res.status, "Failed to start chat stream.");
+  if (!res.ok || !res.body) {
+    noteSessionEnded(res.status, path, token !== null);
+    throw new ApiError(res.status, "Failed to start chat stream.");
+  }
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
