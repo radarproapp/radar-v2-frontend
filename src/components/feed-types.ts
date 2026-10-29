@@ -15,14 +15,19 @@ export interface FeedType {
   icon: IconName;
 }
 
+/// News, podcasts and posts. Nothing else.
+///
+/// Papers, policy documents and essays moved to Research Discovery, which is the product built
+/// to read them: a working paper arriving between two news items is in the way of both the
+/// person skimming the news and the person looking for the paper. Videos went to Radar Learn,
+/// where somebody asks for a video on a subject rather than being shown whatever arrived today.
+///
+/// The chips narrow within the feed now rather than reaching past its edge - /feed?type=
+/// ResearchPaper used to return papers under a heading that says Intelligence.
 export const FEED_TYPES: FeedType[] = [
   { label: "All", type: null, icon: "radar" },
-  { slug: "articles", label: "Articles", type: "Article", icon: "article" },
-  { slug: "videos", label: "Videos", type: "Video", icon: "video" },
+  { slug: "news", label: "News", type: "Article", icon: "article" },
   { slug: "podcasts", label: "Podcasts", type: "Podcast", icon: "podcast" },
-  { slug: "papers", label: "Papers", type: "ResearchPaper", icon: "paper" },
-  { slug: "policy", label: "Policy", type: "PolicyPaper", icon: "policy" },
-  { slug: "ideas", label: "Ideas", type: "Essay", icon: "idea" },
 ];
 
 /// The type a URL is asking for. Anything unrecognised reads as "All" rather than an empty feed,

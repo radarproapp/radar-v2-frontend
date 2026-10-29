@@ -3,9 +3,20 @@ import { FEED_TYPES, feedTypeFor } from "../feed-types";
 
 describe("feedTypeFor", () => {
   it("reads the slug the sidebar links to", () => {
-    expect(feedTypeFor("videos").type).toBe("Video");
+    expect(feedTypeFor("news").type).toBe("Article");
     expect(feedTypeFor("podcasts").type).toBe("Podcast");
-    expect(feedTypeFor("papers").type).toBe("ResearchPaper");
+  });
+
+  /// A link to a filter that has moved shows the feed rather than an empty page.
+  ///
+  /// These slugs were in the sidebar for months, so they are in people's history and in links
+  /// they sent each other. Papers, policy and ideas are in Research Discovery now; the old
+  /// address should not answer with nothing.
+  it("treats the moved filters as no filter rather than an empty feed", () => {
+    for (const gone of ["papers", "policy", "ideas", "videos", "articles"]) {
+      expect(feedTypeFor(gone).type).toBeNull();
+      expect(feedTypeFor(gone).label).toBe("All");
+    }
   });
 
   it("treats no slug as the whole feed", () => {
@@ -20,7 +31,7 @@ describe("feedTypeFor", () => {
   });
 
   it("is case insensitive, since links get typed by hand", () => {
-    expect(feedTypeFor("Videos").type).toBe("Video");
+    expect(feedTypeFor("News").type).toBe("Article");
     expect(feedTypeFor("PODCASTS").type).toBe("Podcast");
   });
 });
@@ -45,10 +56,19 @@ describe("the feed types", () => {
     }
   });
 
-  // Videos and podcasts are the reason this nav exists: they are in the feed but rarely rank
-  // into it, so losing their entry would make them unreachable again.
-  it("keeps a route to video and podcast", () => {
-    expect(FEED_TYPES.map((e) => e.type)).toContain("Video");
+  // Podcasts are the reason this nav exists: they are in the feed but rarely rank into it, so
+  // losing their entry would make them unreachable again.
+  it("keeps a route to podcasts", () => {
     expect(FEED_TYPES.map((e) => e.type)).toContain("Podcast");
+  });
+
+  /// The feed is news, podcasts and posts. Everything else has somewhere better to be.
+  ///
+  /// Asserted as a decision rather than left as an absence. Papers, policy and essays are in
+  /// Research Discovery, which is the product built to read them. Video is the one with a real
+  /// cost: it had a chip here and now has none, so anything ingested as video is reachable only
+  /// through search until Radar Learn carries the corpus as well as YouTube.
+  it("carries nothing but news and podcasts", () => {
+    expect(FEED_TYPES.map((e) => e.type)).toEqual([null, "Article", "Podcast"]);
   });
 });
