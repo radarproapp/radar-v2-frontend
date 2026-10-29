@@ -1,4 +1,4 @@
-import { INTEREST_GROUPS } from "./interests";
+import { ALL_INTERESTS } from "./interests";
 
 /// Suggestions for the three personalisation boxes.
 ///
@@ -13,21 +13,9 @@ import { INTEREST_GROUPS } from "./interests";
 /// Goals and opportunities have no catalogue, so these come from the guide's own examples. They
 /// are deliberately phrased the way a person would say them out loud rather than as categories.
 
-export const INTEREST_SUGGESTIONS: string[] = (() => {
-  const seen = new Set<string>();
-  const flat: string[] = [];
-
-  for (const [, subjects] of INTEREST_GROUPS) {
-    for (const subject of subjects) {
-      const key = subject.toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      flat.push(subject);
-    }
-  }
-
-  return flat;
-})();
+/// The pool behind box 1. The same list the profile editor offers, by construction rather than
+/// by coincidence - the two were derived separately and happened to match.
+export const INTEREST_SUGGESTIONS: string[] = ALL_INTERESTS;
 
 export const GOAL_SUGGESTIONS: string[] = [
   "Find a job",
@@ -44,6 +32,41 @@ export const GOAL_SUGGESTIONS: string[] = [
   "Study abroad",
 ];
 
+/// What is in somebody's way, for the third box.
+///
+/// Written as a reader would say it, in the first person, because that is how the box is answered
+/// and because a challenge phrased as a category ("skills gap") is a label rather than a problem.
+/// These are starting points — the box takes anything typed, and what somebody types about their
+/// own situation will always be better than this list.
+///
+/// Spread across what actually stops people at each level: students stuck on the work itself,
+/// graduates stuck at the door, professionals stuck in place.
+export const CHALLENGE_SUGGESTIONS: string[] = [
+  "I don't know where to start",
+  "I have no portfolio to show",
+  "I keep getting rejected",
+  "I have no experience in the field",
+  "I can't find the right opportunities",
+  "I don't have the right qualifications",
+  "I can't afford the course or programme",
+  "I don't know anyone in the industry",
+  "I struggle to finish what I start",
+  "I don't have enough time to study",
+  "My skills feel out of date",
+  "I am not sure this is the right path",
+  "I find the subject difficult",
+  "I don't know how to write applications",
+  "I have been in the same role too long",
+  "I cannot get funding for my business",
+  "I don't know how to price my work",
+  "English academic writing is hard for me",
+];
+
+/// The older third box: which kinds of opportunity to watch for.
+///
+/// Nothing asks for this any more — opportunities are worked out from the goals and challenges
+/// instead. Kept because profiles that answered it still carry the answer and it is still
+/// honoured where it is set.
 export const OPPORTUNITY_SUGGESTIONS: string[] = [
   "Jobs and internships",
   "Scholarships",

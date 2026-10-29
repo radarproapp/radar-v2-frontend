@@ -8,7 +8,7 @@ import { ApiError, personalise } from "../lib/api";
 import {
   GOAL_SUGGESTIONS,
   INTEREST_SUGGESTIONS,
-  OPPORTUNITY_SUGGESTIONS,
+  CHALLENGE_SUGGESTIONS,
 } from "../lib/personalisation";
 import type { PersonaType } from "../lib/types";
 
@@ -35,9 +35,7 @@ export function Personalise() {
 
   const [interests, setInterests] = useState<string[]>(() => profile?.interests ?? []);
   const [goals, setGoals] = useState<string[]>(() => profile?.goals ?? []);
-  const [opportunities, setOpportunities] = useState<string[]>(
-    () => profile?.opportunityPreferences ?? [],
-  );
+  const [challenges, setChallenges] = useState<string[]>(() => profile?.problems ?? []);
   const [persona, setPersona] = useState<PersonaType | null>(() => profile?.persona ?? null);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +44,7 @@ export function Personalise() {
       personalise({
         interests,
         goals,
-        opportunityPreferences: opportunities,
+        challenges,
         persona: persona ?? undefined,
       }),
     onSuccess: async () => {
@@ -97,13 +95,17 @@ export function Personalise() {
         onChange={setGoals}
       />
 
+      {/* What is in the way, rather than which kinds of opportunity to watch for.
+          A goal says where somebody is going; a challenge says what is stopping them, and the two
+          want different material from the same corpus. Radar works out which opportunities to
+          surface from this and the goals, instead of asking for a third list. */}
       <TagInput
-        label="What opportunities are you looking for?"
-        hint="Optional — what Radar should watch for on your behalf."
-        placeholder="e.g. internships, grants, competitions"
-        pool={OPPORTUNITY_SUGGESTIONS}
-        value={opportunities}
-        onChange={setOpportunities}
+        label="What is getting in your way?"
+        hint="Optional — what is making your goals harder. Radar uses it to pick what to show you."
+        placeholder="e.g. no experience yet, keep getting rejected"
+        pool={CHALLENGE_SUGGESTIONS}
+        value={challenges}
+        onChange={setChallenges}
       />
 
       <div className="tagbox">

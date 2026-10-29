@@ -375,14 +375,15 @@ export interface LearningRecord {
 export function personalise(input: {
   interests: string[];
   goals: string[];
-  opportunityPreferences: string[];
+  /// Box 3. Stored as the profile's `problems`, which is the field this has always been.
+  challenges: string[];
   persona?: PersonaType;
 }) {
   return request<{
     isPersonalised: boolean;
     interests: string[];
     goals: string[];
-    opportunityPreferences: string[];
+    challenges: string[];
     persona: string;
   }>("/api/me/personalise", { method: "POST", body: JSON.stringify(input) });
 }

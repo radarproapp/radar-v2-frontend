@@ -29,7 +29,10 @@ describe("Personalise", () => {
 
     expect(screen.getByText("What are you interested in?")).toBeTruthy();
     expect(screen.getByText("What are your goals?")).toBeTruthy();
-    expect(screen.getByText("What opportunities are you looking for?")).toBeTruthy();
+    // Box 3 asks what is in the way, not which kinds of opportunity to watch for. A goal says
+    // where somebody is going; a challenge says what is stopping them, and Radar works out the
+    // opportunities from both rather than asking for a third list.
+    expect(screen.getByText("What is getting in your way?")).toBeTruthy();
   });
 
   /// A dead button with no explanation is the thing this avoids: it names the missing answer

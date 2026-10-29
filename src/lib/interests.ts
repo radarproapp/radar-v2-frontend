@@ -29,4 +29,27 @@ export const INTEREST_GROUPS: [string, string[]][] = [
 ];
 
 // Academic programs intentionally repeat a few interests. Keep picker operations and payloads unique.
-export const ALL_INTERESTS: string[] = [...new Set(INTEREST_GROUPS.flatMap(([, items]) => items))];
+/// Every subject Radar suggests, deduplicated.
+///
+/// One list, because there were two. This and INTEREST_SUGGESTIONS were derived separately from
+/// the same groups and happened to compute to identical arrays - so the two screens that pick
+/// interests agreed by coincidence rather than by construction, and the day one deduped
+/// case-insensitively and the other did not, nothing would have said so.
+///
+/// Case-insensitive, which the set-based version was not: "UI/UX Design" and "UX/UI Design"
+/// both appear in the groups and both survived it.
+export const ALL_INTERESTS: string[] = (() => {
+  const seen = new Set<string>();
+  const flat: string[] = [];
+
+  for (const [, subjects] of INTEREST_GROUPS) {
+    for (const subject of subjects) {
+      const key = subject.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      flat.push(subject);
+    }
+  }
+
+  return flat;
+})();
