@@ -1054,6 +1054,15 @@ export function setProjectVisibility(projectId: string, isPublic: boolean) {
   });
 }
 
+/// What Radar already holds on the research side for this reader.
+///
+/// Papers, policy documents, essays and long-form analysis, matched by the same rule the feed
+/// uses. Distinct from searchResearch, which asks OpenAlex: this is Radar's own corpus, the half
+/// of moving them out of the Intelligence feed that makes it a move rather than a deletion.
+export function getResearchLibrary(limit = 20) {
+  return request<ContentItem[]>(`/api/research/library?limit=${limit}`);
+}
+
 /// The showcase view, which is an allow-list rather than the stored project — see PublicProject.
 export function getPublicProject(projectId: string) {
   return request<PublicProject>(`/api/projects/${projectId}/public`);

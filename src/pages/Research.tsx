@@ -6,7 +6,7 @@ import { ErrorState } from "../components/ErrorState";
 import { Icon } from "../components/Icon";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { useAuth } from "../auth/AuthContext";
-import { ApiError, searchResearch } from "../lib/api";
+import { ApiError, getResearchLibrary, searchResearch } from "../lib/api";
 import { PaperCard } from "../components/PaperCard";
 
 /// Research Discovery, over OpenAlex.
@@ -58,8 +58,20 @@ export function Research() {
     setQuery(trimmed);
   };
 
+  /// What Radar already holds, shown before anything is searched.
+  ///
+  /// Papers, policy documents, essays and long-form analysis used to arrive in the Intelligence
+  /// feed between news items. Moving them out without showing them here would have left them
+  /// ingested, matched and read by nobody.
+  const library = useQuery({
+    queryKey: ["research", "library"],
+    queryFn: () => getResearchLibrary(20),
+    enabled: query.trim().length < 2,
+  });
+
   const interests = (profile?.interests ?? []).filter((i) => i.trim()).slice(0, 6);
   const papers = results.data ?? [];
+  const held = library.data ?? [];
 
   return (
     <div className="r-page research">
@@ -137,11 +149,27 @@ export function Research() {
       )}
 
       {!query ? (
-        <EmptyState
-          icon="paper"
-          title="Nothing searched yet"
-          description="Type a topic above. Radar does not pick a subject for you — results appear once you ask for something."
-        />
+        <>
+          {library.isLoading ? (
+            <LoadingSkeleton variant="feed" count={3} />
+          ) : held.length > 0 ? (
+            <>
+              <div className="research__count">
+                {held.length} in your library · papers, policy and long-form analysis Radar has
+                already matched to your subjects
+              </div>
+              {held.map((item) => (
+                <PaperCard key={item.id} paper={item} />
+              ))}
+            </>
+          ) : (
+            <EmptyState
+              icon="paper"
+              title="Nothing searched yet"
+              description="Type a topic above. Radar does not pick a subject for you — results appear once you ask for something."
+            />
+          )}
+        </>
       ) : results.isLoading ? (
         <LoadingSkeleton variant="feed" count={3} />
       ) : results.isError ? (

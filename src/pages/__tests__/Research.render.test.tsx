@@ -40,13 +40,41 @@ function withProfile(interests: string[]) {
 }
 
 describe("Research", () => {
-  it("searches nothing until asked", () => {
+  it("searches nothing until asked", async () => {
     withProfile([]);
     const search = vi.spyOn(api, "searchResearch");
+    vi.spyOn(api, "getResearchLibrary").mockResolvedValue([]);
 
     renderPage(<Research />);
 
-    expect(screen.getByText("Nothing searched yet")).toBeTruthy();
+    expect(await screen.findByText("Nothing searched yet")).toBeTruthy();
+    expect(search).not.toHaveBeenCalled();
+  });
+
+  /// What Radar already holds, shown before anything is searched.
+  ///
+  /// Papers, policy and long-form analysis used to arrive in the Intelligence feed between news
+  /// items. Moving them out of the feed without showing them here would have left them ingested,
+  /// matched and read by nobody - the half of the move that is invisible from both screens.
+  ///
+  /// Reading what Radar already matched is not the same as picking a subject for somebody: these
+  /// were matched against what they wrote, and nothing is searched until they ask.
+  it("shows what Radar already holds before anything is searched", async () => {
+    withProfile(["Public policy"]);
+    const search = vi.spyOn(api, "searchResearch");
+    vi.spyOn(api, "getResearchLibrary").mockResolvedValue([
+      {
+        id: "c1",
+        title: "Fiscal consolidation in lower-income economies",
+        authors: [],
+        publishedAt: "2026-02-01T00:00:00Z",
+      } as never,
+    ]);
+
+    renderPage(<Research />);
+
+    expect(await screen.findByText(/fiscal consolidation/i)).toBeTruthy();
+    expect(screen.getByText(/in your library/i)).toBeTruthy();
     expect(search).not.toHaveBeenCalled();
   });
 
@@ -54,6 +82,7 @@ describe("Research", () => {
   /// the page must not pick a subject on somebody's behalf.
   it("offers declared interests without searching them", () => {
     withProfile(["Computer Science", "Nursing"]);
+    vi.spyOn(api, "getResearchLibrary").mockResolvedValue([]);
     const search = vi.spyOn(api, "searchResearch");
 
     renderPage(<Research />);
