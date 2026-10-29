@@ -90,11 +90,25 @@ describe("LessonMaterial", () => {
     expect(screen.queryByText(/not from watching it/i)).toBeNull();
   });
 
-  // An absent summary says it is absent rather than leaving a gap that reads as "no content".
-  it("says when a summary has not been written yet", () => {
+  // An absent summary says it is absent rather than leaving a gap that reads as "no content" -
+  // and says the true reason rather than promising one that is coming.
+  //
+  // This used to read "No summary yet - it is written on the next visit", which is false in both
+  // cases it appears. A video's summary is written by the same call that admits it, so once a
+  // lesson has settled there is no next visit. An article's is the publisher's own, copied at
+  // ingestion, and nothing writes one later at all.
+  it("says why a video has no summary, without promising a later one", () => {
     renderPage(<LessonMaterial resources={[video({ summary: "" })]} />);
 
-    expect(screen.getByText(/no summary yet/i)).toBeTruthy();
+    expect(screen.getByText(/too little in the description/i)).toBeTruthy();
+    expect(screen.queryByText(/next visit/i)).toBeNull();
+  });
+
+  it("says an article's summary came from a publisher who gave none", () => {
+    renderPage(<LessonMaterial resources={[article({ summary: "" })]} />);
+
+    expect(screen.getByText(/publisher did not provide/i)).toBeTruthy();
+    expect(screen.queryByText(/next visit/i)).toBeNull();
   });
 
   /// A YouTube *search* url is not a video. parseVideoUrl refuses it, and the row becomes a link

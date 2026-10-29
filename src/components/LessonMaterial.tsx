@@ -20,9 +20,18 @@ import type { LessonResource } from "../lib/types";
 
 function Summary({ resource }: { resource: LessonResource }) {
   if (!resource.summary) {
+    // Said as a fact about this item, not as a promise about a later one.
+    //
+    // This read "No summary yet — it is written on the next visit", which is false in both cases
+    // it actually appears. An article's summary is the publisher's own, copied when the item was
+    // ingested; nothing writes one later, so an article without one never gets one. And a video's
+    // is written by the same call that admitted it, so once a lesson has settled there is no
+    // next visit to write anything.
     return (
       <p className="material__nosummary">
-        No summary yet — it is written on the next visit.
+        {resource.kind === "Video"
+          ? "No summary — there was too little in the description to write one from."
+          : "The publisher did not provide a summary."}
       </p>
     );
   }
