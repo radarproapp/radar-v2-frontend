@@ -1171,7 +1171,11 @@ export type DocumentKind =
   | "ResearchProposal"
   | "PersonalStatement"
   | "BusinessPlan"
-  | "SocialMediaContent";
+  | "SocialMediaContent"
+  | "GrantApplication"
+  | "PitchDeck"
+  | "TechnicalDocumentation"
+  | "LessonPlan";
 
 /// Met, Partly, NotMet — or Unjudged when the model skipped a criterion, which is reported
 /// rather than hidden so the reader sees the whole rubric.
