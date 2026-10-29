@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
+import { PersonalisePrompt } from "../components/PersonalisePrompt";
+import { useAuth } from "../auth/AuthContext";
 import { ErrorState } from "../components/ErrorState";
 import {
   getDailyOpportunities,
@@ -73,6 +75,16 @@ const TIER_FILTERS = [
 ];
 
 export function Opportunities() {
+  const { profile } = useAuth();
+
+  // Whether there is anything to match against at all. Interests, goals and a stated path are
+  // what the scoring reads; without them the list is not empty because nothing fits, it is empty
+  // because nothing has been said.
+  const isPersonalised =
+    (profile?.interests?.length ?? 0) > 0 ||
+    (profile?.goals?.length ?? 0) > 0 ||
+    Boolean(profile?.primaryGoal);
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -437,14 +449,21 @@ export function Opportunities() {
             allQuery.refetch();
           }}
         />
+      ) : items.length === 0 && !isPersonalised && viewMode !== "pipeline" ? (
+        /* Nothing to show, and the reason is answerable.
+           Opportunities are matched on the field somebody is studying, the interests and goals
+           they stated, and where they are in a career. A learner who has stated none of those
+           has nothing to match against, and the honest answer is the question - not a page of
+           whatever happens to be open, with a percentage beside each one. */
+        <PersonalisePrompt />
       ) : items.length === 0 ? (
         <EmptyState
           icon="goal"
-          title={viewMode === "pipeline" ? "No tracked opportunities in your pipeline" : "No opportunities match your filters"}
+          title={viewMode === "pipeline" ? "No tracked opportunities in your pipeline" : "Nothing here matches what you are working on"}
           description={
             viewMode === "pipeline"
               ? "As you save, mark interest, or apply to opportunities, they will appear in your pipeline tracker."
-              : "Try adjusting your filter criteria to discover more opportunities across Africa and globally."
+              : "Radar only shows openings it can tie to your path, your interests or your goals. Widen the filters, or add what you are working on so there is more to match against."
           }
         >
           {viewMode !== "daily" && (
