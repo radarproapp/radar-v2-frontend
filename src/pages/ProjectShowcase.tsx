@@ -34,9 +34,12 @@ export function ProjectShowcase() {
           </div>
         ) : query.data ? (
           <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 16, padding: 32 }}>
-            {query.data.isCompleted && (
+            {/* Accepted, not "completed". It means the work was assessed against the standards for
+                this path and met them - which is the fact worth showing a stranger. The mark
+                itself is not in this view and is not meant to be. */}
+            {query.data.isAccepted && (
               <span style={{ fontSize: 11, fontWeight: 700, color: "var(--lime)", background: "rgba(46,168,96,0.1)", borderRadius: 99, padding: "4px 10px" }}>
-                Completed
+                Accepted
               </span>
             )}
             <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.6rem", marginTop: 12, marginBottom: 12 }}>{query.data.title}</h1>

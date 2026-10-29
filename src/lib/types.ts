@@ -848,6 +848,22 @@ export interface ProjectPlan {
   generatedAt: string;
 }
 
+/// A project as a stranger sees it, which is much less than the owner sees.
+///
+/// Its own type because the endpoint's own type is an allow-list: the showcase page is reachable
+/// without signing in, and it used to return the whole stored project - every submission, the
+/// text extracted from the uploaded work, and every assessment with its criteria quoting that
+/// work, refused attempts included. Anything not named here is not sent.
+export interface PublicProject {
+  id: string;
+  title: string;
+  description: string;
+  /// That it met the standard. Not the mark: what it scored is between the learner and their
+  /// assessment.
+  isAccepted: boolean;
+  completedAt: string | null;
+}
+
 export interface StudioProject {
   id: string;
   templateId: string;

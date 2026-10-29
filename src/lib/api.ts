@@ -38,6 +38,7 @@ import type {
   SourceProfile,
   SourceReportSummary,
   SpacedRevisionItem,
+  PublicProject,
   StudioProject,
   SubscriptionPlan,
   TopicMastery,
@@ -1064,8 +1065,9 @@ export function setProjectVisibility(projectId: string, isPublic: boolean) {
   });
 }
 
+/// The showcase view, which is an allow-list rather than the stored project — see PublicProject.
 export function getPublicProject(projectId: string) {
-  return request<StudioProject>(`/api/projects/${projectId}/public`);
+  return request<PublicProject>(`/api/projects/${projectId}/public`);
 }
 
 // ── Notebook ─────────────────────────────────────────────────────────────
