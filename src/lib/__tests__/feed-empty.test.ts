@@ -52,4 +52,24 @@ describe("feedEmptyCopy", () => {
       }
     }
   });
+
+  /// The state the strand filter creates, which the enum had no word for.
+  ///
+  /// Before this it was reported as one of two untrue things: that the reader had dismissed
+  /// everything — offering a button that restores dismissals and cannot help — or that they were
+  /// up to date, while the library held plenty that simply did not mention their words.
+  it("says their words are the reason, and offers the only thing that changes it", () => {
+    const copy = feedEmptyCopy("NothingMatchesYourTerms");
+
+    expect(copy.description).toMatch(/mentions the subjects/i);
+    expect(copy.action).toBe("widenInterests");
+  });
+
+  it("never claims they are up to date when nothing matched their words", () => {
+    const copy = feedEmptyCopy("NothingMatchesYourTerms");
+
+    expect(copy.title).not.toMatch(/up to date|nothing new/i);
+    expect(copy.action).not.toBe("restoreDismissed");
+    expect(copy.action).not.toBe("refresh");
+  });
 });

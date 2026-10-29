@@ -9,7 +9,7 @@ import { ApiError, dismissFeedItem, FEED_CARD_FIELDS, getFeed, logEvent, restore
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import type { ContentItem, ContentType, FeedEmptyReason, Page } from "../lib/types";
-import { feedEmptyCopy } from "../lib/feed-empty";
+import { feedEmptyCopy, type FeedEmptyAction } from "../lib/feed-empty";
 import { Icon } from "../components/Icon";
 import { PersonalisePrompt } from "../components/PersonalisePrompt";
 import type { IconName } from "../components/icon-map";
@@ -207,6 +207,7 @@ export function Feed() {
           reason={feedQuery.data?.pages?.[0]?.emptyReason}
           onRefresh={() => feedQuery.refetch()}
           onClearFilter={() => setSearchParams({})}
+          onWidenInterests={() => navigate("/profile/edit")}
           onRestoreDismissed={async () => {
             await restoreDismissedFeedItems();
             await feedQuery.refetch();
@@ -390,18 +391,25 @@ function FeedEmptyState({
   onRefresh,
   onClearFilter,
   onRestoreDismissed,
+  onWidenInterests,
 }: {
   reason?: FeedEmptyReason;
   onRefresh: () => void;
   onClearFilter: () => void;
   onRestoreDismissed: () => void;
+  onWidenInterests: () => void;
 }) {
   const copy = feedEmptyCopy(reason);
 
-  const handlers: Record<string, () => void> = {
+  // Every action the copy can ask for. A missing entry here renders a button whose onClick is
+  // undefined — it looks exactly like a working button and does nothing, which is a failure that
+  // has already shipped once in this codebase.
+  const handlers: Record<FeedEmptyAction, (() => void) | undefined> = {
     refresh: onRefresh,
     clearFilter: onClearFilter,
     restoreDismissed: onRestoreDismissed,
+    widenInterests: onWidenInterests,
+    none: undefined,
   };
 
   return (

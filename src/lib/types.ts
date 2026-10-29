@@ -22,7 +22,8 @@ export type FeedEmptyReason =
   | "NoContentAtAll"
   | "NoneOfThisType"
   | "EverythingDismissed"
-  | "NothingNewRightNow";
+  | "NothingNewRightNow"
+  | "NothingMatchesYourTerms";
 
 export type ContentType =
   | "Article"

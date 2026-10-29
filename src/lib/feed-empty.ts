@@ -10,7 +10,12 @@ import type { FeedEmptyReason } from "./types";
 ///
 /// Kept separate from the component so the wording and the action can be tested without a DOM.
 /// The rule that matters: never offer a button that cannot fix the stated problem.
-export type FeedEmptyAction = "refresh" | "clearFilter" | "restoreDismissed" | "none";
+export type FeedEmptyAction =
+  | "refresh"
+  | "clearFilter"
+  | "restoreDismissed"
+  | "widenInterests"
+  | "none";
 
 export interface FeedEmptyCopy {
   icon: IconName;
@@ -48,6 +53,18 @@ export function feedEmptyCopy(reason: FeedEmptyReason | undefined): FeedEmptyCop
         // Deliberately no action: the corpus is empty, so the next request returns the same
         // nothing. A button that cannot work is worse than no button.
         action: "none",
+      };
+
+    case "NothingMatchesYourTerms":
+      return {
+        icon: "article",
+        title: "Nothing here matches what you follow",
+        description:
+          "Radar has plenty of material, and none of it mentions the subjects, goals or challenges you gave it. Adding a subject, or wording one differently, is what changes that.",
+        // The only action that can resolve this. "Check again" would be a button that cannot
+        // work: the next request runs the same query against the same library.
+        action: "widenInterests",
+        actionLabel: "Edit what you follow",
       };
 
     default:
