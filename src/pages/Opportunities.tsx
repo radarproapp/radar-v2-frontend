@@ -46,6 +46,31 @@ const TYPE_LABELS: Record<OpportunityType, string> = {
   Event: "Other events",
 };
 
+/// The name of one of them, for the badge on a card.
+///
+/// Separate from the filter labels because they do different jobs: a filter asks for "Jobs" and
+/// a card is one job. The badge rendered the raw enum name - a reader saw "JobFair",
+/// "GraduateProgramme", "StartupAccelerator" - while the labels sat unused in the same file.
+const TYPE_NAMES: Record<OpportunityType, string> = {
+  Job: "Job",
+  RemoteJob: "Remote job",
+  Internship: "Internship",
+  GraduateProgramme: "Graduate programme",
+  Fellowship: "Fellowship",
+  Scholarship: "Scholarship",
+  ResearchGrant: "Research grant",
+  Funding: "Funding",
+  Competition: "Competition",
+  StartupAccelerator: "Accelerator",
+  Conference: "Conference",
+  Seminar: "Seminar",
+  Workshop: "Workshop",
+  JobFair: "Job fair",
+  Training: "Training",
+  Bootcamp: "Bootcamp",
+  Event: "Event",
+};
+
 const TYPE_FILTERS: { label: string; value: OpportunityType | "All" }[] = [
   { label: "All Types", value: "All" },
   ...OPPORTUNITY_TYPES.map((value) => ({ label: TYPE_LABELS[value], value })),
@@ -521,7 +546,7 @@ export function Opportunities() {
                       <span>{opp.matchTier === "StrongMatch" ? "Strong Match" : opp.matchTier === "Relevant" ? "Relevant" : "Explore"}</span>
                     </span>
 
-                    <span className="opp-type-badge">{opp.type}</span>
+                    <span className="opp-type-badge">{TYPE_NAMES[opp.type] ?? opp.type}</span>
 
                     {opp.regionTag && (
                       <span style={{ fontSize: 11, fontWeight: 700, background: "var(--canvas)", color: "var(--text-muted)", padding: "3px 8px", borderRadius: 6, border: "1px solid var(--border)" }}>
