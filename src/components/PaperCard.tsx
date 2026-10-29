@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Icon } from "./Icon";
-import { explainPaper, findResearchGaps, getPaperCitation } from "../lib/api";
+import { explainPaper, findResearchGaps, getPaper, getPaperCitation } from "../lib/api";
 import { paperAuthorLine, paperYear } from "../lib/paper";
 import type { CitationStyle, ContentItem } from "../lib/types";
 
@@ -11,9 +11,14 @@ import type { CitationStyle, ContentItem } from "../lib/types";
 /// as a link the reader can follow. Nothing is paraphrased at this level, because a one-line
 /// summary of a paper is a claim about its findings.
 ///
-/// Expanded it offers the three things the backend can actually do — a citation, a plain-language
-/// explanation, and a gap analysis. Each is fetched on request rather than up front: they are
-/// model calls, and most papers in a result list are never opened.
+/// Expanded it shows the summary — the paper in about 500 words of plain English, section by
+/// section — and offers the three other things the backend can do: a citation, a longer
+/// explanation, and a gap analysis.
+///
+/// The summary is fetched when the card is opened. Search results arrive without one: building it
+/// is a model call per paper, and a page of twenty would be twenty calls for the nineteen nobody
+/// opens. It had nowhere else to be fetched from either, so the section existed in the component,
+/// in the model and in the endpoint, and never once reached a reader.
 
 const STYLES: CitationStyle[] = ["APA", "MLA", "Chicago", "Harvard", "IEEE"];
 
@@ -25,6 +30,19 @@ export function PaperCard({ paper }: { paper: ContentItem }) {
   const citation = useMutation({
     mutationFn: (next: CitationStyle) => getPaperCitation(paper.id, next),
   });
+
+  /// The summary, fetched the first time this card is opened and kept after that.
+  ///
+  /// Not requested when the paper already carries one, which is how it arrives from the feed.
+  const detail = useQuery({
+    queryKey: ["paper", paper.id],
+    queryFn: () => getPaper(paper.id),
+    enabled: open && !paper.paperBreakdown,
+    staleTime: Infinity,
+    retry: 1,
+  });
+
+  const summary = paper.paperBreakdown ?? detail.data?.paperBreakdown ?? null;
 
   const explanation = useMutation({ mutationFn: () => explainPaper(paper.id) });
   const gaps = useMutation({ mutationFn: () => findResearchGaps(paper.id) });
@@ -106,17 +124,31 @@ export function PaperCard({ paper }: { paper: ContentItem }) {
         <div className="paper__body">
           {paper.aiSummary && <p className="paper__abstract">{paper.aiSummary}</p>}
 
-          {paper.paperBreakdown && (
+          {detail.isLoading && <p className="paper__summary-wait">Reading the paper…</p>}
+
+          {summary && (
             <div className="paper__breakdown">
+              {/* Where the paper sits in time. A founding text of its field can still be the
+                  wrong thing to copy as current practice, and nobody works that out from a year
+                  while skimming. */}
+              {summary.era && <span className="paper__era">{summary.era}</span>}
+
               {(
                 [
-                  ["Introduction", paper.paperBreakdown.introduction],
-                  ["Problem", paper.paperBreakdown.problem],
-                  ["Aim and objectives", paper.paperBreakdown.aimAndObjectives],
-                  ["Methodology", paper.paperBreakdown.methodology],
-                  ["Key arguments", paper.paperBreakdown.keyArguments],
-                  ["Findings", paper.paperBreakdown.findings],
-                  ["Contribution", paper.paperBreakdown.contribution],
+                  ["Introduction", summary.introduction],
+                  ["The problem", summary.problem],
+                  ["What they wanted to find out", summary.aimAndObjectives],
+                  ["How they did it", summary.methodology],
+                  ["What they argue", summary.keyArguments],
+                  ["What they found", summary.findings],
+                  ["What they conclude", summary.conclusion],
+                  ["What this adds", summary.contribution],
+                  ["Why it matters to you", summary.whyItMatters],
+                  // The authors' own account of what their work cannot do — the most useful
+                  // section of any paper and the one most often dropped. A reader generalising a
+                  // finding needs to know the sample was 40 undergraduates first.
+                  ["What it cannot tell you", summary.limitations],
+                  ["What is still open", summary.futureWork],
                 ] as const
               )
                 .filter(([, value]) => value && value.trim())
@@ -127,6 +159,14 @@ export function PaperCard({ paper }: { paper: ContentItem }) {
                   </div>
                 ))}
             </div>
+          )}
+
+          {/* Said rather than left blank. The abstract and the DOI are both still on the card,
+              which is more than a summary that could not be written would have added. */}
+          {!summary && !detail.isLoading && (
+            <p className="paper__summary-wait">
+              Radar could not summarise this one. The abstract is above and the DOI below resolves.
+            </p>
           )}
 
           <div className="paper__actions">

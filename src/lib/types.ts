@@ -575,6 +575,10 @@ export interface GrowthRoadmap {
 export type HubResourceCategory = "Learn" | "Understand" | "Research" | "Apply" | "StayCurrent";
 export type HubMediaFormat = "Video" | "AudioPodcast" | "Article" | "AcademicPaper" | "Documentation" | "ProjectGuide";
 
+/// A paper in about 500 words of plain English, for a reader who is not in its field.
+///
+/// Every section is built from the title and the abstract and nothing else, so a section the
+/// abstract does not cover says it is not stated rather than filling the gap.
 export interface AcademicPaperBreakdown {
   introduction: string;
   problem: string;
@@ -582,8 +586,16 @@ export interface AcademicPaperBreakdown {
   methodology: string;
   keyArguments: string;
   findings: string;
+  /// What the authors conclude. A different question from contribution, which is what it adds.
+  conclusion?: string;
   contribution: string;
   whyItMatters: string;
+  /// Recent, Established or Foundational — a 1998 paper can be the founding text of its field
+  /// and still be the wrong thing to copy as current practice.
+  era?: string;
+  /// What the authors say their own work cannot do. Extracted, never inferred.
+  limitations?: string;
+  futureWork?: string;
 }
 
 export interface PodcastBreakdown {

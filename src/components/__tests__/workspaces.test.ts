@@ -76,9 +76,9 @@ describe("isItemActive", () => {
   // Research Discovery has its own row now. It used to be reached through the Hub's also-list,
   // so removing the Hub without this would have left it routed, built and linked from nowhere -
   // which is how the privacy policy went missing for months.
-  it("gives Research its own row in Learn", () => {
+  it("gives Research Discovery its own row in Learn", () => {
     expect(workspaceForPath("/research").id).toBe("learn");
-    expect(activeLabels(learn.items, "/research")).toEqual(["Research"]);
+    expect(activeLabels(learn.items, "/research")).toEqual(["Research Discovery"]);
   });
 
   it("keeps Assess my work inside Learn", () => {

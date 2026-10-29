@@ -64,10 +64,12 @@ export function Research() {
   return (
     <div className="r-page research">
       <div className="r-page-head">
-        <h1 className="r-page-title">Research</h1>
+        <h1 className="r-page-title">Research Discovery</h1>
         <p className="research__sub">
-          Search OpenAlex. Every result carries a DOI you can resolve, and open-access copies are
-          linked where they exist.
+          Search OpenAlex. Open any result for the paper in about 500 words of plain English —
+          what it is about, the problem, how they did it, what they found and what they conclude.
+          Every result carries a DOI you can resolve, and open-access copies are linked where they
+          exist.
         </p>
       </div>
 

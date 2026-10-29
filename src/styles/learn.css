@@ -1645,6 +1645,27 @@ button.path-resource {
 .paper__section {
   margin-bottom: 14px;
 }
+/* Where the paper sits in time, read before the sections rather than worked out from a year. */
+.paper__era {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: var(--cyan-light);
+  color: var(--cyan-deep);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.paper__summary-wait {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
 
 .paper__section-label {
   margin-bottom: 3px;
