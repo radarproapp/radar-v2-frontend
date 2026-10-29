@@ -1,0 +1,103 @@
+{
+  "context": "win a scholarship",
+  "topSignals": [
+    {
+      "contentItemId": "51491dff-5156-4b50-b977-3586a0b4c84e",
+      "signal": "Saudi Arabia needs JOP reforms for housing goals.",
+      "source": "OpenAlex — Law & Governance",
+      "type": "ResearchPaper",
+      "layer": "RealEstate",
+      "topic": "Housing",
+      "thumbnailUrl": null,
+      "publishedAt": "2029-01-01T00:00:00Z",
+      "whyYoureSeeingThis": "Matches your interest in Data analysis"
+    },
+    {
+      "contentItemId": "4dfafc4f-fdf1-4ab2-8384-170246e73426",
+      "signal": "Solar cooling systems show promise in Mediterranean climates.",
+      "source": "OpenAlex — Energy Transitions",
+      "type": "ResearchPaper",
+      "layer": "Environment",
+      "topic": "Solar",
+      "thumbnailUrl": null,
+      "publishedAt": "2028-07-09T00:00:00Z",
+      "whyYoureSeeingThis": "Matches your interest in Data analysis"
+    },
+    {
+      "contentItemId": "3b8bfe3d-9331-4f5a-8d4d-1dd8c00d1ea8",
+      "signal": "Solar cooling systems show promise in Mediterranean climates.",
+      "source": "OpenAlex — Energy Transitions",
+      "type": "ResearchPaper",
+      "layer": "Environment",
+      "topic": "Solar",
+      "thumbnailUrl": null,
+      "publishedAt": "2028-07-09T00:00:00Z",
+      "whyYoureSeeingThis": "Matches your interest in Data analysis"
+    }
+  ],
+  "noticed": [],
+  "todaysFocus": {
+    "topic": "Understanding Numbers and Operations",
+    "stage": "Beginner",
+    "why": "This is the next step toward win a scholarship.",
+    "estimatedTime": "30 min",
+    "actionUrl": "/learn"
+  },
+  "nextBuild": {
+    "artifact": "a documented case study applying mathematics to solve a problem in mathematics",
+    "why": "Evidence beats a claim. This is the piece that shows you can do Mathematics, not just that you studied it.",
+    "actionUrl": "/projects"
+  },
+  "opportunities": [
+    {
+      "id": "c150d119-b60e-4a31-be0b-1111241a3d95",
+      "title": "SMART Scholarship-for-Service Program 2027: Fully Funded STEM Scholarships in the USA with Annual Stipends of Up to $46,000",
+      "organisation": "SMART Scholarship-for-Service Program 2027",
+      "location": null,
+      "matchScorePercent": 98,
+      "matchTier": "StrongMatch",
+      "daysUntilDeadline": null,
+      "whyItMatches": "It is foundations of Mathematics work, which is what you are learning. It fits what you said you are working on: win a scholarship. It is the kind of opening that suits where you are now.",
+      "reminderSet": false,
+      "urgencyLabel": "No deadline given"
+    },
+    {
+      "id": "7d556a86-b74f-4dbe-9bf0-94478a689a01",
+      "title": "Science, Mathematics, and Research for Transformation (SMART) Scholarship-for-Service Program 2027/2028",
+      "organisation": "Opportunity Desk",
+      "location": null,
+      "matchScorePercent": 98,
+      "matchTier": "StrongMatch",
+      "daysUntilDeadline": 35,
+      "whyItMatches": "It is foundations of Mathematics work, which is what you are learning. It fits what you said you are working on: win a scholarship. It is the kind of opening that suits where you are now.",
+      "reminderSet": false,
+      "urgencyLabel": "Open"
+    },
+    {
+      "id": "d62cb957-07ad-4961-92d8-f4c9a0817b06",
+      "title": "WAAW Foundation Scholarship 2026/2027: $500 Undergraduate Scholarship for African Women Studying STEM – Applications Open October 30, 2026",
+      "organisation": "WAAW Foundation Scholarship 2026/2027",
+      "location": null,
+      "matchScorePercent": 98,
+      "matchTier": "StrongMatch",
+      "daysUntilDeadline": null,
+      "whyItMatches": "It is foundations of Mathematics work, which is what you are learning. It fits what you said you are working on: win a scholarship. It is the kind of opening that suits where you are now.",
+      "reminderSet": false,
+      "urgencyLabel": "No deadline given"
+    }
+  ],
+  "closingSoon": [],
+  "stats": {
+    "learningStreakDays": 0,
+    "savedResourcesCount": 0,
+    "roadmapProgressPercent": 0,
+    "opportunitiesApplied": 0,
+    "projectsCompleted": 0,
+    "lessonsCompleted": 0,
+    "articlesRead": 0,
+    "podcastsFinished": 0,
+    "videosWatched": 0,
+    "researchPapersRead": 0,
+    "lastActivityDate": null
+  }
+}

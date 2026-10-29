@@ -4,6 +4,7 @@ import { HomeBriefView } from "../HomeBriefView";
 import { renderPage } from "../../test/harness";
 import * as api from "../../lib/api";
 import type { HomeBrief } from "../../lib/types";
+import productionBrief from "./home-brief.production.json";
 
 /// The first screen after signing in, which is the worst one to render nothing.
 ///
@@ -78,5 +79,21 @@ describe("HomeBriefView", () => {
     renderPage(<HomeBriefView firstName="Mercy" />);
 
     expect(await screen.findByText(/couldn't load your brief/i)).toBeTruthy();
+  });
+
+  /// The payload production actually returns, for an account that has been personalised.
+  ///
+  /// Captured from the live API rather than written by hand, because the shape that broke is the
+  /// one nobody wrote down: a personalised account takes a different branch on Today, and the
+  /// fixtures above were all built from what the type says rather than from what the server
+  /// sends. This one carries the nulls the server really emits - a signal with no thumbnail, an
+  /// opportunity with no location and no days until its deadline, stats with no last activity.
+  it("renders the payload production returns", async () => {
+    vi.spyOn(api, "getHome").mockResolvedValue(productionBrief as unknown as HomeBrief);
+
+    renderPage(<HomeBriefView firstName="Mercy" />);
+
+    expect(await screen.findByText(/good day, mercy/i)).toBeTruthy();
+    expect(screen.getByText("WHAT MATTERS TO YOU TODAY")).toBeTruthy();
   });
 });
