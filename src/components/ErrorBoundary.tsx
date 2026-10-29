@@ -33,6 +33,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <div className="r-error-state__desc">
             Radar hit an unexpected error on this screen. Reloading usually fixes it.
           </div>
+
+          {/* What actually broke, on the screen rather than only in the console.
+              A screen that fails for one account and works for another is a data difference, and
+              the one person who can see that account is the one reading this. "Something went
+              wrong" sends them to devtools to find out what; this line is the thing they would
+              have gone to find. */}
+          {this.state.error.message && (
+            <div className="r-error-state__detail">{this.state.error.message}</div>
+          )}
           <button className="btn btn--primary btn--sm" onClick={() => window.location.reload()}>
             Reload
           </button>

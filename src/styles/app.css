@@ -2609,6 +2609,22 @@ a:hover { color: var(--cyan-deep); }
 }
 .r-error-state__title { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; margin-bottom: 7px; }
 .r-error-state__desc { font-size: 14px; color: var(--text-body); line-height: 1.65; max-width: 36ch; margin-bottom: 20px; }
+/* The error itself, readable. Monospace because it is a message from the machine, and selectable
+   because the first thing anybody does with it is send it to somebody. */
+.r-error-state__detail {
+  max-width: 52ch;
+  margin: -8px 0 20px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--bg-sunken, #f4f6f8);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  text-align: left;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
 
 /* --- Offline State --- */
 .r-offline-state {
