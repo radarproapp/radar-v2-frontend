@@ -8,9 +8,16 @@ import type { AcademicPaperBreakdown, ContentItem } from "../../lib/types";
 /// The summary a reader opens a paper for.
 ///
 /// It existed in the model, in the endpoint and in this component, and never once reached a
-/// reader: search results arrive without a breakdown, nothing fetched one, and the section only
-/// rendered when the paper already carried it. So Research Discovery showed titles and abstracts,
-/// which is what OpenAlex already is.
+/// reader. Twice, for two different reasons.
+///
+/// First nothing fetched one, and the section only rendered when the paper already carried it.
+/// Then the fetch was added but conditioned on the paper not already carrying a breakdown - and
+/// every search result carried one, built by sorting abstract sentences into headings by keyword.
+/// So the condition was never true, and the dense keyword-sorted version is what every reader
+/// saw. Measured on production: the search response had a breakdown on it, and the same paper
+/// fetched by id came back in plain English that nobody could reach.
+///
+/// This test asserted the premise of that bug - a fixture carrying no breakdown - and passed.
 
 function breakdown(overrides: Partial<AcademicPaperBreakdown> = {}): AcademicPaperBreakdown {
   return {
@@ -103,14 +110,25 @@ describe("PaperCard", () => {
     expect(await screen.findByText(/could not summarise this one/i)).toBeTruthy();
   });
 
-  /// A paper that already carries its summary is not fetched again.
-  it("uses a summary the paper already carries", () => {
-    const spy = vi.spyOn(api, "getPaper").mockResolvedValue(paper());
+  /// A paper that arrives carrying a summary is still re-read, and the fetched one wins.
+  ///
+  /// This is the shape production actually serves. The carried breakdown is a fallback for the
+  /// seconds before the fetch lands - not a reason to skip it, which is what made the whole
+  /// feature unreachable.
+  it("prefers the fetched summary over one the paper arrived with", async () => {
+    const spy = vi.spyOn(api, "getPaper").mockResolvedValue(
+      paper({ paperBreakdown: breakdown({ findings: "Yields rose by 18 per cent." }) }),
+    );
 
-    renderPage(<PaperCard paper={paper({ paperBreakdown: breakdown() })} />);
+    const carried = breakdown({ findings: "Sorted out of the abstract by keyword." });
+
+    renderPage(<PaperCard paper={paper({ paperBreakdown: carried })} />);
     fireEvent.click(screen.getByRole("button", { name: /demand-led irrigation/i }));
 
-    expect(screen.getByText(/yields rose by 18 per cent/i)).toBeTruthy();
-    expect(spy).not.toHaveBeenCalled();
+    // The carried one shows first, because it is already there.
+    expect(screen.getByText(/sorted out of the abstract/i)).toBeTruthy();
+
+    await waitFor(() => expect(spy).toHaveBeenCalledWith("W1"));
+    expect(await screen.findByText("Yields rose by 18 per cent.")).toBeTruthy();
   });
 });

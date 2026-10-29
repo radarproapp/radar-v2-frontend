@@ -33,16 +33,21 @@ export function PaperCard({ paper }: { paper: ContentItem }) {
 
   /// The summary, fetched the first time this card is opened and kept after that.
   ///
-  /// Not requested when the paper already carries one, which is how it arrives from the feed.
+  /// Fetched whenever the card is opened, even when the paper arrives carrying a breakdown. The
+  /// condition used to be "only if it has none", which meant never: search results carried a
+  /// breakdown built from abstract sentences sorted by keyword, so that is what every reader saw
+  /// and the plain-English summary was unreachable from the page that exists to show it.
   const detail = useQuery({
     queryKey: ["paper", paper.id],
     queryFn: () => getPaper(paper.id),
-    enabled: open && !paper.paperBreakdown,
+    enabled: open,
     staleTime: Infinity,
     retry: 1,
   });
 
-  const summary = paper.paperBreakdown ?? detail.data?.paperBreakdown ?? null;
+  // What was fetched wins. Anything the paper arrived with is a fallback for the seconds before
+  // it lands, and for a paper the endpoint cannot resolve.
+  const summary = detail.data?.paperBreakdown ?? paper.paperBreakdown ?? null;
 
   const explanation = useMutation({ mutationFn: () => explainPaper(paper.id) });
   const gaps = useMutation({ mutationFn: () => findResearchGaps(paper.id) });
