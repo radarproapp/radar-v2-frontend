@@ -82,22 +82,32 @@ export type ContentLayer =
   | "Industry"
   | "Career";
 
-export type OpportunityType =
-  | "Job"
-  | "Internship"
-  | "Scholarship"
-  | "GraduateProgramme"
-  | "ResearchGrant"
-  | "Competition"
-  | "StartupAccelerator"
-  | "Fellowship"
-  | "RemoteJob"
-  | "Event"
-  | "Conference"
-  | "Workshop"
-  | "Training"
-  | "Bootcamp"
-  | "Funding";
+/// Every kind of opportunity Radar carries.
+///
+/// A list rather than a bare union so the screens can be built from it. The filter row was a
+/// hand-written nine, which left seven types with no way to reach them - including every
+/// graduate programme and everything filed as Funding rather than ResearchGrant.
+export const OPPORTUNITY_TYPES = [
+  "Job",
+  "RemoteJob",
+  "Internship",
+  "GraduateProgramme",
+  "Fellowship",
+  "Scholarship",
+  "ResearchGrant",
+  "Funding",
+  "Competition",
+  "StartupAccelerator",
+  "Conference",
+  "Seminar",
+  "Workshop",
+  "JobFair",
+  "Training",
+  "Bootcamp",
+  "Event",
+] as const;
+
+export type OpportunityType = (typeof OPPORTUNITY_TYPES)[number];
 
 export type OpportunityTrackingStatus =
   | "None"

@@ -13,19 +13,40 @@ import {
   logEvent,
   markOpportunityApplied,
 } from "../lib/api";
+import { OPPORTUNITY_TYPES } from "../lib/types";
 import type { Opportunity, OpportunityType, OpportunityTrackingStatus } from "../lib/types";
 import { Icon } from "../components/Icon";
 
+/// What each kind of opportunity is called on screen.
+///
+/// Typed as a Record over every type, so adding one to OPPORTUNITY_TYPES fails the build until
+/// somebody names it. The filter row used to be a hand-written nine out of sixteen: there was no
+/// way to ask for a graduate programme, a workshop, a seminar, a job fair or a traineeship, and
+/// "Grants & Funding" filtered ResearchGrant only - so everything stored as Funding was
+/// unreachable under the one label that claimed to cover it.
+const TYPE_LABELS: Record<OpportunityType, string> = {
+  Job: "Jobs",
+  RemoteJob: "Remote jobs",
+  Internship: "Internships",
+  GraduateProgramme: "Graduate programmes",
+  Fellowship: "Fellowships",
+  Scholarship: "Scholarships",
+  ResearchGrant: "Research grants",
+  Funding: "Funding",
+  Competition: "Competitions",
+  StartupAccelerator: "Accelerators",
+  Conference: "Conferences",
+  Seminar: "Seminars",
+  Workshop: "Workshops",
+  JobFair: "Job fairs",
+  Training: "Training",
+  Bootcamp: "Bootcamps",
+  Event: "Other events",
+};
+
 const TYPE_FILTERS: { label: string; value: OpportunityType | "All" }[] = [
   { label: "All Types", value: "All" },
-  { label: "Jobs", value: "Job" },
-  { label: "Internships", value: "Internship" },
-  { label: "Fellowships", value: "Fellowship" },
-  { label: "Scholarships", value: "Scholarship" },
-  { label: "Grants & Funding", value: "ResearchGrant" },
-  { label: "Competitions & CTFs", value: "Competition" },
-  { label: "Conferences", value: "Conference" },
-  { label: "Accelerators", value: "StartupAccelerator" },
+  ...OPPORTUNITY_TYPES.map((value) => ({ label: TYPE_LABELS[value], value })),
 ];
 
 const REGION_FILTERS = [
