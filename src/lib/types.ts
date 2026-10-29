@@ -813,13 +813,22 @@ export interface ChallengeResult {
 
 // ── Project Studio ───────────────────────────────────────────────────────
 
-export interface ProjectTemplate {
+/// A project worth building at this point on this path.
+///
+/// This replaced ProjectTemplate, a fixed list of six shown to every learner regardless of what
+/// they were studying. These come from the learner's own path - the catalogue builds one per
+/// domain per stage, and the personaliser attaches one to every module - so by the time somebody
+/// opens the studio Radar already knows what they should build and why it proves something.
+export interface StageProject {
   id: string;
   title: string;
-  description: string;
-  category: string;
-  estimatedTime: string;
-  tags: string[];
+  /// What they will have at the end, in plain words.
+  deliverable: string;
+  /// Why this proves something an employer or client cares about.
+  whyItProvesCapability: string;
+  estimatedTime: string | null;
+  steps: string[];
+  isCompleted: boolean;
 }
 
 export interface ProjectMilestone {

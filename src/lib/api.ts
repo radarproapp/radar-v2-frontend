@@ -32,7 +32,7 @@ import type {
   PlaybackProgress,
   PolicyComparison,
   QuizPerformance,
-  ProjectTemplate,
+  StageProject,
   ReportReason,
   SignalsSummary,
   SourceProfile,
@@ -1006,8 +1006,16 @@ export function streamAskRadarChat(message: string, history: ChatMessage[], onCh
 
 // ── Project Studio ───────────────────────────────────────────────────────
 
-export function getProjectTemplates() {
-  return request<ProjectTemplate[]>("/api/projects/templates");
+/// What this learner should build next, from their own path.
+///
+/// This fetched six templates served to everybody — Product Case Study, Marketing Campaign,
+/// Research Proposal, Literature Review, Business Model Canvas, Portfolio Project — so somebody
+/// studying mathematics was offered a Business Model Canvas. A fixed list shown to everyone is a
+/// catalogue, not a suggestion.
+///
+/// Empty until there is a path to suggest from, which is the honest answer.
+export function getSuggestedProjects() {
+  return request<StageProject[]>("/api/projects/suggested");
 }
 
 export function getUserProjects() {
@@ -1023,8 +1031,8 @@ export function createProject(title: string, description: string, category: stri
   });
 }
 
-export function startProject(templateId: string) {
-  return request<StudioProject>(`/api/projects/${templateId}/start`, { method: "POST" });
+export function startSuggestedProject(projectId: string) {
+  return request<StudioProject>(`/api/projects/suggested/${projectId}/start`, { method: "POST" });
 }
 
 export function completeProject(projectId: string) {

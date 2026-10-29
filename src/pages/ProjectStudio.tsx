@@ -3,12 +3,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { ApiError, createProject, generateProjectPlan, getProjectTemplates, getUserProjects, sendAskRadarChat, setProjectVisibility, startProject } from "../lib/api";
+import { ApiError, createProject, generateProjectPlan, getSuggestedProjects, getUserProjects, sendAskRadarChat, setProjectVisibility, startSuggestedProject } from "../lib/api";
 import type { StudioProject } from "../lib/types";
 
 export function ProjectStudio() {
   const queryClient = useQueryClient();
-  const templatesQuery = useQuery({ queryKey: ["projects", "templates"], queryFn: getProjectTemplates });
+  const suggestedQuery = useQuery({ queryKey: ["projects", "suggested"], queryFn: getSuggestedProjects });
   const projectsQuery = useQuery({ queryKey: ["projects", "mine"], queryFn: getUserProjects });
   const [tipsByProject, setTipsByProject] = useState<Record<string, string>>({});
   const [tipsLoadingId, setTipsLoadingId] = useState<string | null>(null);
@@ -39,15 +39,15 @@ export function ProjectStudio() {
     setCreating(false);
   };
 
-  const loading = templatesQuery.isLoading || projectsQuery.isLoading;
-  const error = templatesQuery.error ?? projectsQuery.error;
+  const loading = suggestedQuery.isLoading || projectsQuery.isLoading;
+  const error = suggestedQuery.error ?? projectsQuery.error;
   const errorMessage = error instanceof ApiError ? error.message : "Could not load projects.";
-  const templates = templatesQuery.data ?? [];
+  const suggested = suggestedQuery.data ?? [];
   const userProjects = projectsQuery.data ?? [];
 
-  const handleStart = async (templateId: string) => {
+  const handleStart = async (projectId: string) => {
     try {
-      const project = await startProject(templateId);
+      const project = await startSuggestedProject(projectId);
       queryClient.setQueryData<StudioProject[]>(["projects", "mine"], (old) => [...(old ?? []), project]);
     } catch {
       // silent, matches the original Blazor page's behaviour
@@ -118,7 +118,7 @@ export function ProjectStudio() {
           title="Failed to load projects"
           description={errorMessage}
           onRetry={() => {
-            templatesQuery.refetch();
+            suggestedQuery.refetch();
             projectsQuery.refetch();
           }}
         />
@@ -296,44 +296,52 @@ export function ProjectStudio() {
             <EmptyState icon="launch" title="No projects yet" description="Start a project from a template below to practice what you've learned." compact />
           )}
 
+          {/* What to build next, taken from this learner's own path.
+              This was a grid of six templates served to everyone - Product Case Study, Marketing
+              Campaign, Research Proposal, Literature Review, Business Model Canvas, Portfolio
+              Project - so somebody studying mathematics was offered a Business Model Canvas. A
+              fixed list shown to everybody is a catalogue, not a suggestion. */}
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 10 }}>
-            PROJECT TEMPLATES
+            SUGGESTED FOR YOUR PATH
           </div>
+
+          {suggested.length === 0 ? (
+            <EmptyState
+              icon="launch"
+              title="Nothing suggested yet"
+              description="Radar suggests projects from the stage you are on. Start a learning path and they will appear here."
+              compact
+            />
+          ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 10 }}>
-            {templates.map((template) => (
-              <div key={template.id} style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: "18px 20px", display: "flex", flexDirection: "column" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
-                  <span
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: 700,
-                      letterSpacing: ".05em",
-                      textTransform: "uppercase",
-                      color: "var(--cyan-deep)",
-                      background: "var(--cyan-light)",
-                      borderRadius: 99,
-                      padding: "4px 10px",
-                    }}
-                  >
-                    {template.category}
-                  </span>
-                  <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600 }}>{template.estimatedTime}</span>
-                </div>
-                <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 14.5, lineHeight: 1.4, marginBottom: 6 }}>{template.title}</div>
-                <div style={{ fontSize: 12.5, color: "var(--text-dim)", lineHeight: 1.6, marginBottom: 12, flex: 1 }}>{template.description}</div>
-                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 12 }}>
-                  {template.tags.map((tag) => (
-                    <span key={tag} style={{ fontSize: 10.5, fontWeight: 600, background: "#f0f2f4", borderRadius: 99, padding: "3px 8px" }}>
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <button className="btn btn--primary btn--sm" onClick={() => handleStart(template.id)}>
-                   Start project demonstration
+            {suggested.map((project) => (
+              <div key={project.id} style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: "18px 20px", display: "flex", flexDirection: "column" }}>
+                {project.estimatedTime ? (
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, marginBottom: 8 }}>
+                    {project.estimatedTime}
+                  </div>
+                ) : null}
+
+                <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 14.5, lineHeight: 1.4, marginBottom: 6 }}>{project.title}</div>
+
+                {/* What they will have at the end, rather than a category label. */}
+                <div style={{ fontSize: 12.5, color: "var(--text-dim)", lineHeight: 1.6, marginBottom: 10, flex: 1 }}>{project.deliverable}</div>
+
+                {/* Why it is worth the hours. The old cards carried tags instead, which say what
+                    a project is filed under and nothing about why to build it. */}
+                {project.whyItProvesCapability ? (
+                  <div style={{ fontSize: 12, color: "var(--action)", lineHeight: 1.55, marginBottom: 12 }}>
+                    {project.whyItProvesCapability}
+                  </div>
+                ) : null}
+
+                <button className="btn btn--primary btn--sm" onClick={() => handleStart(project.id)}>
+                  Start this project
                 </button>
               </div>
             ))}
           </div>
+          )}
         </>
       )}
     </div>
