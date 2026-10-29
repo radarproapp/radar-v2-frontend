@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../auth/AuthContext";
 import { getFocus, getSignals, removeSignalTerm, updateMe } from "../lib/api";
 import { ALL_INTERESTS } from "../lib/interests";
+import { TagInput } from "../components/TagInput";
 import type { PersonaType, SignalsSummary, UserInterestContext } from "../lib/types";
 
 const PERSONAS: [PersonaType, string][] = [
@@ -90,14 +91,6 @@ export function EditProfile() {
   useEffect(() => {
     getFocus().then((focus) => setSuggestedInterests(focus.suggestedDominantInterests)).catch(() => undefined);
   }, []);
-
-  const toggleInterest = (interest: string) => {
-    setInterests((prev) => {
-      if (prev.includes(interest)) return prev.filter((i) => i !== interest);
-      if (prev.length >= 8) return prev;
-      return [...prev, interest];
-    });
-  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -231,15 +224,22 @@ export function EditProfile() {
         <input type="text" className="r-input" value={city} onChange={(e) => setCity(e.target.value)} />
       </div>
 
+      {/* The same box the three-box personalisation uses, not a second way of doing it.
+          This screen listed all 249 interests as chips and asked the reader to find theirs in it.
+          Section 3 asks for the opposite — suggestions as you type, your own wording allowed —
+          and a wall of fixed options is the thing it names: "Do not force users to choose from
+          fixed options when their own wording is more appropriate."
+          Reusing TagInput also means the two screens cannot drift into disagreeing about what
+          choosing an interest looks like. */}
       <div style={{ marginBottom: 22 }}>
-        <label style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-dim)", display: "block", marginBottom: 8 }}>Interests ({interests.length} selected)</label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-          {ALL_INTERESTS.map((interest) => (
-            <button key={interest} className={`r-interest-pill ${interests.includes(interest) ? "active" : ""}`} onClick={() => toggleInterest(interest)}>
-              {interest}
-            </button>
-          ))}
-        </div>
+        <TagInput
+          label="What are you interested in?"
+          hint="The subjects you want Radar to follow. Type to search, or add your own."
+          placeholder="Search subjects, or type your own"
+          pool={ALL_INTERESTS}
+          value={interests}
+          onChange={setInterests}
+        />
       </div>
 
       <div style={{ marginBottom: 22 }}>

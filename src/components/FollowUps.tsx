@@ -99,8 +99,11 @@ export function FollowUps() {
         <button className="btn btn--primary btn--sm" onClick={() => navigate("/feed")}>
           Explore in Feed
         </button>
+        {/* Named for what it does. "Tune focus" is Radar's word for it, not a reader's — it
+            was read as some kind of signal-strength control, and what it actually opens is the
+            screen where you change the subjects you follow. Plain language, per the core rule. */}
         <button className="btn btn--text btn--sm" onClick={() => navigate("/profile/edit")}>
-          Tune focus
+          Edit your interests
         </button>
         <button className="btn btn--text btn--sm" onClick={() => dismiss(item.id)}>
           Got it
