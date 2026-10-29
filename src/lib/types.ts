@@ -15,6 +15,20 @@ export interface Page<T> {
   emptyReason?: FeedEmptyReason;
 }
 
+/// A page of Radar Intelligence: what happened, and what you can apply for.
+///
+/// Opportunities ride alongside the items rather than inside them, because one carries a
+/// deadline, an organisation and a list of requirements and a content item carries none of those
+/// — the deadline least of all, and it is the only part that expires.
+///
+/// Present on the first unfiltered page only, so they are not repeated under every scroll.
+export interface FeedPage extends Page<ContentItem> {
+  opportunities?: Opportunity[];
+  /// What they were matched against, in the reader's own words, so the match can be disagreed
+  /// with.
+  opportunityFocus?: string;
+}
+
 export type FeedEmptyReason =
   | "NotEmpty"
   /// Radar has plenty; it has no basis for choosing any of it until the three boxes are answered.

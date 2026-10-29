@@ -26,7 +26,7 @@ import type {
   Opportunity,
   OpportunityTrackingStatus,
   OpportunityType,
-  Page,
+  FeedPage,
   PersonaType,
   PersonalLearningMemory,
   PlaybackProgress,
@@ -589,7 +589,7 @@ export function getFeed(type: ContentType | null, options: GetFeedOptions = {}) 
   if (options.cursor) params.set("cursor", options.cursor);
   if (options.limit) params.set("limit", String(options.limit));
   if (options.fields?.length) params.set("fields", options.fields.join(","));
-  return request<Page<ContentItem>>(`/api/feed?${params.toString()}`);
+  return request<FeedPage>(`/api/feed?${params.toString()}`);
 }
 
 /// The item, plus where the reader got to if it is a video or a podcast.

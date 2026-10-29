@@ -1277,3 +1277,83 @@
   color: var(--text-muted);
   background: var(--surface-sunken, transparent);
 }
+
+/* The third strand of Radar Intelligence, above the feed.
+   A deadline is the only thing on this screen that expires, which is why these sit at the top
+   rather than among the items. Quiet enough that somebody reading the feed is not shouted at,
+   and distinct enough that it is clearly not another article. */
+.feed-opps {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-sunken, transparent);
+}
+
+.feed-opps__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.feed-opps__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--action);
+}
+
+.feed-opps__focus {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.feed-opps__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.feed-opps__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.feed-opps__item:hover { background: var(--bg-hover); }
+
+.feed-opps__title {
+  font-size: 13.5px;
+  font-weight: 650;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.feed-opps__meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* The part that expires. Never omitted when known, never invented when not. */
+.feed-opps__closes { color: var(--text-dim); font-weight: 600; }
+
+.feed-opps__why {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--action);
+}

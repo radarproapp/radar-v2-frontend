@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Deferred } from "../components/Deferred";
+import { FeedOpportunities } from "../components/FeedOpportunities";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
@@ -180,6 +181,12 @@ export function Feed() {
   // only the server knows whether the profile has been personalised.
   const notPersonalised = feedQuery.data?.pages?.[0]?.emptyReason === "NotPersonalisedYet";
 
+  // The third strand of Radar Intelligence, carried on the first page only - they are a standing
+  // set rather than a stream, so repeating them under every scroll would be the same handful of
+  // things over and over.
+  const firstPage = feedQuery.data?.pages?.[0];
+  const opportunities = firstPage?.opportunities ?? [];
+
   return (
     <div className="r-page">
       <div className="r-page-head">
@@ -196,6 +203,16 @@ export function Feed() {
           <PersonalisePrompt />
           <div className="feed-sample-label">A sample of what Radar carries</div>
         </>
+      )}
+
+      {/* Above the feed, because a deadline is the only thing here that expires. Nothing is
+          rendered when there is nothing open: a strip padded to look populated sends somebody to
+          spend an afternoon on an application Radar did not actually match them to. */}
+      {!notPersonalised && (
+        <FeedOpportunities
+          opportunities={opportunities}
+          focus={firstPage?.opportunityFocus}
+        />
       )}
 
       {feedQuery.isLoading ? (
