@@ -34,12 +34,28 @@ export function HomeBriefView({ firstName }: { firstName: string }) {
   }
 
   const dateLabel = new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" });
+
+  // Read defensively, every list and every nested object.
+  //
+  // A section the server omits for one account used to take the whole screen with it: reading
+  // .length off a list that is not there throws during render, and this is the first screen
+  // after signing in. The same shape of bug was found on the opportunities page the same day,
+  // where one missing count blanked the page. A brief with a section missing should show the
+  // sections it does have.
+  const topSignals = brief.topSignals ?? [];
+  const noticed = brief.noticed ?? [];
+  const opportunities = brief.opportunities ?? [];
+  const closingSoon = brief.closingSoon ?? [];
+  const focus = brief.todaysFocus ?? null;
+  const nextBuild = brief.nextBuild ?? null;
+  const stats = brief.stats;
+
   const hasAnything =
-    brief.topSignals.length > 0 ||
-    brief.noticed.length > 0 ||
-    brief.todaysFocus ||
-    brief.opportunities.length > 0 ||
-    (brief.closingSoon?.length ?? 0) > 0;
+    topSignals.length > 0 ||
+    noticed.length > 0 ||
+    focus !== null ||
+    opportunities.length > 0 ||
+    closingSoon.length > 0;
 
   return (
     <div className="r-page">
@@ -51,10 +67,10 @@ export function HomeBriefView({ firstName }: { firstName: string }) {
 
       {/* 1. The three things that matter today — the central ask: "what are the top three things
           a professional should see when they open Radar, based on what they picked?" */}
-      {brief.topSignals.length > 0 && (
+      {topSignals.length > 0 && (
         <>
           <div className="nav-section-label">WHAT MATTERS TO YOU TODAY</div>
-          {brief.topSignals.map((item) => (
+          {topSignals.map((item) => (
             <button
               key={item.contentItemId}
               className="nav-signal-card"
@@ -89,10 +105,10 @@ export function HomeBriefView({ firstName }: { firstName: string }) {
       )}
 
       {/* 2. Radar noticed — what the user keeps returning to, from observed behaviour only. */}
-      {brief.noticed.length > 0 && (
+      {noticed.length > 0 && (
         <>
           <div className="nav-section-label">RADAR NOTICED</div>
-          {brief.noticed.map((n) => (
+          {noticed.map((n) => (
             <button
               key={n.term}
               className="nav-signal-card"
@@ -110,17 +126,17 @@ export function HomeBriefView({ firstName }: { firstName: string }) {
 
       {/* 3. Today's focus — names the actual topic. "Continue your learning path" was the
              complaint; if there is no roadmap to name one from, this section does not render. */}
-      {brief.todaysFocus && (
+      {focus && (
         <>
           <div className="nav-section-label">TODAY'S FOCUS</div>
-          <button className="nav-focus-card nav-focus-card--active" onClick={() => navigate(brief.todaysFocus!.actionUrl)}>
-            <div className="nav-focus-label">{brief.todaysFocus.stage.toUpperCase()}</div>
-            <div className="nav-focus-title">{brief.todaysFocus.topic}</div>
-            <div className="nav-focus-sub">{brief.todaysFocus.why}</div>
+          <button className="nav-focus-card nav-focus-card--active" onClick={() => navigate(focus.actionUrl)}>
+            <div className="nav-focus-label">{(focus.stage ?? "").toUpperCase()}</div>
+            <div className="nav-focus-title">{focus.topic}</div>
+            <div className="nav-focus-sub">{focus.why}</div>
             <div className="nav-focus-meta">
               <span className="btn btn--primary btn--sm">Start →</span>
-              {brief.todaysFocus.estimatedTime && (
-                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{brief.todaysFocus.estimatedTime}</span>
+              {focus.estimatedTime && (
+                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{focus.estimatedTime}</span>
               )}
             </div>
           </button>
@@ -129,10 +145,10 @@ export function HomeBriefView({ firstName }: { firstName: string }) {
 
       {/* 3b. Reminders the user set. Above the general list on purpose: these are deadlines
              they chose to track, and they are about to pass. */}
-      {(brief.closingSoon?.length ?? 0) > 0 && (
+      {closingSoon.length > 0 && (
         <>
           <div className="nav-section-label">CLOSING SOON — YOU ASKED TO BE REMINDED</div>
-          {brief.closingSoon!.map((opp) => (
+          {closingSoon.map((opp) => (
             <button
               className="nav-opp-card"
               key={opp.id}
@@ -159,10 +175,10 @@ export function HomeBriefView({ firstName }: { firstName: string }) {
       )}
 
       {/* 4. Opportunities — each with the specific reason it matched. */}
-      {brief.opportunities.length > 0 && (
+      {opportunities.length > 0 && (
         <>
           <div className="nav-section-label">OPPORTUNITIES FOR YOU</div>
-          {brief.opportunities.map((opp) => (
+          {opportunities.map((opp) => (
             <button
               className="nav-opp-card"
               key={opp.id}
@@ -190,12 +206,12 @@ export function HomeBriefView({ firstName }: { firstName: string }) {
       )}
 
       {/* 5. Next build — names the artifact, not "something you can show". */}
-      {brief.nextBuild && (
+      {nextBuild && (
         <>
           <div className="nav-section-label">YOUR NEXT MOVE</div>
-          <button className="nav-next-move" onClick={() => navigate(brief.nextBuild!.actionUrl)}>
-            <div className="nav-next-move-title">Build {brief.nextBuild.artifact}</div>
-            <div className="nav-next-move-desc">{brief.nextBuild.why}</div>
+          <button className="nav-next-move" onClick={() => navigate(nextBuild.actionUrl)}>
+            <div className="nav-next-move-title">Build {nextBuild.artifact}</div>
+            <div className="nav-next-move-desc">{nextBuild.why}</div>
             <span className="nav-next-move-link">Open Project Studio →</span>
           </button>
         </>
@@ -215,19 +231,19 @@ export function HomeBriefView({ firstName }: { firstName: string }) {
         <div className="nav-momentum-label">YOUR MOMENTUM</div>
         <div className="nav-momentum-stats">
           <div>
-            <div className="nav-momentum-stat-val">{brief.stats.learningStreakDays}-day</div>
+            <div className="nav-momentum-stat-val">{stats?.learningStreakDays ?? 0}-day</div>
             <div className="nav-momentum-stat-label">Learning streak</div>
           </div>
           <div>
-            <div className="nav-momentum-stat-val">{brief.stats.roadmapProgressPercent}%</div>
+            <div className="nav-momentum-stat-val">{stats?.roadmapProgressPercent ?? 0}%</div>
             <div className="nav-momentum-stat-label">Roadmap complete</div>
           </div>
           <div>
-            <div className="nav-momentum-stat-val">{brief.stats.savedResourcesCount}</div>
+            <div className="nav-momentum-stat-val">{stats?.savedResourcesCount ?? 0}</div>
             <div className="nav-momentum-stat-label">Resources saved</div>
           </div>
           <div>
-            <div className="nav-momentum-stat-val">{brief.stats.projectsCompleted}</div>
+            <div className="nav-momentum-stat-val">{stats?.projectsCompleted ?? 0}</div>
             <div className="nav-momentum-stat-label">Projects built</div>
           </div>
         </div>

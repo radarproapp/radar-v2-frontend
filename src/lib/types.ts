@@ -1054,17 +1054,20 @@ export interface HomeOpportunity {
   urgencyLabel?: string;
 }
 
+/// Every section optional, because any of them can be absent for one account and present for the
+/// next. Declaring a list required does not make the server send it; it only stops the screen
+/// being written to survive its absence.
 export interface HomeBrief {
-  context: string;
-  topSignals: HomeSignal[];
-  noticed: NoticedSignal[];
+  context?: string;
+  topSignals?: HomeSignal[];
+  noticed?: NoticedSignal[];
   todaysFocus?: HomeFocus | null;
   nextBuild?: HomeBuild | null;
-  opportunities: HomeOpportunity[];
+  opportunities?: HomeOpportunity[];
   /// Deadlines the user asked to be reminded about, closing soonest first. The reminder toggle
   /// used to write a boolean nothing read; this is where it is delivered.
   closingSoon?: HomeOpportunity[];
-  stats: UserStats;
+  stats?: UserStats;
 }
 
 /// The styles GET /api/research/{id}/citation accepts.
