@@ -160,8 +160,9 @@ export interface DailyOpportunityFeed {
   message: string;
   primaryFocus: string;
   items: Opportunity[];
-  tierCounts: Record<string, number>;
-  urgencyCounts: Record<string, number>;
+  /// Absent rather than empty when a response predates them, so both are read defensively.
+  tierCounts?: Record<string, number>;
+  urgencyCounts?: Record<string, number>;
 }
 
 export interface NotificationPrefs {

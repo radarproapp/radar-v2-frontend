@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { PersonalisePrompt } from "../components/PersonalisePrompt";
@@ -9,6 +9,7 @@ import { ErrorState } from "../components/ErrorState";
 import {
   getDailyOpportunities,
   getOpportunities,
+  getOpportunityById,
   getOpportunityPipeline,
   updateOpportunityStatus,
   toggleOpportunityReminder,
@@ -124,6 +125,22 @@ export function Opportunities() {
   // Selected opportunity for the deep Intelligence Detail Drawer
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null);
 
+  /// The one somebody arrived here to read.
+  ///
+  /// The feed sends ?open=<id> and this page ignored it, so clicking an opportunity in the feed
+  /// landed on today's batch and the reader had to find it again. There is no :id route either,
+  /// so a shared link could not reach it at all - and now that the batch only holds what matches
+  /// the learner, the item may not be on the page to find.
+  const [params, setParams] = useSearchParams();
+  const openId = params.get("open");
+
+  const openedQuery = useQuery({
+    queryKey: ["opportunity", openId],
+    queryFn: () => getOpportunityById(openId!),
+    enabled: Boolean(openId),
+    retry: false,
+  });
+
   // Queries
   const dailyQuery = useQuery({
     queryKey: ["opportunities", "daily"],
@@ -149,6 +166,22 @@ export function Opportunities() {
     queryFn: getOpportunityPipeline,
     enabled: viewMode === "pipeline",
   });
+
+  // Opened once, then the parameter is dropped: a refresh or a step back should not reopen a
+  // drawer the reader has closed.
+  useEffect(() => {
+    if (!openId || !openedQuery.data) return;
+
+    setSelectedOpp(openedQuery.data);
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.delete("open");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [openId, openedQuery.data, setParams]);
 
   // Which filters are actually narrowing the list, so the collapsed bar can say so without
   // making the user expand it to find out.
@@ -335,22 +368,24 @@ export function Opportunities() {
           </p>
 
           <div className="opp-daily-stats">
+            {/* Read defensively. A response without urgencyCounts on it threw and took the whole
+                page with it - a blank screen because one optional count was missing. */}
             <span className="opp-daily-stat-pill strong">
               <span><Icon name="open" /></span>
-              <span>{dailyData.tierCounts["StrongMatch"] || 0} Strong Matches (80–100%)</span>
+              <span>{dailyData.tierCounts?.["StrongMatch"] ?? 0} Strong Matches (80–100%)</span>
             </span>
             <span className="opp-daily-stat-pill">
               <span><Icon name="open" /></span>
-              <span>{dailyData.tierCounts["Relevant"] || 0} Relevant Opportunities</span>
+              <span>{dailyData.tierCounts?.["Relevant"] ?? 0} Relevant Opportunities</span>
             </span>
             <span className="opp-daily-stat-pill">
               <span><Icon name="open" /></span>
-              <span>{dailyData.tierCounts["Explore"] || 0} Serendipitous Explore</span>
+              <span>{dailyData.tierCounts?.["Explore"] ?? 0} Serendipitous Explore</span>
             </span>
-            {dailyData.urgencyCounts["Urgent"] > 0 && (
+            {(dailyData.urgencyCounts?.["Urgent"] ?? 0) > 0 && (
               <span className="opp-daily-stat-pill urgent">
                 <span><Icon name="urgent" /></span>
-                <span>{dailyData.urgencyCounts["Urgent"]} Closing in ≤ 7 Days</span>
+                <span>{dailyData.urgencyCounts?.["Urgent"]} Closing in ≤ 7 Days</span>
               </span>
             )}
           </div>
@@ -735,7 +770,7 @@ export function Opportunities() {
             <div className="opp-drawer-header">
               <div>
                 <span className={`opp-tier-pill ${selectedOpp.matchTier === "StrongMatch" ? "opp-tier-pill--strong" : "opp-tier-pill--relevant"}`} style={{ marginBottom: 6 }}>
-                  {selectedOpp.matchScorePercent}% Match · {selectedOpp.type}
+                  {selectedOpp.matchScorePercent}% Match · {TYPE_NAMES[selectedOpp.type] ?? selectedOpp.type}
                 </span>
                 {/* 7.4: the drawer showed match, cost and status but never when it closes - the
                     one fact that decides whether applying is possible at all. A closed
