@@ -56,7 +56,7 @@ export const WORKSPACES: Workspace[] = [
     home: "/learn",
     items: [
       { label: "My path", path: "/learn", icon: "checklist", also: ["/learn/path", "/learn/build"] },
-      { label: "Hub", path: "/learn/hub", icon: "book", also: ["/research"] },
+      { label: "Research", path: "/research", icon: "book" },
       { label: "Projects", path: "/projects", icon: "build", also: ["/showcase"] },
       { label: "Assess my work", path: "/assess", icon: "checklist" },
       { label: "Mentor", path: "/mentor", icon: "chat" },
@@ -67,7 +67,7 @@ export const WORKSPACES: Workspace[] = [
 
 /// Which workspace a path belongs to.
 ///
-/// Longest match wins, so `/learn/hub` resolves to Learn rather than matching `/` first. Anything
+/// Longest match wins, so `/learn/build` resolves to Learn rather than matching `/` first. Anything
 /// unrecognised falls to Intelligence, which is the home of the app — better than rendering a
 /// sidebar with nothing selected.
 export function workspaceForPath(pathname: string): Workspace {

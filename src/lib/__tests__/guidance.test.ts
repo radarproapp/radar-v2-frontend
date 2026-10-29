@@ -63,7 +63,7 @@ describe("the guidance itself", () => {
   it("points only at routes the app has", () => {
     const known = [
       "/", "/feed", "/weekly", "/saved", "/capture", "/notebook",
-      "/learn", "/learn/build", "/learn/hub", "/projects", "/mentor", "/progress",
+      "/learn", "/learn/build", "/research", "/projects", "/mentor", "/progress",
       "/opportunities", "/ask",
     ];
 

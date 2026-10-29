@@ -640,23 +640,6 @@ export interface NextBestAction {
   subInterest: string;
 }
 
-export interface LearnHubPayload {
-  /// Set when the learner has not built a path, so there is nothing to curate for yet.
-  emptyReason?: string | null;
-  primarySkill: string;
-  goal: string;
-  currentStage: string;
-  subInterests: string[];
-  activeSubInterest: string;
-  nextAction: NextBestAction;
-  graphNodes: KnowledgeGraphNode[];
-  graphEdges: KnowledgeGraphEdge[];
-  resources: HubResourceItem[];
-  totalMasteredNodes: number;
-  totalLearningNodes: number;
-  totalWeakNodes: number;
-}
-
 // ── Mentor ───────────────────────────────────────────────────────────────
 
 export interface ChatMessage {

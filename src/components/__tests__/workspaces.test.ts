@@ -24,7 +24,7 @@ describe("workspaceForPath", () => {
   it("keeps nested learn routes inside Learn rather than falling back to the root", () => {
     expect(workspaceForPath("/learn/path").id).toBe("learn");
     expect(workspaceForPath("/learn/build").id).toBe("learn");
-    expect(workspaceForPath("/learn/hub").id).toBe("learn");
+    expect(workspaceForPath("/research").id).toBe("learn");
   });
 
   it("puts Feed inside Intelligence", () => {
@@ -47,7 +47,7 @@ describe("isItemActive", () => {
   // The bug this guards: a plain startsWith lit up two sibling rows at once when one item's path
   // was a prefix of another's. Only the most specific claim may win.
   it("marks exactly one item current on a nested route", () => {
-    expect(activeLabels(learn.items, "/learn/hub")).toEqual(["Hub"]);
+    expect(activeLabels(learn.items, "/learn/build")).toEqual(["My path"]);
     expect(activeLabels(intelligence.items, "/feed")).toEqual(["Feed"]);
   });
 
@@ -73,12 +73,12 @@ describe("isItemActive", () => {
     expect(isItemActive({ label: "My path", path: "/learn", icon: "checklist" }, "/learnhub")).toBe(false);
   });
 
-  // Research Discovery is reached from the Hub and has no sidebar row of its own, so the Hub
-  // claims the route. Without that, workspaceForPath falls back to Intelligence and a learner
-  // searching the literature watches the Learn sidebar disappear.
-  it("keeps the Learn sidebar on the research page, with Hub current", () => {
+  // Research Discovery has its own row now. It used to be reached through the Hub's also-list,
+  // so removing the Hub without this would have left it routed, built and linked from nowhere -
+  // which is how the privacy policy went missing for months.
+  it("gives Research its own row in Learn", () => {
     expect(workspaceForPath("/research").id).toBe("learn");
-    expect(activeLabels(learn.items, "/research")).toEqual(["Hub"]);
+    expect(activeLabels(learn.items, "/research")).toEqual(["Research"]);
   });
 
   it("keeps Assess my work inside Learn", () => {

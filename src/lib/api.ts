@@ -17,7 +17,6 @@ import type {
   EventsSummary,
   GrowthRoadmap,
   HomeBrief,
-  LearnHubPayload,
   MentorQuiz,
   MentorStudyPlan,
   MentorWorkReview,
@@ -888,41 +887,6 @@ export function addPathSection(subject: string, level: string, outcome?: string 
 
 export function generateLearningPathway() {
   return request<GrowthRoadmap>("/api/roadmaps/generate", { method: "POST" });
-}
-
-// ── Learn Hub ─────────────────────────────────────────────────────────────
-
-export function getLearnHub(subInterest?: string, stage?: string) {
-  const params = new URLSearchParams();
-  if (subInterest && subInterest !== "All Sub-Interests") params.set("subInterest", subInterest);
-  if (stage) params.set("stage", stage);
-  const q = params.toString();
-  return request<LearnHubPayload>(`/api/learn-hub${q ? `?${q}` : ""}`);
-}
-
-/// Marks the hands-on exercise on a Hub resource as done, or undone.
-///
-/// The storage, the toggle and a route for this existed on the server all along. What did not was
-/// a flag on the resource a client could read, so nothing ever called any of it.
-export function completeHubExercise(resourceId: string) {
-  return request<void>(`/api/learn-hub/resources/${resourceId}/exercise/complete`, {
-    method: "POST",
-  });
-}
-
-export function completeHubResource(resourceId: string) {
-  return request<void>(`/api/learn-hub/resources/${resourceId}/complete`, { method: "POST" });
-}
-
-export function toggleSaveHubResource(resourceId: string) {
-  return request<void>(`/api/learn-hub/resources/${resourceId}/save`, { method: "POST" });
-}
-
-export function recordNodeActivity(nodeId: string, activityType: string, scorePercent: number) {
-  return request<void>("/api/learn-hub/nodes/activity", {
-    method: "POST",
-    body: JSON.stringify({ nodeId, activityType, scorePercent }),
-  });
 }
 
 // ── Mentor ───────────────────────────────────────────────────────────────

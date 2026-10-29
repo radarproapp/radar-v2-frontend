@@ -31,7 +31,6 @@ const TopicHub = lazy(() => import("./pages/TopicHub").then((m) => ({ default: m
 const LearnBuilder = lazy(() => import("./pages/LearnBuilder").then((m) => ({ default: m.LearnBuilder })));
 const Personalise = lazy(() => import("./pages/Personalise").then((m) => ({ default: m.Personalise })));
 const LearnPath = lazy(() => import("./pages/LearnPath").then((m) => ({ default: m.LearnPath })));
-const LearnHub = lazy(() => import("./pages/LearnHub").then((m) => ({ default: m.LearnHub })));
 const GrowthTracker = lazy(() => import("./pages/GrowthTracker").then((m) => ({ default: m.GrowthTracker })));
 const ProjectStudio = lazy(() => import("./pages/ProjectStudio").then((m) => ({ default: m.ProjectStudio })));
 const LearningMentor = lazy(() => import("./pages/LearningMentor").then((m) => ({ default: m.LearningMentor })));
@@ -129,7 +128,6 @@ export default function App() {
                 <Route path="/learn" element={<RequireAuth><LearnPath /></RequireAuth>} />
                 <Route path="/learn/path" element={<RequireAuth><LearnPath /></RequireAuth>} />
                 <Route path="/learn/build" element={<RequireAuth><LearnBuilder /></RequireAuth>} />
-                <Route path="/learn/hub" element={<RequireAuth><LearnHub /></RequireAuth>} />
                 <Route path="/progress" element={<RequireAuth><GrowthTracker /></RequireAuth>} />
                 <Route path="/projects" element={<RequireAuth><ProjectStudio /></RequireAuth>} />
                 <Route path="/ask" element={<RequireAuth><AskRadar /></RequireAuth>} />
