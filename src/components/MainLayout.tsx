@@ -5,6 +5,7 @@ import { Icon } from "./Icon";
 import { WORKSPACES, isItemActive, workspaceForPath } from "./workspaces";
 import { FEED_TYPES } from "./feed-types";
 import { ProfileSwitcher } from "./ProfileSwitcher";
+import { ErrorBoundary } from "./ErrorBoundary";
 
 /// The application shell: a workspace switcher, that workspace's own navigation, and the content.
 ///
@@ -274,7 +275,12 @@ export function MainLayout({ children }: { children?: ReactNode } = {}) {
           </div>
         )}
 
-        {children ?? <Outlet />}
+        {/* A page that throws takes the page down, not the product.
+            The only boundary was in main.tsx, outside the router and this shell, so a render
+            error anywhere replaced the whole app - and anything that stopped short of throwing
+            left this area blank with no message in it at all. Keyed by path so that navigating
+            away from a broken screen clears the error rather than carrying it to the next one. */}
+        <ErrorBoundary key={pathname}>{children ?? <Outlet />}</ErrorBoundary>
       </div>
 
       {/* Outside-click catcher. Stays below the sidebar and tabbar (z-index 50) so it cannot

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { useAuth } from "../auth/AuthContext";
 import { updateMe } from "../lib/api";
 import { WhatRadarKnows } from "../components/WhatRadarKnows";
@@ -32,7 +33,19 @@ export function Settings() {
     }
   };
 
-  if (!profile || !notifications) return null;
+  // A blank page is not a loading state. This returned nothing while the preferences were in
+  // flight and nothing at all if the call failed, which looks exactly like a crash from the
+  // outside - the shell, and an empty space where the screen should be.
+  if (!profile || !notifications) {
+    return (
+      <div className="r-page">
+        <div className="r-page-head">
+          <h1 className="r-page-title">Settings</h1>
+        </div>
+        <LoadingSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="r-page" style={{ maxWidth: 600 }}>
