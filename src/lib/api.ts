@@ -614,22 +614,35 @@ export function recordPlayback(
   );
 }
 
-/// Assesses a document the user wrote.
+/// Work handed in to be assessed: a file, or the text of it.
+export interface WorkToAssess {
+  file?: File;
+  /// Pasted straight in, for writing that is open in a window rather than saved as a file.
+  text?: string;
+  /// What the reader says this is. Sent only when they have said; otherwise it is detected.
+  kind?: DocumentKind;
+}
+
+/// Assesses a piece of work the user wrote.
 ///
 /// Raw fetch rather than request(), which forces a JSON content type — multipart needs the
 /// browser to set the boundary itself, the same reason transcribeAudio bypasses it.
 ///
-/// The kind is deliberately not a parameter: it is detected from the text, because a CV submitted
-/// with an essay selected comes back criticised as an essay.
-export async function assessDocument(file: File, kind?: DocumentKind): Promise<DocumentAssessment> {
+/// Multipart even for pasted text, because the endpoint takes either and one form is better than
+/// two paths that have to agree about what the kind means.
+export async function assessDocument(work: WorkToAssess): Promise<DocumentAssessment> {
   const token = getToken();
   const form = new FormData();
-  form.append("file", file);
+
+  if (work.file) form.append("file", work.file);
+
+  // Preferred by the endpoint when both arrive, so only one of the two is ever sent.
+  if (work.text) form.append("text", work.text);
 
   // Supplied only when the reader has told us. Sending a kind skips detection, which is the
   // recovery path for the times detection cannot tell — being told Radar does not know what your
   // own CV is would otherwise be a dead end.
-  if (kind) form.append("kind", kind);
+  if (work.kind) form.append("kind", work.kind);
 
   const res = await fetch(`${API_BASE}/api/documents/assess`, {
     method: "POST",

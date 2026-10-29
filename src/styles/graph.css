@@ -600,16 +600,32 @@
    A judgement with its criteria on screen. The verdict colour and the verdict word say the same
    thing, so one can never contradict the other. */
 
-.assess__drop {
+/* Pasting is the main way in, so it is the thing on screen rather than a second option behind a
+   tab. Attaching a file sits inside the same block because it is the same act. */
+.assess__paste {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  padding: 22px;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
   margin-bottom: 22px;
-  border: 1px dashed var(--border-strong);
+  border: 1px solid var(--border-strong);
   border-radius: var(--r-lg);
   background: var(--bg-card);
+}
+
+.assess__text {
+  min-height: 180px;
+}
+
+.assess__paste-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.assess__kind-search {
+  margin-bottom: 12px;
 }
 
 .assess__formats {

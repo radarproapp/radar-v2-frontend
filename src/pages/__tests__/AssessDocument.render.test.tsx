@@ -196,7 +196,7 @@ describe("AssessDocument", () => {
 
     // Awaited: mutate() schedules the call, so asserting synchronously catches only the upload.
     await waitFor(() =>
-      expect(assessSpy).toHaveBeenLastCalledWith(expect.any(File), "Cv"),
+      expect(assessSpy).toHaveBeenLastCalledWith({ file: expect.any(File), kind: "Cv" }),
     );
   });
 
@@ -223,5 +223,124 @@ describe("AssessDocument", () => {
     upload();
 
     expect(await screen.findByText(/not a essay\?|not an essay\?/i)).toBeTruthy();
+  });
+});
+
+/// Pasting, which is how most work actually arrives.
+///
+/// The screen took a file and nothing else, so anybody whose writing was open in a window had to
+/// export it first - a step that existed only because the endpoint wanted one. The endpoint took
+/// pasted text the whole time.
+describe("handing in work that was never a file", () => {
+  function paste(body: string) {
+    fireEvent.change(screen.getByPlaceholderText(/paste your work here/i), {
+      target: { value: body },
+    });
+  }
+
+  it("sends what was pasted", async () => {
+    withPersona("Student");
+    const assessSpy = vi.spyOn(api, "assessDocument").mockResolvedValue(assessment());
+
+    renderPage(<AssessDocument />);
+    paste("a".repeat(500));
+    fireEvent.click(screen.getByRole("button", { name: "Assess this" }));
+
+    await waitFor(() =>
+      expect(assessSpy).toHaveBeenLastCalledWith({ text: "a".repeat(500), kind: undefined }),
+    );
+  });
+
+  /// Said before the round trip, not after it.
+  ///
+  /// The endpoint refuses anything under four hundred characters, because below that an
+  /// assessment is confident nonsense about something nobody read. Finding that out by waiting
+  /// for a refusal teaches the same thing more slowly.
+  it("will not send an extract too short to judge", () => {
+    withPersona("Student");
+    const assessSpy = vi.spyOn(api, "assessDocument").mockResolvedValue(assessment());
+
+    renderPage(<AssessDocument />);
+    paste("Too short to judge.");
+
+    expect(screen.getByRole("button", { name: "Assess this" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByText(/more characters before there is enough/i)).toBeTruthy();
+    expect(assessSpy).not.toHaveBeenCalled();
+  });
+
+  /// And nothing is said about an empty box, which is not a mistake yet.
+  it("says nothing about a box nobody has typed in", () => {
+    withPersona("Student");
+
+    renderPage(<AssessDocument />);
+
+    expect(screen.queryByText(/more characters before there is enough/i)).toBeNull();
+  });
+
+  /// A declared kind is carried with the paste, the same as with a file.
+  it("sends the kind the reader typed along with the text", async () => {
+    withPersona("Student");
+    vi.spyOn(api, "getRubric").mockResolvedValue({
+      kind: "GrantApplication",
+      assessedAs: "Student",
+      criteria: [],
+    });
+    const assessSpy = vi.spyOn(api, "assessDocument").mockResolvedValue(assessment());
+
+    renderPage(<AssessDocument />);
+    paste("a".repeat(500));
+    fireEvent.click(screen.getByRole("button", { name: "Grant or scholarship application" }));
+    fireEvent.click(screen.getByRole("button", { name: "Assess this" }));
+
+    await waitFor(() =>
+      expect(assessSpy).toHaveBeenLastCalledWith({
+        text: "a".repeat(500),
+        kind: "GrantApplication",
+      }),
+    );
+  });
+});
+
+/// Typing what you have, rather than choosing which of seven it is least unlike.
+describe("saying what kind of work it is", () => {
+  function typeKind(what: string) {
+    fireEvent.change(screen.getByPlaceholderText(/dissertation chapter/i), {
+      target: { value: what },
+    });
+  }
+
+  it("offers every standard before anything is typed", () => {
+    withPersona("Student");
+
+    renderPage(<AssessDocument />);
+
+    expect(screen.getByRole("button", { name: "CV" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Pitch deck" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Technical documentation" })).toBeTruthy();
+  });
+
+  it("narrows to the standard that fits what was typed", () => {
+    withPersona("Student");
+
+    renderPage(<AssessDocument />);
+    typeKind("funding bid");
+
+    expect(screen.getByRole("button", { name: "Grant or scholarship application" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "CV" })).toBeNull();
+  });
+
+  /// Nothing rather than the nearest thing.
+  ///
+  /// Quietly judging a wedding speech against the personal-statement standard is how a judgement
+  /// nobody can account for happens. The rubrics are authored, so when none fits, the screen says
+  /// so and the work is read as whatever it is instead.
+  it("says when it has no standard for what was typed", () => {
+    withPersona("Student");
+
+    renderPage(<AssessDocument />);
+    typeKind("wedding speech");
+
+    expect(screen.getByText(/no written standard for that/i)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Essay" })).toBeNull();
   });
 });

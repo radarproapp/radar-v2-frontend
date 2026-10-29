@@ -4,30 +4,32 @@ import { EmptyState } from "../components/EmptyState";
 import { Icon } from "../components/Icon";
 import { useAuth } from "../auth/AuthContext";
 import { ApiError, assessDocument, getRubric } from "../lib/api";
+import type { WorkToAssess } from "../lib/api";
+import { DOCUMENT_KINDS, kindsMatching } from "../lib/document-kinds";
 import type { AssessmentCriterion, DocumentAssessment, DocumentKind } from "../lib/types";
 
-/// Upload work you wrote and have it assessed as the kind of thing it is.
+/// Hand in work you wrote and have it assessed as the kind of thing it is.
 ///
 /// Distinct from "start from a document", which reads a textbook and builds a path out of it.
 /// This reads your essay and says what is wrong with it.
 ///
-/// Two things it will not do. It does not ask you to pick the document type — that is detected
-/// from the text, because a CV submitted with "Essay" selected comes back criticised for short
-/// paragraphs. And it does not give a score: the criteria are named on screen and each gets Met,
-/// Partly or Not met, because a judgement you can see the basis of is one you can argue with.
+/// Pasted or attached. Most writing being assessed is open in another window, and exporting it to
+/// a file first was a step that existed only because the screen wanted one.
+///
+/// Two things it will not do. It does not require you to pick the document type — that is
+/// detected from the text, because a CV submitted with "Essay" selected comes back criticised for
+/// short paragraphs. You can say, and then it skips detection and takes your word; what you type
+/// is matched to a written standard rather than becoming one, because a rubric invented per
+/// request leaves nobody knowing what the judgement was against. And it does not give a score:
+/// the criteria are named on screen and each gets Met, Partly or Not met, because a judgement you
+/// can see the basis of is one you can argue with.
 
-/// Readable before uploading anything. A rubric you can see in advance is one you can write
-/// towards, which is more use than the same rubric applied afterwards.
-const PREVIEWABLE: { kind: DocumentKind; label: string }[] = [
-  { kind: "Essay", label: "Essay" },
-  { kind: "Report", label: "Report" },
-  { kind: "Cv", label: "CV" },
-  { kind: "CoverLetter", label: "Cover letter" },
-  { kind: "PersonalStatement", label: "Personal statement" },
-  { kind: "ResearchProposal", label: "Research proposal" },
-  { kind: "BusinessPlan", label: "Business plan" },
-  { kind: "SocialMediaContent", label: "Social media content" },
-];
+/// The least that can be assessed.
+///
+/// The endpoint enforces this and refuses below it in its own words. Mirrored here only so the
+/// screen can say how much is still needed instead of spending a round trip to find out; if the
+/// two ever disagree the server's refusal is what the reader sees.
+const MINIMUM_PASTED = 400;
 
 const VERDICT_LABEL: Record<string, string> = {
   Met: "Met",
@@ -35,6 +37,10 @@ const VERDICT_LABEL: Record<string, string> = {
   NotMet: "Not met",
   Unjudged: "Not assessed",
 };
+
+function labelFor(kind: DocumentKind): string {
+  return DOCUMENT_KINDS.find((option) => option.kind === kind)?.label ?? kind;
+}
 
 function Criterion({ criterion }: { criterion: AssessmentCriterion }) {
   return (
@@ -62,41 +68,91 @@ export function AssessDocument() {
   const { profile } = useAuth();
   const fileInput = useRef<HTMLInputElement>(null);
 
-  const [preview, setPreview] = useState<DocumentKind | null>(null);
+  const [text, setText] = useState("");
+  const [typed, setTyped] = useState("");
+  const [declared, setDeclared] = useState<DocumentKind | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  /// The rubric for whatever kind is on screen, readable before handing anything in. A standard
+  /// you can see in advance is one you can write towards, which is more use than the same
+  /// standard applied afterwards.
   const rubric = useQuery({
-    queryKey: ["rubric", preview, profile?.persona],
-    queryFn: () => getRubric(preview!),
-    enabled: preview !== null,
+    queryKey: ["rubric", declared, profile?.persona],
+    queryFn: () => getRubric(declared!),
+    enabled: declared !== null,
   });
 
-  // Kept so a declared kind can be re-sent for the same file without choosing it again.
-  const [lastFile, setLastFile] = useState<File | null>(null);
+  // Kept so a kind can be declared for the same work without handing it in again.
+  const [lastWork, setLastWork] = useState<WorkToAssess | null>(null);
 
   const assess = useMutation({
-    mutationFn: ({ file, kind }: { file: File; kind?: DocumentKind }) => assessDocument(file, kind),
-    onMutate: () => setError(null),
+    mutationFn: (work: WorkToAssess) => assessDocument(work),
+    onMutate: (work) => {
+      setError(null);
+      setLastWork(work);
+    },
     onError: (e) =>
       setError(
-        e instanceof ApiError ? e.message : "Could not assess that file. Try again in a moment.",
+        e instanceof ApiError ? e.message : "Could not assess that. Try again in a moment.",
       ),
   });
 
   const result: DocumentAssessment | undefined = assess.data;
+  const matches = kindsMatching(typed);
+  const shortBy = MINIMUM_PASTED - text.trim().length;
+
+  /// Re-judges the same work, now that the reader has said what it is.
+  function declareAndReassess(kind: DocumentKind) {
+    if (!lastWork) return;
+    setDeclared(kind);
+    assess.mutate({ ...lastWork, kind });
+  }
 
   return (
     <div className="r-page assess" style={{ maxWidth: 780 }}>
       <div className="r-page-head">
         <h1 className="r-page-title">Assess my work</h1>
         <p className="r-page-sub">
-          Upload something you wrote. Radar works out what kind of document it is, then judges it
-          against criteria for that kind and for where you are — shown on screen, so you can see
-          what it was measured against.
+          Paste what you wrote, or attach the file. Radar judges it against criteria for that kind
+          of work and for where you are — shown on screen, so you can see what it was measured
+          against.
         </p>
       </div>
 
-      <div className="assess__drop">
+      <div className="assess__paste">
+        <textarea
+          className="r-textarea assess__text"
+          placeholder="Paste your work here — the whole thing, not an extract."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          disabled={assess.isPending}
+        />
+
+        <div className="assess__paste-foot">
+          <button
+            className="btn btn--primary"
+            onClick={() => assess.mutate({ text: text.trim(), kind: declared ?? undefined })}
+            disabled={assess.isPending || shortBy > 0}
+          >
+            {assess.isPending ? "Reading it…" : "Assess this"}
+          </button>
+
+          {/* Said before the work is sent rather than after it is refused. */}
+          {text.trim().length > 0 && shortBy > 0 && (
+            <span className="assess__formats">
+              {shortBy} more characters before there is enough to judge
+            </span>
+          )}
+
+          <button
+            className="btn btn--text btn--sm"
+            onClick={() => fileInput.current?.click()}
+            disabled={assess.isPending}
+          >
+            <Icon name="upload" size={13} /> Or attach a file
+          </button>
+        </div>
+
         <input
           ref={fileInput}
           type="file"
@@ -104,22 +160,11 @@ export function AssessDocument() {
           style={{ display: "none" }}
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) {
-              setLastFile(file);
-              assess.mutate({ file });
-            }
-            // Cleared so re-uploading the same file after a fix fires onChange again.
+            if (file) assess.mutate({ file, kind: declared ?? undefined });
+            // Cleared so re-attaching the same file after a fix fires onChange again.
             e.target.value = "";
           }}
         />
-
-        <button
-          className="btn btn--primary"
-          onClick={() => fileInput.current?.click()}
-          disabled={assess.isPending}
-        >
-          {assess.isPending ? "Reading it…" : "Choose a file"}
-        </button>
 
         <span className="assess__formats">PDF, Word, Markdown, text, CSV, JSON or HTML</span>
       </div>
@@ -130,28 +175,51 @@ export function AssessDocument() {
         </div>
       )}
 
-      {/* The rubric, before anything is uploaded. */}
+      {/* What kind of work this is — typed, not picked from a fixed seven. */}
       {!result && !assess.isPending && (
         <section className="assess__rubric">
-          <div className="assess__rubric-label">Or see what each kind is judged against</div>
+          <div className="assess__rubric-label">What kind of work is this?</div>
+
+          <p className="assess__rubric-note">
+            Optional. Leave it and Radar works it out from the text. Say, and it takes your word
+            and shows you the standard first.
+          </p>
+
+          <input
+            className="r-input assess__kind-search"
+            type="text"
+            placeholder="Type it — dissertation chapter, scholarship, README, caption…"
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+          />
 
           <div className="assess__kinds">
-            {PREVIEWABLE.map((entry) => (
+            {matches.map((option) => (
               <button
-                key={entry.kind}
-                className={`assess__kind ${preview === entry.kind ? "active" : ""}`}
-                onClick={() => setPreview(preview === entry.kind ? null : entry.kind)}
+                key={option.kind}
+                className={`assess__kind ${declared === option.kind ? "active" : ""}`}
+                title={option.covers}
+                onClick={() => setDeclared(declared === option.kind ? null : option.kind)}
               >
-                {entry.label}
+                {option.label}
               </button>
             ))}
           </div>
 
-          {preview && rubric.data && (
+          {/* Nothing rather than the nearest thing. Quietly judging a recipe book against the
+              research-proposal standard is how a judgement nobody can account for happens. */}
+          {matches.length === 0 && (
+            <p className="assess__rubric-note">
+              Radar has no written standard for that. Leave this blank and it will judge the work
+              as whatever it reads it to be, or try another word for it.
+            </p>
+          )}
+
+          {declared && rubric.data && (
             <div className="assess__rubric-list">
               <p className="assess__rubric-note">
                 As a {rubric.data.assessedAs.replace("YoungProfessional", "professional")}, your{" "}
-                {PREVIEWABLE.find((e) => e.kind === preview)?.label.toLowerCase()} is read for:
+                {labelFor(declared).toLowerCase()} is read for:
               </p>
 
               {rubric.data.criteria.map((criterion) => (
@@ -175,27 +243,24 @@ export function AssessDocument() {
           <EmptyState
             icon="warning"
             title={result.kind === "Unknown" ? "What is this?" : "Not assessed"}
-            description={result.notAssessedReason ?? "Radar could not assess this document."}
+            description={result.notAssessedReason ?? "Radar could not assess this work."}
           />
 
-          {result.kind === "Unknown" && lastFile && (
+          {result.kind === "Unknown" && lastWork && (
             <div className="assess__kinds">
-              {PREVIEWABLE.map((entry) => (
+              {DOCUMENT_KINDS.map((option) => (
                 <button
-                  key={entry.kind}
+                  key={option.kind}
                   className="assess__kind"
-                  onClick={() => assess.mutate({ file: lastFile, kind: entry.kind })}
+                  title={option.covers}
+                  onClick={() => declareAndReassess(option.kind)}
                   disabled={assess.isPending}
                 >
-                  {entry.label}
+                  {option.label}
                 </button>
               ))}
             </div>
           )}
-
-          <button className="btn btn--text btn--sm" onClick={() => fileInput.current?.click()}>
-            Or try another file
-          </button>
         </section>
       )}
 
@@ -205,11 +270,8 @@ export function AssessDocument() {
             <div>
               <div className="assess__detected">
                 {result.kindWasDeclared ? "Assessed as a" : "Read as a"}{" "}
-                <strong>
-                  {PREVIEWABLE.find((e) => e.kind === result.kind)?.label.toLowerCase() ??
-                    result.kind}
-                </strong>
-                , for a {result.assessedAs.replace("YoungProfessional", "professional")}
+                <strong>{labelFor(result.kind).toLowerCase()}</strong>, for a{" "}
+                {result.assessedAs.replace("YoungProfessional", "professional")}
               </div>
               {/* Why it thinks that, so a wrong guess is arguable rather than mysterious. */}
               {result.kindEvidence && (
@@ -246,23 +308,29 @@ export function AssessDocument() {
           </div>
 
           <div className="assess__after">
-            <button className="btn btn--text btn--sm" onClick={() => fileInput.current?.click()}>
-              <Icon name="upload" size={13} /> Assess a revision
+            {/* A revision is the point of the bar, and the pasted text is still in the box. */}
+            <button
+              className="btn btn--text btn--sm"
+              onClick={() => assess.reset()}
+              disabled={assess.isPending}
+            >
+              <Icon name="next" size={13} /> Assess a revision
             </button>
 
-            {/* A wrong detection is correctable without re-uploading. */}
-            {!result.kindWasDeclared && lastFile && (
+            {/* A wrong detection is correctable without handing the work in again. */}
+            {!result.kindWasDeclared && lastWork && (
               <details className="assess__wrong">
-                <summary>Not a {PREVIEWABLE.find((e) => e.kind === result.kind)?.label.toLowerCase() ?? result.kind}?</summary>
+                <summary>Not a {labelFor(result.kind).toLowerCase()}?</summary>
                 <div className="assess__kinds">
-                  {PREVIEWABLE.filter((e) => e.kind !== result.kind).map((entry) => (
+                  {DOCUMENT_KINDS.filter((option) => option.kind !== result.kind).map((option) => (
                     <button
-                      key={entry.kind}
+                      key={option.kind}
                       className="assess__kind"
-                      onClick={() => assess.mutate({ file: lastFile, kind: entry.kind })}
+                      title={option.covers}
+                      onClick={() => declareAndReassess(option.kind)}
                       disabled={assess.isPending}
                     >
-                      {entry.label}
+                      {option.label}
                     </button>
                   ))}
                 </div>
