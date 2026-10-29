@@ -745,25 +745,6 @@ export interface MentorStudyPlan {
   createdAt: string;
 }
 
-export interface MentorWorkReview {
-  wasReviewed: boolean;
-  id: string;
-  workTitle: string;
-  workContent: string;
-  reviewType: string;
-  score?: number;
-  feedback: string;
-  strengths: string[];
-  weaknesses: string[];
-  mainIssue?: string;
-  improvements: string[];
-  suggestions: string[];
-  nextStep?: string;
-  revisionNumber?: number;
-  previousScore?: number | null;
-  revisedFromId?: string | null;
-  reviewedAt: string;
-}
 
 export interface SubtopicMasteryItem {
   name: string;
@@ -793,7 +774,6 @@ export interface PersonalLearningMemory {
   recentMistakes: string[];
   masteries: TopicMastery[];
   completedProjects: string[];
-  submittedReviewsCount: number;
   lastActiveAt: string;
 }
 

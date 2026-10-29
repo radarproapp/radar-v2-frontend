@@ -9,8 +9,6 @@ import {
   toggleStudyTask,
   generateQuiz,
   submitQuizAnswer,
-  reviewWork,
-  getUserReviews,
   streamMentorChat,
   getLearningMemory,
   getTopicMasteries,
@@ -24,7 +22,6 @@ import type {
   ChatMessage,
   MentorQuiz,
   MentorStudyPlan,
-  MentorWorkReview,
   PersonalLearningMemory,
   TopicMastery,
   DailyLearningCard,
@@ -37,7 +34,6 @@ const MODES = [
   { id: "chat", label: "Ask (Tutor)", desc: "Socratic Q&A connected to your roadmap" },
   { id: "quiz", label: "Practice & Quiz", desc: "Adaptive exercises across 4 cognitive levels" },
   { id: "studyplan", label: "Study Plan", desc: "Dynamic goal-oriented week-by-week plan" },
-  { id: "review", label: "Review Work", desc: "Rubric evaluation, score & revision loop" },
   { id: "mastery", label: "Mastery & Memory", desc: "Topic mastery progress & learning memory" },
   { id: "spaced", label: "Spaced Revision", desc: "Automated retention schedule" },
 ];
@@ -99,8 +95,6 @@ function buildQuizTopics(memory: PersonalLearningMemory | null): string[] {
   return out.slice(0, 6);
 }
 
-const REVIEW_TYPES = ["Essay", "Assignment", "Research", "Report", "CV / Cover Letter", "Business Plan", "Code", "Project Brief"];
-
 function formatMarkdown(text: string): string {
   return text
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
@@ -142,15 +136,6 @@ export function LearningMentor() {
   const [planWeeks, setPlanWeeks] = useState(6);
   const [planCreating, setPlanCreating] = useState(false);
 
-  // Work Review & Revision Loop
-  const [review, setReview] = useState<MentorWorkReview | null>(null);
-  const [pastReviews, setPastReviews] = useState<MentorWorkReview[]>([]);
-  const [reviewTitle, setReviewTitle] = useState("");
-  const [reviewContent, setReviewContent] = useState("");
-  const [reviewType, setReviewType] = useState("Essay");
-  const [reviewRunning, setReviewRunning] = useState(false);
-  const [revisedFromId, setRevisedFromId] = useState<string | null>(null);
-
   // Learning Memory & Mastery
   const [memory, setMemory] = useState<PersonalLearningMemory | null>(null);
 
@@ -178,7 +163,6 @@ export function LearningMentor() {
     getTopicMasteries().then(setMasteries).catch(() => {});
     getSpacedRevisions().then(setSpacedRevisions).catch(() => {});
     getActiveStudyPlan().then(setStudyPlan).catch(() => {});
-    getUserReviews().then(setPastReviews).catch(() => {});
   }, [profile]);
 
   // Handle URL Params for deep-links (e.g. from research paper or topic)
@@ -314,28 +298,6 @@ export function LearningMentor() {
     setStudyPlan(adjusted);
   };
 
-  // Review Work
-  const runReviewWork = async () => {
-    if (!reviewTitle.trim() || !reviewContent.trim()) return;
-    setReviewRunning(true);
-    try {
-      const res = await reviewWork(reviewTitle.trim(), reviewContent.trim(), reviewType, revisedFromId || undefined);
-      setReview(res);
-      setRevisedFromId(null);
-      getUserReviews().then(setPastReviews).catch(() => {});
-    } finally {
-      setReviewRunning(false);
-    }
-  };
-
-  // Prepare Revision
-  const prepareRevision = (rev: MentorWorkReview) => {
-    setRevisedFromId(rev.id);
-    setReviewTitle(rev.workTitle);
-    setReviewContent(rev.workContent);
-    setReviewType(rev.reviewType);
-    setReview(null);
-  };
 
   // Run Challenge Mode
   const handleRunChallenge = async () => {
@@ -368,7 +330,7 @@ export function LearningMentor() {
           <span><Icon name="brain" /></span> Radar AI Learning Mentor
         </h1>
         <p className="r-page-sub">
-          Your personal tutor connected to your Radar Roadmap. Helps you understand concepts simply, practice adaptive exercises, follow dynamic study plans, and continuously improve through work reviews.
+          Your personal tutor connected to your Radar Roadmap. Helps you understand concepts simply, practice adaptive exercises and follow dynamic study plans. To have a piece of work judged against a written standard, use Assess my work.
         </p>
       </div>
 
@@ -972,231 +934,6 @@ export function LearningMentor() {
         </>
       )}
 
-      {/* ── 4. REVIEW WORK & REVISION LOOP ───────────────────────────────── */}
-      {activeMode === "review" && (
-        <>
-          {!review ? (
-            <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 16, padding: 24, marginBottom: 20 }}>
-              <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.15rem", marginBottom: 6 }}>
-                Submit Work for Evaluation & Revision
-              </div>
-              <p style={{ fontSize: 13.5, color: "var(--text-dim)", lineHeight: 1.6, marginBottom: 16 }}>
-                Submit essays, reports, research, code, project deliverables or CVs. Radar provides a strict 6-part evaluation: <strong>Score /100, Strengths, Weaknesses, Main Issue Explanation, Specific Improvements, and Immediate Next Step</strong>.
-              </p>
-
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ fontSize: 12.5, fontWeight: 700, color: "var(--text-dim)", display: "block", marginBottom: 6 }}>
-                  Work Format:
-                </label>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {REVIEW_TYPES.map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      className={`r-chip ${reviewType === type ? "active" : ""}`}
-                      onClick={() => setReviewType(type)}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {revisedFromId && (
-                <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", padding: "10px 14px", borderRadius: 8, marginBottom: 14, fontSize: 12.5, color: "#1e40af" }}><Icon name="refresh" /><strong>Submitting a Revision:</strong> Radar will compare this against your previous score and verify whether you fixed the main issue.
-                </div>
-              )}
-
-              <input
-                type="text"
-                className="r-input"
-                placeholder="Title (e.g. Analysis of Mobile Money Interoperability in Ghana)..."
-                value={reviewTitle}
-                onChange={(e) => setReviewTitle(e.target.value)}
-                style={{ marginBottom: 12 }}
-              />
-
-              <textarea
-                className="r-textarea"
-                placeholder="Paste your work here (essay text, project draft, code snippet, assignment answer)..."
-                value={reviewContent}
-                onChange={(e) => setReviewContent(e.target.value)}
-                style={{ minHeight: 180 }}
-              />
-
-              <button
-                type="button"
-                className="btn btn--primary"
-                style={{ marginTop: 14 }}
-                onClick={runReviewWork}
-                disabled={!reviewTitle.trim() || !reviewContent.trim() || reviewRunning}
-              >
-                {reviewRunning ? "Evaluating against rubric…" : revisedFromId ? "Submit Revised Version" : "Review My Work"}
-              </button>
-            </div>
-          ) : review.wasReviewed === false ? (
-            /* Radar could not read the work. Showing the normal result card here would present a
-               score of 0 and empty sections as if they were an assessment. */
-            <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 16, padding: 24, marginBottom: 20 }}>
-              <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.1rem", marginBottom: 8 }}>
-                Radar couldn't review this yet
-              </div>
-              <p style={{ fontSize: 13.5, color: "var(--text-dim)", lineHeight: 1.6, marginBottom: 16 }}>
-                {review.feedback || "Your work is saved — try submitting it again in a moment."}
-              </p>
-              <button type="button" className="btn btn--primary btn--sm" onClick={() => setReview(null)}>
-                Try again
-              </button>
-            </div>
-          ) : (
-            <>
-              {/* Review Header with Score */}
-              <div style={{ background: "var(--navy)", borderRadius: 16, padding: "22px 24px", color: "#fff", marginBottom: 16 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--cyan-bright)", marginBottom: 4 }}>
-                      EVALUATION RESULT {review.revisionNumber && review.revisionNumber > 1 ? `· REVISION #${review.revisionNumber}` : ""}
-                    </div>
-                    <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 17, marginBottom: 4 }}>
-                      {review.workTitle}
-                    </div>
-                    <div style={{ fontSize: 13, color: "rgba(255,255,255,.7)" }}>
-                      Format: {review.reviewType}
-                      {typeof review.previousScore === "number" && typeof review.score === "number" && (
-                        <span style={{ color: "var(--lime)", fontWeight: 700, marginLeft: 8 }}>
-                          (Score Improved: {review.previousScore} → {review.score} [+{review.score - review.previousScore}])
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="mentor-score-circle">
-                    <span style={{ fontSize: 20 }}>{review.score || 76}</span>
-                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.7)" }}>/100</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* General Assessment Feedback */}
-              <div style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, marginBottom: 16 }}>
-                {review.feedback}
-              </div>
-
-              {/* MAIN ISSUE (PEDAGOGICAL TEACHING MOMENT) */}
-              {review.mainIssue && (
-                <div className="mentor-main-issue-box">
-                  <div className="mentor-main-issue-title"><Icon name="warning" /> Main Issue Identified</div>
-                  <div className="mentor-main-issue-text">{review.mainIssue}</div>
-                </div>
-              )}
-
-              {/* NEXT STEP BANNER */}
-              {review.nextStep && (
-                <div className="mentor-next-move-banner">
-                  <span className="mentor-next-move-icon"><Icon name="goal" /></span>
-                  <div>
-                    <div className="mentor-next-move-title">Immediate Next Step</div>
-                    <div className="mentor-next-move-text">{review.nextStep}</div>
-                  </div>
-                </div>
-              )}
-
-              {/* Strengths */}
-              <div style={{ background: "var(--cyan-light)", borderRadius: 14, padding: "16px 18px", marginBottom: 12 }}>
-                <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--cyan-deep)", marginBottom: 8 }}>
-                  <Icon name="check" /> STRENGTHS
-                </div>
-                {review.strengths.map((s, i) => (
-                  <div key={i} style={{ fontSize: 13, color: "#0d3d40", lineHeight: 1.6, marginBottom: 4 }}>
-                    • {s}
-                  </div>
-                ))}
-              </div>
-
-              {/* Weaknesses */}
-              <div style={{ background: "#fdf3f2", borderRadius: 14, padding: "16px 18px", marginBottom: 12 }}>
-                <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "#c0392b", marginBottom: 8 }}>
-                  ! WEAKNESSES TO ADDRESS
-                </div>
-                {review.weaknesses.map((s, i) => (
-                  <div key={i} style={{ fontSize: 13, color: "#8a4b44", lineHeight: 1.6, marginBottom: 4 }}>
-                    • {s}
-                  </div>
-                ))}
-              </div>
-
-              {/* Specific Improvements */}
-              <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 14, padding: "16px 18px", marginBottom: 16 }}>
-                <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 8 }}>
-                  SPECIFIC ACTIONABLE IMPROVEMENTS
-                </div>
-                {review.improvements.map((s, i) => (
-                  <div key={i} style={{ fontSize: 13, color: "#374151", lineHeight: 1.6, marginBottom: 6 }}>
-                    → {s}
-                  </div>
-                ))}
-              </div>
-
-              {/* REVISION LOOP ACTIONS */}
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  className="btn btn--primary"
-                  onClick={() => prepareRevision(review)}
-                >
-                  <Icon name="refresh" /> Submit Revision (Improve Score)
-                </button>
-                <button type="button" className="btn" onClick={() => setReview(null)}>
-                  Review New Work
-                </button>
-                <button type="button" className="btn" onClick={() => navigate("/notebook")}>
-                  Save in Notebook
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* Past Reviews History */}
-          {pastReviews.length > 0 && !review && (
-            <div style={{ marginTop: 24 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--text-muted)", marginBottom: 10 }}>
-                Past Evaluations & Submissions ({pastReviews.length})
-              </div>
-              {pastReviews.map((r) => (
-                <div
-                  key={r.id}
-                  style={{
-                    background: "#fff",
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                    padding: "12px 16px",
-                    marginBottom: 8,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center"
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: 13.5, fontWeight: 700 }}>{r.workTitle}</div>
-                    <div style={{ fontSize: 11.5, color: "var(--text-muted)" }}>
-                      {r.reviewType} · {new Date(r.reviewedAt).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: "var(--cyan-deep)" }}>
-                      Score: {r.score || 75}/100
-                    </span>
-                    <button type="button" className="btn btn--sm" onClick={() => setReview(r)}>
-                      View
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
-      )}
-
       {/* ── 5. MASTERY & LEARNING MEMORY DASHBOARD ───────────────────────── */}
       {activeMode === "mastery" && (
         <>
@@ -1301,7 +1038,7 @@ export function LearningMentor() {
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 700 }}>{tm.topic}</div>
                     <div style={{ fontSize: 11.5, color: "var(--text-muted)" }}>
-                      Completion != Mastery · Evaluated across recent quizzes and reviews
+                      Completion != Mastery · Evaluated across recent quizzes
                     </div>
                   </div>
                   <div style={{ fontSize: 18, fontWeight: 800, color: tm.masteryPercent >= 70 ? "var(--cyan-deep)" : "#b91c1c" }}>

@@ -19,7 +19,6 @@ import type {
   HomeBrief,
   MentorQuiz,
   MentorStudyPlan,
-  MentorWorkReview,
   NavigatorFocus,
   Note,
   NotificationPrefs,
@@ -958,16 +957,6 @@ export function toggleStudyTask(planId: string, weekNumber: number, taskIndex: n
   });
 }
 
-export function reviewWork(workTitle: string, workContent: string, reviewType: string, revisedFromId?: string) {
-  return request<MentorWorkReview>("/api/mentor/review", {
-    method: "POST",
-    body: JSON.stringify({ workTitle, workContent, reviewType, revisedFromId }),
-  });
-}
-
-export function getUserReviews() {
-  return request<MentorWorkReview[]>("/api/mentor/reviews");
-}
 
 export function getLearningMemory() {
   return request<PersonalLearningMemory>("/api/mentor/memory");
