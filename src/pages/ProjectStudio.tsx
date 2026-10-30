@@ -4,6 +4,7 @@ import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { ApiError, createProject, generateProjectPlan, getSuggestedProjects, getUserProjects, sendAskRadarChat, setProjectVisibility, startSuggestedProject } from "../lib/api";
+import { ProjectSubmissionPanel } from "../components/ProjectSubmission";
 import type { StudioProject } from "../lib/types";
 
 export function ProjectStudio() {
@@ -280,6 +281,11 @@ export function ProjectStudio() {
                       )}
                     </div>
                   )}
+
+                  {/* Handing it in, and the mark. The whole assessment existed on the server
+                      and nowhere a learner could reach it, so a project could be started and
+                      never submitted. */}
+                  <ProjectSubmissionPanel project={project} />
 
                   {tipsByProject[project.id] && (
                     <div style={{ marginTop: 12, background: "var(--cyan-light)", borderRadius: 12, padding: "13px 15px" }}>

@@ -871,6 +871,42 @@ export interface PublicProject {
   completedAt: string | null;
 }
 
+/// How a project can be handed in.
+///
+/// Five, named in the spec: code, image, video, document or link. Radar reads the text of a
+/// document or source file; an image or a video it cannot read at all, and the learner's own
+/// notes are the whole of what it has to judge those on.
+export const SUBMISSION_KINDS = ["Code", "Image", "Video", "Document", "Link"] as const;
+
+export type SubmissionKind = (typeof SUBMISSION_KINDS)[number];
+
+/// What Radar made of one attempt.
+export interface ProjectAssessment {
+  /// One to ten, or null when nothing could be assessed. Null is not zero.
+  score: number | null;
+  isAccepted: boolean;
+  verdict: string;
+  criteria: AssessmentCriterion[];
+  /// What Radar actually read in order to judge it — the work, or only the notes about it.
+  judgedFrom: string;
+  /// Set when no mark was given, and why. A provider failure is not a finding about the work.
+  notAssessedReason?: string | null;
+  assessedAt: string;
+}
+
+/// One attempt at a project. Kept as a list, because a project under the bar is meant to be
+/// revised and handed in again, and the earlier attempts are the evidence that it was.
+export interface ProjectSubmission {
+  id: string;
+  kind: SubmissionKind;
+  url?: string | null;
+  fileName?: string | null;
+  notes: string;
+  submittedAt: string;
+  /// Null until it has been assessed.
+  assessment?: ProjectAssessment | null;
+}
+
 export interface StudioProject {
   id: string;
   templateId: string;
@@ -883,6 +919,8 @@ export interface StudioProject {
   completedAt: string | null;
   /** Null until the user asks for a plan. */
   plan?: ProjectPlan | null;
+  /** Every attempt, oldest first. */
+  submissions?: ProjectSubmission[];
 }
 
 // ── Personalization signals ──────────────────────────────────────────────

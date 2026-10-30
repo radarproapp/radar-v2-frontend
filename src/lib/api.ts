@@ -39,6 +39,7 @@ import type {
   SpacedRevisionItem,
   PublicProject,
   StudioProject,
+  SubmissionKind,
   SubscriptionPlan,
   TopicMastery,
   TopicProfile,
@@ -1065,6 +1066,39 @@ export function completeProject(projectId: string) {
 }
 
 /// Builds and persists the project's execution plan. Idempotent — re-calling returns the stored one.
+/// Hands work in for assessment.
+///
+/// Multipart, because it carries a file. Raw fetch rather than request(), which forces a JSON
+/// content type — the browser has to set the multipart boundary itself.
+///
+/// The project comes back with the attempt appended and assessed, so the screen can show the
+/// mark without a second call.
+export async function submitProject(
+  projectId: string,
+  work: { kind: SubmissionKind; file?: File; url?: string; notes: string },
+): Promise<StudioProject> {
+  const token = getToken();
+  const form = new FormData();
+
+  form.append("kind", work.kind);
+  form.append("notes", work.notes);
+
+  if (work.file) form.append("file", work.file);
+  if (work.url) form.append("url", work.url);
+
+  const res = await fetch(`${API_BASE}/api/projects/${encodeURIComponent(projectId)}/submit`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: form,
+  });
+
+  const isJson = res.headers.get("content-type")?.includes("application/json");
+  const body = isJson ? await res.json() : null;
+  if (!res.ok) throw new ApiError(res.status, body?.error ?? body?.title ?? res.statusText);
+
+  return body as StudioProject;
+}
+
 export function generateProjectPlan(projectId: string) {
   return request<StudioProject>(`/api/projects/${projectId}/plan`, { method: "POST" });
 }
