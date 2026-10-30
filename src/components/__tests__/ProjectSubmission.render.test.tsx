@@ -60,7 +60,7 @@ describe("handing a project in", () => {
   /// The five kinds the spec names.
   it("offers code, image, video, document and link", () => {
     renderPage(<ProjectSubmissionPanel project={project()} />);
-    fireEvent.click(screen.getByRole("button", { name: /hand in your work/i }));
+    fireEvent.click(screen.getByRole("button", { name: /show your work/i }));
 
     for (const kind of ["Code", "Image", "Video", "Document", "Link"]) {
       expect(screen.getByRole("button", { name: kind })).toBeTruthy();
@@ -70,7 +70,7 @@ describe("handing a project in", () => {
   /// A kind Radar cannot read says so, rather than implying it watched the video.
   it("says what it can and cannot read", () => {
     renderPage(<ProjectSubmissionPanel project={project()} />);
-    fireEvent.click(screen.getByRole("button", { name: /hand in your work/i }));
+    fireEvent.click(screen.getByRole("button", { name: /show your work/i }));
     fireEvent.click(screen.getByRole("button", { name: "Video" }));
 
     expect(screen.getByText(/cannot watch a video/i)).toBeTruthy();
@@ -81,7 +81,7 @@ describe("handing a project in", () => {
     const spy = vi.spyOn(api, "submitProject");
 
     renderPage(<ProjectSubmissionPanel project={project()} />);
-    fireEvent.click(screen.getByRole("button", { name: /hand in your work/i }));
+    fireEvent.click(screen.getByRole("button", { name: /show your work/i }));
 
     expect(screen.getByRole("button", { name: /hand it in/i }).hasAttribute("disabled")).toBe(true);
     expect(spy).not.toHaveBeenCalled();
@@ -91,7 +91,7 @@ describe("handing a project in", () => {
     const spy = vi.spyOn(api, "submitProject").mockResolvedValue(project());
 
     renderPage(<ProjectSubmissionPanel project={project()} />);
-    fireEvent.click(screen.getByRole("button", { name: /hand in your work/i }));
+    fireEvent.click(screen.getByRole("button", { name: /show your work/i }));
     fireEvent.click(screen.getByRole("button", { name: "Link" }));
 
     fireEvent.change(screen.getByPlaceholderText("https://…"), {

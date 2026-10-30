@@ -180,7 +180,7 @@ export function ProjectSubmissionPanel({ project }: { project: StudioProject }) 
       <div className="submit__actions">
         <button className="btn btn--sm" onClick={() => setOpen((v) => !v)} disabled={busy}>
           <Icon name="upload" size={13} />{" "}
-          {project.submissions?.length ? "Hand in a revision" : "Hand in your work"}
+          {project.submissions?.length ? "Show your revised work" : "Show your work"}
         </button>
 
         {/* Offered only once the work has earned it. The server refuses otherwise, and a
