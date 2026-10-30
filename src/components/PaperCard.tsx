@@ -73,7 +73,11 @@ export function PaperCard({
   // whole field rests on and still be the wrong thing to copy as current practice; the reader
   // would otherwise have to notice the year and draw the conclusion, which nobody does while
   // skimming. Only shown when the server worked one out - never guessed from the date here.
-  const era = summary?.era?.split(" - ")[0] ?? null;
+  // From the item, not from the breakdown. The breakdown is a model call made when a paper is
+  // opened, so reading the era out of it meant the badge could never appear on a collapsed card
+  // and never at all on a library card - the two places a reader is skimming twenty papers and
+  // wants to know which are current. The server sets it on every result now.
+  const era = (paper.paperEra ?? summary?.era)?.split(" - ")[0] ?? null;
   const authors = paperAuthorLine(paper.authors);
 
   const copy = async (text: string) => {

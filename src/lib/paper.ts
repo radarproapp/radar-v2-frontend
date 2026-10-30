@@ -25,11 +25,17 @@ export function paperDate(publishedAt: string | null | undefined): string | null
   const parsed = new Date(publishedAt);
   if (Number.isNaN(parsed.getTime())) return null;
 
+  // No date at all. The server sends the .NET default for a work whose publication date the
+  // index did not report, rather than stamping it with today - so this is "not recorded", and
+  // the card leaves the slot out instead of printing the year 1.
+  if (parsed.getUTCFullYear() < 1500) return null;
+
   // OpenAlex reports a date it does not always have, and a work it only knows the year for
   // arrives as the first of January. Showing "1 January 2019" would be a precision nothing
-  // supports, so a date that lands exactly there is reported as the year.
+  // supports, so a date that lands exactly there is reported as the year - which is what
+  // paperYear is for, and why it is still here.
   const isJanuaryFirst = parsed.getUTCMonth() === 0 && parsed.getUTCDate() === 1;
-  if (isJanuaryFirst) return String(parsed.getUTCFullYear());
+  if (isJanuaryFirst) return paperYear(publishedAt);
 
   return parsed.toLocaleDateString("en-GB", {
     day: "numeric",

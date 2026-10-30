@@ -65,4 +65,11 @@ describe("paperDate", () => {
     expect(paperDate(null)).toBeNull();
     expect(paperDate("not a date")).toBeNull();
   });
+
+  /// A work whose date the index never reported arrives as the .NET default rather than as
+  /// today, which is what it used to be stamped with. Printing "1 January 0001" would be worse
+  /// than printing nothing, and printing this morning would be an invented publication date.
+  it("omits a date the index never recorded", () => {
+    expect(paperDate("0001-01-01T00:00:00Z")).toBeNull();
+  });
 });

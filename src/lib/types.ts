@@ -297,6 +297,10 @@ export interface ContentItem {
   /// How many times the paper has been cited. OpenAlex reports it; Radar used to bake it into a
   /// sentence and drop the number, so nothing could rank on it.
   citationCount: number;
+  /// Recent, Established or Foundational - derived server-side from the date and the citation
+  /// count. Absent when the index never reported a publication date, in which case nothing is
+  /// claimed about where the paper sits in time.
+  paperEra?: string | null;
   layer: ContentLayer;
   credibilityTier: number;
   ingestionSourceId: string | null;
