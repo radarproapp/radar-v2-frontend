@@ -145,6 +145,28 @@ describe("InterestControls", () => {
     expect(screen.queryByText(/which describes you/i)).toBeNull();
   });
 
+  /// <summary>An abandoned edit does not come back dressed as what Radar has stored.</summary>
+  ///
+  /// The reseed lived in the toggle handler, and the empty feed's own "edit what you follow"
+  /// does not go through it - so that route reopened the panel still holding the edit somebody
+  /// had cancelled, presented as their stored answers. Saving from there replaces the whole
+  /// list, so two interests deleted and cancelled would be deleted for real without ever having
+  /// been shown as present.
+  it("forgets an abandoned edit when reopened from outside", () => {
+    signedIn({ interests: ["Mathematics", "Physics"] } as never);
+
+    const { rerender } = renderPage(<InterestControls open={false} onOpenChange={() => {}} />);
+
+    rerender(<InterestControls open onOpenChange={() => {}} />);
+    fireEvent.click(screen.getByRole("button", { name: "Physics" }));
+    expect(screen.queryByText("Physics")).toBeNull();
+
+    rerender(<InterestControls open={false} onOpenChange={() => {}} />);
+    rerender(<InterestControls open onOpenChange={() => {}} />);
+
+    expect(screen.getByText("Physics")).toBeTruthy();
+  });
+
   /// Opened from the page around it, for the empty feed's own button.
   it("can be opened from outside", () => {
     signedIn();

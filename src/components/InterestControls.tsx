@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Icon } from "./Icon";
 import { TagInput } from "./TagInput";
@@ -80,18 +80,27 @@ export function InterestControls({ open: openedFromOutside, onOpenChange }: Inte
       setError(e instanceof ApiError ? e.message : "Could not save that. Try again shortly."),
   });
 
-  /// Reopened with what is stored, not with what was last typed and abandoned.
-  const toggle = () => {
-    if (!open) {
-      setInterests(profile?.interests ?? []);
-      setGoals(profile?.goals ?? []);
-      setChallenges(profile?.problems ?? []);
-      setPersona(profile?.hasChosenCategory ? profile.persona : null);
-      setError(null);
-    }
+  /// Opened with what is stored, not with what was last typed and abandoned.
+  ///
+  /// Driven by the panel opening rather than by the button being pressed. It lived in the toggle
+  /// handler, which the empty feed's own "edit what you follow" does not go through - so that
+  /// route reopened the panel still holding an abandoned edit, presented as what Radar has. Two
+  /// interests deleted and cancelled would come back deleted, and saving from there replaces the
+  /// whole list.
+  useEffect(() => {
+    if (!open) return;
 
-    setOpen(!open);
-  };
+    setInterests(profile?.interests ?? []);
+    setGoals(profile?.goals ?? []);
+    setChallenges(profile?.problems ?? []);
+    setPersona(profile?.hasChosenCategory ? profile.persona : null);
+    setError(null);
+    // Only when the panel opens. Re-running on every profile change would overwrite what the
+    // reader is in the middle of typing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const toggle = () => setOpen(!open);
 
   const ready = interests.length > 0 && goals.length > 0 && (!askForCategory || persona !== null);
 

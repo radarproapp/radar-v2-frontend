@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import { PasswordField } from "../components/PasswordField";
@@ -48,13 +48,22 @@ export function Onboarding() {
   const { persona: personaParam } = useParams();
   const { profile, refetchProfile, signIn } = useAuth();
 
-  const persona = PERSONA_FROM_ROUTE[(personaParam ?? "").toLowerCase()] ?? "Student";
+  // Null rather than Student for a segment nobody routes to. The fallback used to be Student,
+  // and finishing posts the persona - so a hand-typed /onboarding/anything stamped a category
+  // choice nobody made, which is the thing the category question exists to prevent.
+  const chosen = PERSONA_FROM_ROUTE[(personaParam ?? "").toLowerCase()] ?? null;
+  const persona = chosen ?? "Student";
   const isStudent = persona === "Student";
 
   // An existing user reaching this from "Update these answers" in Settings already has an
   // account; sending them back through account creation would be absurd and would fail on the
   // duplicate email.
   const [step, setStep] = useState<"account" | "subjects">(profile ? "subjects" : "account");
+
+  // Back to the picker rather than on through a flow for a category that was never named.
+  useEffect(() => {
+    if (chosen === null) navigate("/onboarding", { replace: true });
+  }, [chosen, navigate]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
