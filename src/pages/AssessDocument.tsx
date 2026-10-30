@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AssessmentHistory } from "../components/AssessmentHistory";
 import { EmptyState } from "../components/EmptyState";
 import { Icon } from "../components/Icon";
 import { useAuth } from "../auth/AuthContext";
@@ -66,7 +67,12 @@ function Criterion({ criterion }: { criterion: AssessmentCriterion }) {
 
 export function AssessDocument() {
   const { profile } = useAuth();
+  const queryClient = useQueryClient();
   const fileInput = useRef<HTMLInputElement>(null);
+
+  /// An older assessment the reader has opened from their history, shown in place of the one
+  /// they just submitted. Cleared the moment they hand something new in.
+  const [opened, setOpened] = useState<DocumentAssessment | null>(null);
 
   const [text, setText] = useState("");
   const [typed, setTyped] = useState("");
@@ -90,14 +96,17 @@ export function AssessDocument() {
     onMutate: (work) => {
       setError(null);
       setLastWork(work);
+      setOpened(null);
     },
+    // The new one belongs in the history immediately, not on the next visit.
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["assessments"] }),
     onError: (e) =>
       setError(
         e instanceof ApiError ? e.message : "Could not assess that. Try again in a moment.",
       ),
   });
 
-  const result: DocumentAssessment | undefined = assess.data;
+  const result: DocumentAssessment | undefined = opened ?? assess.data;
   const matches = kindsMatching(typed);
   const shortBy = MINIMUM_PASTED - text.trim().length;
 
@@ -339,6 +348,11 @@ export function AssessDocument() {
           </div>
         </section>
       )}
+
+      {/* Everything handed in before. Already stored, already served by an endpoint, and
+          reachable from nowhere until now - so a learner read their feedback once and lost it
+          when they closed the tab. */}
+      <AssessmentHistory onOpen={setOpened} openId={opened?.id} />
     </div>
   );
 }

@@ -2113,3 +2113,59 @@ button.path-resource {
   font-size: 11.5px;
   color: var(--text-faint);
 }
+
+/* ── What you have handed in before ──────────────────────────────────────────────────────
+   Every assessment was already stored and served; nothing reached it. A single assessment is
+   an opinion, and two of the same work a week apart is evidence something improved. */
+.assess-history { margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--border); }
+
+.assess-history__title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.assess-history__note {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 60ch;
+}
+
+.assess-history__list { display: flex; flex-direction: column; gap: 6px; }
+
+.assess-history__item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 10px;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.assess-history__item:hover { border-color: var(--cyan); }
+.assess-history__item.active { border-color: var(--cyan); background: var(--bg-sunken, #f4f6f8); }
+
+.assess-history__item > :global(svg) { grid-row: 1 / span 3; align-self: center; }
+
+.assess-history__name { font-size: 13.5px; font-weight: 700; color: var(--text); }
+
+.assess-history__meta {
+  display: flex;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.assess-history__summary {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
