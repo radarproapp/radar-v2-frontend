@@ -169,7 +169,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 // Shared by Ask Radar and Mentor chat: POSTs { message, history } to an SSE endpoint and calls
 // onChunk with each text delta as it arrives. Uses fetch + a stream reader rather than
 // EventSource, since EventSource can't send a POST body.
-async function streamChat(path: string, message: string, history: ChatMessage[], onChunk: (text: string) => void, signal?: AbortSignal, conversationId?: string): Promise<void> {
+async function streamChat(path: string, message: string, history: ChatMessage[], onChunk: (text: string) => void, signal?: AbortSignal, conversationId?: string): Promise<string | null> {
   const token = getToken();
   const headers = new Headers({ "Content-Type": "application/json" });
   if (token) headers.set("Authorization", `Bearer ${token}`);
@@ -186,13 +186,17 @@ async function streamChat(path: string, message: string, history: ChatMessage[],
     throw new ApiError(res.status, "Failed to start chat stream.");
   }
 
+  // Which conversation the server filed this turn under, told rather than guessed. Null for
+  // endpoints that do not store threads, which is every one but the mentor.
+  const thread = res.headers.get("X-Conversation-Id");
+
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
 
   while (true) {
     const { done, value } = await reader.read();
-    if (done) return;
+    if (done) return thread;
     buffer += decoder.decode(value, { stream: true });
 
     let sepIndex: number;
@@ -202,7 +206,7 @@ async function streamChat(path: string, message: string, history: ChatMessage[],
       if (!line.startsWith("data: ")) continue;
 
       const data = line.slice("data: ".length);
-      if (data === "[DONE]") return;
+      if (data === "[DONE]") return thread;
       try {
         onChunk((JSON.parse(data) as { content: string }).content);
       } catch {
@@ -210,6 +214,10 @@ async function streamChat(path: string, message: string, history: ChatMessage[],
       }
     }
   }
+
+  // The stream ended without [DONE] - a reset connection, or a reply that hit its ceiling.
+  // The caller still needs to know which thread it was, so the next question joins it.
+  return thread;
 }
 
 // ── Auth ─────────────────────────────────────────────────────────────────
@@ -929,19 +937,23 @@ export function generateLearningPathway() {
 
 // ── Mentor ───────────────────────────────────────────────────────────────
 
-/// Asks the mentor, in a conversation.
+/// Asks the mentor, in a conversation, and returns which conversation it was.
 ///
-/// `conversationId` joins an existing thread; without one the server starts a new thread and
-/// does not announce its id in the stream - the SSE frames are what the client already parses
-/// and that shape did not change. The id arrives from getMentorConversations, which is ordered
-/// by the last turn taken, so a thread just spoken to is the first entry.
+/// `conversationId` joins an existing thread; without one the server starts one and names it in
+/// the X-Conversation-Id response header, which is what this returns. The SSE frames - the
+/// thing the client parses - are unchanged.
+///
+/// This used to be worked out by refetching the conversation list afterwards and taking the
+/// first entry, which was wrong whenever the reply arrived inside the list query's
+/// thirty-second staleTime: the pre-send cache came back and the client claimed whichever
+/// thread was already top, then sent every follow-up to it.
 export function streamMentorChat(
   message: string,
   history: ChatMessage[],
   onChunk: (text: string) => void,
   signal?: AbortSignal,
   conversationId?: string,
-) {
+): Promise<string | null> {
   return streamChat("/api/mentor/chat/stream", message, history, onChunk, signal, conversationId);
 }
 

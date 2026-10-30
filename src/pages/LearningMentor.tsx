@@ -12,8 +12,8 @@ import {
   generateQuiz,
   submitQuizAnswer,
   streamMentorChat,
+  ApiError,
   getMentorConversation,
-  getMentorConversations,
   getLearningMemory,
   getTopicMasteries,
   getTodayLearning,
@@ -99,8 +99,26 @@ function buildQuizTopics(memory: PersonalLearningMemory | null): string[] {
   return out.slice(0, 6);
 }
 
-function formatMarkdown(text: string): string {
+/// Turns a message into something that can only ever be text.
+function escapeHtml(text: string): string {
   return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/// <summary>The handful of marks a tutor's reply uses, as HTML.</summary>
+///
+/// Escaped first, which it was not. The output goes to dangerouslySetInnerHTML and this only
+/// ever rewrote asterisks and newlines, so anything angle-bracketed in a message reached the
+/// browser as markup. Pasting a snippet and asking a tutor what it does is an ordinary thing a
+/// learner does - and now that conversations are stored, one pasted image tag with an onerror
+/// would run again every time that thread was reopened, for as long as it existed.
+///
+/// The escape runs before the substitutions, so the tags written below survive it and nothing
+/// in the message itself can become one.
+function formatMarkdown(text: string): string {
+  return escapeHtml(text)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/\n\n/g, "<br/><br/>")
@@ -129,7 +147,10 @@ export function LearningMentor() {
   /// The server does not announce a new thread's id in the stream - the SSE frames are what this
   /// page already parses and that shape did not change - so it is read back from the list, which
   /// is ordered by the last turn taken and therefore has it first.
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationId, setChatConversation] = useState<string | null>(null);
+
+  /// What went wrong on the last turn, in words. Cleared when the next one starts.
+  const [chatError, setChatError] = useState<string | null>(null);
 
   // Quiz & Practice
   const [quiz, setQuiz] = useState<MentorQuiz | null>(null);
@@ -226,12 +247,13 @@ export function LearningMentor() {
     setChatInput("");
     setChatThinking(true);
     setChatBusy(true);
+    setChatError(null);
 
     const assistantId = crypto.randomUUID();
     let started = false;
 
     try {
-      await streamMentorChat(
+      const thread = await streamMentorChat(
         trimmed,
         history,
         (chunk) => {
@@ -251,34 +273,58 @@ export function LearningMentor() {
         undefined,
         conversationId ?? undefined,
       );
+
+      // Which thread the server filed this under, from the response header.
+      //
+      // This used to refetch the conversation list and take the first entry. That is a guess,
+      // and it was wrong in the ordinary case: the list query inherits a thirty-second
+      // staleTime, so a reply arriving inside that window got the pre-send cache back and the
+      // client claimed whichever thread was already top - then sent every follow-up to it,
+      // while the sidebar highlighted a title that had nothing to do with the screen.
+      //
+      // Set through the updater rather than from the captured value, because the reader may
+      // have opened a different thread while this was streaming.
+      if (thread) setChatConversation((current) => current ?? thread);
+    } catch (e) {
+      // Said, not swallowed. The question is stored by now, so without this the learner is left
+      // with their own words on screen, no reply, no explanation, and a thread that reopens
+      // looking exactly as abandoned.
+      setChatError(
+        e instanceof ApiError
+          ? e.message
+          : "Radar could not reach your mentor just now. Your question is saved - try asking again.",
+      );
     } finally {
       setChatThinking(false);
       setChatBusy(false);
 
-      // The list has moved: a new thread exists, or an existing one has a later turn and has
-      // risen to the top. Refetched rather than patched, because the server decides the order
-      // and the title, and guessing either here is how the two drift apart.
-      const refreshed = await queryClient.fetchQuery({
-        queryKey: ["mentor", "conversations"],
-        queryFn: () => getMentorConversations(),
-      });
-
-      // A thread that was just started is the first entry, because the list is ordered by the
-      // last turn taken. Only claimed when there was none before - joining an existing thread
-      // must not silently re-point at whatever happens to be top.
-      if (conversationId === null && refreshed.length > 0) setConversationId(refreshed[0].id);
+      // The sidebar has moved: a new thread exists, or an existing one rose to the top. Its own
+      // failure is not the turn's failure, so it cannot be allowed to replace the error above.
+      queryClient.invalidateQueries({ queryKey: ["mentor", "conversations"] });
     }
   };
 
-  /// Opens a stored conversation, turns and all.
+  /// <summary>Opens a stored conversation, turns and all.</summary>
+  ///
+  /// Refused while a reply is streaming. Switching mid-stream put the old transcript on screen
+  /// with the pointer still aimed at the question being answered, and the chunks still arriving
+  /// appended themselves to it.
   const openConversation = async (id: string) => {
+    if (chatBusy) return;
+
     setActiveMode("chat");
     setChatBusy(true);
+    setChatError(null);
 
     try {
       const conversation = await getMentorConversation(id);
-      setConversationId(conversation.id);
+      setChatConversation(conversation.id);
       setChatMessages(conversation.messages);
+    } catch {
+      // Usually deleted from another tab. Clicking a row and having nothing happen, forever, is
+      // worse than being told it is gone.
+      setChatError("That conversation could not be opened. It may have been deleted.");
+      queryClient.invalidateQueries({ queryKey: ["mentor", "conversations"] });
     } finally {
       setChatBusy(false);
     }
@@ -286,9 +332,12 @@ export function LearningMentor() {
 
   /// Starts a fresh one. The turns on screen are already saved, so nothing is lost by clearing.
   const startNewConversation = () => {
-    setConversationId(null);
+    if (chatBusy) return;
+
+    setChatConversation(null);
     setChatMessages([]);
     setChatInput("");
+    setChatError(null);
   };
 
   const handleChatKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -455,6 +504,14 @@ export function LearningMentor() {
             onOpen={openConversation}
             onNew={startNewConversation}
           />
+
+          {/* What went wrong, in words. The question is stored by the time anything can fail,
+              so silence leaves the learner with their own words, no reply and no explanation. */}
+          {chatError && (
+            <div role="alert" className="mentor-history__error">
+              {chatError}
+            </div>
+          )}
 
           {chatMessages.length === 0 ? (
             <div className="ask-suggestions">
