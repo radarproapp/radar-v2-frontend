@@ -22,7 +22,22 @@ import type { CitationStyle, ContentItem } from "../lib/types";
 
 const STYLES: CitationStyle[] = ["APA", "MLA", "Chicago", "Harvard", "IEEE"];
 
-export function PaperCard({ paper }: { paper: ContentItem }) {
+/// Where this record came from, which decides what can be asked about it.
+///
+/// "openalex" is a live search result: Radar can fetch it again by id, so the summary, the
+/// citation, the explanation and the gap analysis all work. "library" is Radar's own corpus,
+/// whose ids mean nothing to OpenAlex — asking it for one of those answers 404, and the gap and
+/// explain endpoints returned "Paper not found. Please check the ID and try again." with a 200,
+/// which rendered as the explanation. An error message presented as the answer.
+export type PaperOrigin = "openalex" | "library";
+
+export function PaperCard({
+  paper,
+  origin = "openalex",
+}: {
+  paper: ContentItem;
+  origin?: PaperOrigin;
+}) {
   const [open, setOpen] = useState(false);
   const [style, setStyle] = useState<CitationStyle>("APA");
   const [copied, setCopied] = useState(false);
@@ -40,7 +55,7 @@ export function PaperCard({ paper }: { paper: ContentItem }) {
   const detail = useQuery({
     queryKey: ["paper", paper.id],
     queryFn: () => getPaper(paper.id),
-    enabled: open,
+    enabled: open && origin === "openalex",
     staleTime: Infinity,
     retry: 1,
   });
@@ -131,6 +146,15 @@ export function PaperCard({ paper }: { paper: ContentItem }) {
 
           {detail.isLoading && <p className="paper__summary-wait">Reading the paper…</p>}
 
+          {/* A corpus record carries whatever was written when it was ingested. Radar cannot
+              fetch it again by id, so what is here is what there is. */}
+          {origin === "library" && !summary && paper.aiSummary && (
+            <p className="paper__summary-wait">
+              Radar holds this from {paper.source || "its own sources"}. Open it to read the whole
+              thing.
+            </p>
+          )}
+
           {summary && (
             <div className="paper__breakdown">
               {/* Where the paper sits in time. A founding text of its field can still be the
@@ -168,12 +192,18 @@ export function PaperCard({ paper }: { paper: ContentItem }) {
 
           {/* Said rather than left blank. The abstract and the DOI are both still on the card,
               which is more than a summary that could not be written would have added. */}
-          {!summary && !detail.isLoading && (
+          {!summary && !detail.isLoading && origin === "openalex" && (
             <p className="paper__summary-wait">
               Radar could not summarise this one. The abstract is above and the DOI below resolves.
             </p>
           )}
 
+          {/* Asked of OpenAlex, so offered only for records OpenAlex knows.
+              A corpus record's id means nothing to it: Cite answered 404, and Explain and
+              Research gaps returned "Paper not found. Please check the ID and try again." with a
+              200, which rendered inside the plain-language block as though it were the answer.
+              Three buttons that could not work, and one that lied about why. */}
+          {origin === "openalex" && (
           <div className="paper__actions">
             <div className="paper__cite">
               <select
@@ -218,6 +248,7 @@ export function PaperCard({ paper }: { paper: ContentItem }) {
               <Icon name="explore" size={13} /> {gaps.isPending ? "Looking…" : "Research gaps"}
             </button>
           </div>
+          )}
 
           {citation.data && (
             <div className="paper__result">

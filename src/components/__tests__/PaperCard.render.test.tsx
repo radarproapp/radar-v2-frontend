@@ -132,3 +132,57 @@ describe("PaperCard", () => {
     expect(await screen.findByText("Yields rose by 18 per cent.")).toBeTruthy();
   });
 });
+
+/// A record out of Radar's own library, which OpenAlex has never heard of.
+///
+/// Library cards carry Radar's own ids. Every OpenAlex-backed action on them failed: the summary
+/// fetch answered 404, Cite answered 404, and Explain and Research gaps returned "Paper not
+/// found. Please check the ID and try again." with a 200 — which rendered inside the
+/// plain-language block as though it were the explanation. An error message presented as the
+/// answer is worse than no button.
+describe("a paper from Radar's own library", () => {
+  it("asks OpenAlex for nothing", () => {
+    const detail = vi.spyOn(api, "getPaper").mockResolvedValue(paper());
+    const citation = vi.spyOn(api, "getPaperCitation");
+    const explain = vi.spyOn(api, "explainPaper");
+
+    renderPage(<PaperCard paper={paper({ id: "radar-guid" })} origin="library" />);
+    fireEvent.click(screen.getByRole("button", { name: /demand-led irrigation/i }));
+
+    expect(detail).not.toHaveBeenCalled();
+    expect(citation).not.toHaveBeenCalled();
+    expect(explain).not.toHaveBeenCalled();
+  });
+
+  it("offers no action it cannot carry out", () => {
+    vi.spyOn(api, "getPaper").mockResolvedValue(paper());
+
+    renderPage(<PaperCard paper={paper({ id: "radar-guid" })} origin="library" />);
+    fireEvent.click(screen.getByRole("button", { name: /demand-led irrigation/i }));
+
+    expect(screen.queryByRole("button", { name: /cite/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /explain simply/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /research gaps/i })).toBeNull();
+  });
+
+  /// And does not claim it failed to summarise something it never tried to summarise.
+  it("does not report a failure it never attempted", () => {
+    vi.spyOn(api, "getPaper").mockResolvedValue(paper());
+
+    renderPage(<PaperCard paper={paper({ id: "radar-guid" })} origin="library" />);
+    fireEvent.click(screen.getByRole("button", { name: /demand-led irrigation/i }));
+
+    expect(screen.queryByText(/could not summarise this one/i)).toBeNull();
+  });
+
+  /// A search result still gets everything.
+  it("leaves a search result alone", async () => {
+    const detail = vi.spyOn(api, "getPaper").mockResolvedValue(paper({ paperBreakdown: breakdown() }));
+
+    renderPage(<PaperCard paper={paper()} />);
+    fireEvent.click(screen.getByRole("button", { name: /demand-led irrigation/i }));
+
+    await waitFor(() => expect(detail).toHaveBeenCalled());
+    expect(screen.getByRole("button", { name: /cite/i })).toBeTruthy();
+  });
+});

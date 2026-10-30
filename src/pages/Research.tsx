@@ -159,7 +159,7 @@ export function Research() {
                 already matched to your subjects
               </div>
               {held.map((item) => (
-                <PaperCard key={item.id} paper={item} />
+                <PaperCard key={item.id} paper={item} origin="library" />
               ))}
             </>
           ) : (
