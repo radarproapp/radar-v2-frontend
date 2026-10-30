@@ -17,8 +17,9 @@ const NAV_LINKS = [
 /// The header used to render the full desktop navigation at every width. On a 420px phone the logo
 /// took the first row, the three links the second and "Sign in"/"Start free" the third — a 160px
 /// header above a 420px-wide screen, so a third of the first view was navigation. Below 860px the
-/// links and "Sign in" now collapse into a disclosure menu, which is the same width at which the
-/// signed-in shell swaps its sidebar for the tab bar.
+/// links, "Sign in" and "Start free" all collapse into a disclosure menu, leaving the row as brand
+/// plus toggle. 860px is the same width at which the signed-in shell swaps its sidebar for the
+/// tab bar.
 export function MarketingLayout({ children }: { children?: ReactNode } = {}) {
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -57,6 +58,9 @@ export function MarketingLayout({ children }: { children?: ReactNode } = {}) {
           <Link to="/login" className="mkt-nav__signin">
             Sign in
           </Link>
+          {/* The desktop copy. `mkt-nav__start` is the hook the phone stylesheet switches off:
+              below 860px the sheet carries its own "Start free", and rendering this one as well
+              would offer the same link twice with only CSS deciding which. */}
           <Link to="/onboarding" className="btn btn--accent mkt-nav__start">
             Start free
           </Link>
@@ -76,12 +80,28 @@ export function MarketingLayout({ children }: { children?: ReactNode } = {}) {
 
         {menuOpen && (
           <div className="mkt-nav__sheet" id="mkt-nav-menu" role="menu">
+            {/* First, not last. On the desktop header "Start free" is the rightmost thing in the
+                row, which is where a left-to-right layout puts its emphasis; copied straight into
+                a vertical list that same order buries the one action a first-time visitor came
+                for under four links they have no reason to read yet. The sheet hangs off the top
+                of the viewport, so no row is closer to the thumb than another and there is nothing
+                to be gained by putting it at the bottom.
+
+                Still a role="menuitem" link, because role="menu" only accepts menuitem children
+                and a div with an onClick would lose the middle-click and the open-in-new-tab that
+                a signup link should keep. */}
+            <Link to="/onboarding" role="menuitem" className="btn btn--dark mkt-nav__sheet-cta">
+              Start free
+            </Link>
+            <div className="mkt-nav__sheet-divider" />
             {NAV_LINKS.map((link) => (
               <Link key={link.to} to={link.to} role="menuitem" className="mkt-nav__sheet-link">
                 {link.label}
               </Link>
             ))}
             <div className="mkt-nav__sheet-divider" />
+            {/* The secondary of the two account actions, and the one only a returning visitor
+                needs, so it sits below the navigation while the signup sits above it. */}
             <Link to="/login" role="menuitem" className="mkt-nav__sheet-link">
               Sign in
             </Link>

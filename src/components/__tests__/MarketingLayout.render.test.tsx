@@ -6,8 +6,8 @@ import { renderPage } from "../../test/harness";
 /// The public site's header, which did not fit a phone.
 ///
 /// At 420px the logo took one row, the three links a second and Sign in/Start free a third — 160px
-/// of navigation above a 420px screen. The links and "Sign in" now live in a disclosure menu that
-/// CSS shows only below 860px.
+/// of navigation above a 420px screen. The links, "Sign in" and "Start free" now live in a
+/// disclosure menu that CSS shows only below 860px, leaving the phone header as brand plus toggle.
 ///
 /// Which of the two headers is on screen is a media query, and jsdom has no layout, so these tests
 /// cannot assert that. What they can hold is the part that would silently rot: that the menu exists
@@ -41,7 +41,7 @@ describe("MarketingLayout header", () => {
 
     const menu = screen.getByRole("menu");
     const labels = Array.from(menu.querySelectorAll("a")).map((link) => link.textContent);
-    expect(labels).toEqual(["Product", "Institutions", "How it works", "Sign in"]);
+    expect(labels).toEqual(["Start free", "Product", "Institutions", "How it works", "Sign in"]);
   });
 
   it("can be opened and closed from the keyboard alone", () => {
@@ -57,11 +57,42 @@ describe("MarketingLayout header", () => {
     expect(screen.queryByRole("menu")).toBeNull();
   });
 
-  it("still offers Start free without opening anything", () => {
+  it("leads the menu with Start free rather than ending on it", () => {
     renderPage(<MarketingLayout>{null}</MarketingLayout>);
 
-    // The one action worth a tap on arrival stays on the header row rather than moving into the
-    // menu, so collapsing the navigation does not also hide the way in.
-    expect(screen.getByRole("link", { name: /start free/i }).getAttribute("href")).toBe("/onboarding");
+    fireEvent.click(screen.getByRole("button", { name: /^menu$/i }));
+
+    // The desktop header ends with the signup, because the right-hand edge is where a row carries
+    // its emphasis; a vertical list carries it at the top. This asserts the position and not only
+    // the presence, since "somewhere in the menu" is how the one action a first-time visitor came
+    // for ends up fifth, under four pages they have no reason to read yet.
+    const rows = screen.getAllByRole("menuitem");
+    expect(rows[0].textContent).toBe("Start free");
+    expect(rows[0].getAttribute("href")).toBe("/onboarding");
+  });
+
+  it("keeps the menu's Start free looking like a button rather than a fifth navigation row", () => {
+    renderPage(<MarketingLayout>{null}</MarketingLayout>);
+
+    fireEvent.click(screen.getByRole("button", { name: /^menu$/i }));
+
+    // Whether it reads as a button is paint, and jsdom does not paint, so the classes carrying the
+    // fill are the only handle a test here has. Worth holding anyway: nothing but those classes
+    // separates the signup from the four links around it, and a call to action that looks exactly
+    // like a navigation link is a call to action nobody presses.
+    const cta = screen.getAllByRole("menuitem")[0];
+    expect(cta.className).toContain("btn--dark");
+    expect(cta.className).not.toContain("mkt-nav__sheet-link");
+  });
+
+  it("leaves the desktop header its own Start free, behind the class the phone switches off", () => {
+    const { container } = renderPage(<MarketingLayout>{null}</MarketingLayout>);
+
+    // Both copies are in the markup and a media query decides which one is seen, which jsdom
+    // cannot evaluate. What it can hold is that the desktop copy still exists and still carries
+    // `mkt-nav__start` — the hook the 859px block hides it with. Drop the class and the phone
+    // header grows a third target back, which is the thing this change was asked to remove.
+    const headerCta = container.querySelector(".mkt-nav__actions .mkt-nav__start");
+    expect(headerCta?.getAttribute("href")).toBe("/onboarding");
   });
 });
