@@ -8,7 +8,7 @@ import { PathResources } from "../components/PathResources";
 import { GuidanceCards } from "../components/GuidanceCards";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { ErrorState } from "../components/ErrorState";
-import { addPathSectionFromDocument, ApiError, completeLesson, getActiveRoadmap } from "../lib/api";
+import { addPathSectionFromDocument, ApiError, completeLesson, getActiveRoadmap, removePathSection } from "../lib/api";
 import { formatDuration, sumMinutes } from "../lib/duration";
 import type { GrowthRoadmap, RoadmapLesson, RoadmapModule } from "../lib/types";
 
@@ -64,6 +64,40 @@ export function LearnPath() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [docError, setDocError] = useState<string | null>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
+
+  /// Taking a section out of the path.
+  ///
+  /// The other half of being able to edit one. Sections could be added and never removed, so a
+  /// path built by trying things accumulated every wrong turn and the only way back was to start
+  /// again. The endpoint existed and nothing in the product reached it.
+  ///
+  /// Confirmed first, because the lessons inside a removed section go with it and there is no
+  /// undo. Stated as what it costs rather than as "are you sure".
+  const removeSection = useMutation({
+    mutationFn: ({ roadmapId, moduleId }: { roadmapId: string; moduleId: string }) =>
+      removePathSection(roadmapId, moduleId),
+    onSuccess: (updated) => {
+      setSaveError(null);
+      queryClient.setQueryData(["roadmap", "active"], updated);
+      queryClient.invalidateQueries({ queryKey: ["roadmap", "active"] });
+    },
+    onError: (e) =>
+      setSaveError(e instanceof ApiError ? e.message : "Could not remove that section."),
+  });
+
+  const confirmRemove = (moduleId: string, title: string, finished: number) => {
+    if (!roadmap) return;
+
+    const lost = finished > 0
+      ? `
+
+${finished} completed ${finished === 1 ? "lesson" : "lessons"} in it will be lost, and that cannot be undone.`
+      : "";
+
+    if (!window.confirm(`Remove "${title}" from your path?${lost}`)) return;
+
+    removeSection.mutate({ roadmapId: roadmap.id, moduleId });
+  };
 
   /// Upload a document, and Radar works out what it teaches and builds a section from it.
   const fromDocument = useMutation({
@@ -448,6 +482,18 @@ export function LearnPath() {
                       {duration && ` · ${duration}`}
                     </span>
                   </span>
+                </button>
+
+                {/* Removing this section. Beside the heading rather than inside the lessons,
+                    because it acts on the section and nothing else on this row does. */}
+                <button
+                  className="path-section__remove"
+                  onClick={() => confirmRemove(module.id, stripStagePrefix(module.title), done)}
+                  disabled={removeSection.isPending}
+                  aria-label={`Remove section "${stripStagePrefix(module.title)}"`}
+                  title="Remove this section"
+                >
+                  <Icon name="delete" size={13} />
                 </button>
 
                 {open && (

@@ -275,7 +275,39 @@
 }
 
 .path-section {
+  position: relative;
   border-bottom: 1px solid var(--border);
+}
+
+/* Removing a section. Quiet until the row is hovered or the control is focused: it is
+   destructive and it should not be the brightest thing on a reading screen. Always present for
+   a keyboard or a touch screen, where there is no hover to reveal it. */
+.path-section__remove {
+  position: absolute;
+  top: 10px;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--t-fast), color var(--t-fast);
+}
+
+.path-section:hover .path-section__remove,
+.path-section__remove:focus-visible {
+  opacity: 1;
+}
+
+.path-section__remove:hover { color: var(--red, #dc2626); }
+
+@media (hover: none) {
+  .path-section__remove { opacity: 1; }
 }
 
 .path-section__head {
