@@ -2080,3 +2080,36 @@ button.path-resource {
   background: rgba(220, 38, 38, 0.07);
   font-size: 13px;
 }
+
+/* ── Where a paper sits in time, and how much the field leans on it ───────────────────────
+   Both are facts the reader would otherwise have to work out from a year, which nobody does
+   while skimming. Neither is a score: a foundational paper is not a better paper, it is a
+   different kind of thing to read. */
+.paper__era {
+  padding: 1px 7px;
+  border-radius: 99px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.paper__era--recent {
+  background: rgba(5, 150, 105, 0.12);
+  color: #047857;
+}
+
+.paper__era--foundational {
+  background: rgba(180, 83, 9, 0.12);
+  color: #b45309;
+}
+
+.paper__era--established {
+  background: var(--bg);
+  color: var(--text-muted);
+}
+
+.paper__cited {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}

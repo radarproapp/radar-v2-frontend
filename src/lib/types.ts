@@ -294,6 +294,9 @@ export interface ContentItem {
   wordCount?: number;
   openAccessPdfUrl?: string | null;
   databaseSource?: string | null;
+  /// How many times the paper has been cited. OpenAlex reports it; Radar used to bake it into a
+  /// sentence and drop the number, so nothing could rank on it.
+  citationCount: number;
   layer: ContentLayer;
   credibilityTier: number;
   ingestionSourceId: string | null;

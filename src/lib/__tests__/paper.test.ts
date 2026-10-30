@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { paperAuthorLine, paperYear } from "../paper";
+import { paperAuthorLine, paperYear, paperDate } from "../paper";
 
 describe("paperYear", () => {
   it("reads the year from an ISO timestamp", () => {
@@ -46,5 +46,23 @@ describe("paperAuthorLine", () => {
 
   it("ignores blank entries when counting", () => {
     expect(paperAuthorLine(["Ada Lovelace", "  ", "Charles Babbage"])).toBe("Ada Lovelace, Charles Babbage");
+  });
+});
+
+/// The publication date, which the spec asks for by name on every result.
+describe("paperDate", () => {
+  it("gives the full date when the source recorded one", () => {
+    expect(paperDate("2025-03-14T00:00:00Z")).toBe("14 March 2025");
+  });
+
+  /// OpenAlex reports a date it does not always have: a work it only knows the year for arrives
+  /// as the first of January. "1 January 2019" would be a precision nothing supports.
+  it("gives the year alone when that is all the source really knew", () => {
+    expect(paperDate("2019-01-01T00:00:00Z")).toBe("2019");
+  });
+
+  it("says nothing rather than guessing", () => {
+    expect(paperDate(null)).toBeNull();
+    expect(paperDate("not a date")).toBeNull();
   });
 });

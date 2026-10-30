@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Icon } from "./Icon";
 import { explainPaper, findResearchGaps, getPaper, getPaperCitation } from "../lib/api";
-import { paperAuthorLine, paperYear } from "../lib/paper";
+import { paperAuthorLine, paperDate } from "../lib/paper";
 import type { CitationStyle, ContentItem } from "../lib/types";
 
 /// One paper, and what can be done with it.
@@ -67,7 +67,13 @@ export function PaperCard({
   const explanation = useMutation({ mutationFn: () => explainPaper(paper.id) });
   const gaps = useMutation({ mutationFn: () => findResearchGaps(paper.id) });
 
-  const published = paperYear(paper.publishedAt);
+  const published = paperDate(paper.publishedAt);
+
+  // Where the paper sits in time, which is not how good it is. A 1998 paper can be the text a
+  // whole field rests on and still be the wrong thing to copy as current practice; the reader
+  // would otherwise have to notice the year and draw the conclusion, which nobody does while
+  // skimming. Only shown when the server worked one out - never guessed from the date here.
+  const era = summary?.era?.split(" - ")[0] ?? null;
   const authors = paperAuthorLine(paper.authors);
 
   const copy = async (text: string) => {
@@ -95,6 +101,10 @@ export function PaperCard({
           {paper.journal && <span className="paper__venue">{paper.journal}</span>}
           {published && <span className="paper__year">{published}</span>}
           {paper.documentType && <span className="paper__type">{paper.documentType}</span>}
+          {era && <span className={`paper__era paper__era--${era.toLowerCase()}`}>{era}</span>}
+          {paper.citationCount > 0 && (
+            <span className="paper__cited">Cited {paper.citationCount.toLocaleString()} times</span>
+          )}
         </div>
 
         <span className="paper__toggle">
