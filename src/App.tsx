@@ -1,4 +1,5 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { lazyPage } from "./lib/lazy-page";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
@@ -18,53 +19,53 @@ import { HomeGate } from "./pages/HomeGate";
 // Pages are named exports (`export function Feed`), so each import is adapted into the default
 // export React.lazy expects. Mapping them explicitly keeps the whole thing type-checked — a renamed
 // or deleted export fails `tsc -b` instead of throwing when the route is first opened.
-const Login = lazy(() => import("./pages/Login").then((m) => ({ default: m.Login })));
-const Onboarding = lazy(() => import("./pages/Onboarding").then((m) => ({ default: m.Onboarding })));
-const OnboardingSelection = lazy(() => import("./pages/OnboardingSelection").then((m) => ({ default: m.OnboardingSelection })));
-const Feed = lazy(() => import("./pages/Feed").then((m) => ({ default: m.Feed })));
-const FeedDetail = lazy(() => import("./pages/FeedDetail").then((m) => ({ default: m.FeedDetail })));
-const Saved = lazy(() => import("./pages/Saved").then((m) => ({ default: m.Saved })));
-const Capture = lazy(() => import("./pages/Capture").then((m) => ({ default: m.Capture })));
-const WeeklyBrief = lazy(() => import("./pages/WeeklyBrief").then((m) => ({ default: m.WeeklyBrief })));
-const SourcePage = lazy(() => import("./pages/SourcePage").then((m) => ({ default: m.SourcePage })));
-const TopicHub = lazy(() => import("./pages/TopicHub").then((m) => ({ default: m.TopicHub })));
-const LearnBuilder = lazy(() => import("./pages/LearnBuilder").then((m) => ({ default: m.LearnBuilder })));
-const Personalise = lazy(() => import("./pages/Personalise").then((m) => ({ default: m.Personalise })));
-const LearnPath = lazy(() => import("./pages/LearnPath").then((m) => ({ default: m.LearnPath })));
-const GrowthTracker = lazy(() => import("./pages/GrowthTracker").then((m) => ({ default: m.GrowthTracker })));
-const ProjectStudio = lazy(() => import("./pages/ProjectStudio").then((m) => ({ default: m.ProjectStudio })));
-const LearningMentor = lazy(() => import("./pages/LearningMentor").then((m) => ({ default: m.LearningMentor })));
-const AskRadar = lazy(() => import("./pages/AskRadar").then((m) => ({ default: m.AskRadar })));
-const Notebook = lazy(() => import("./pages/Notebook").then((m) => ({ default: m.Notebook })));
-const NoteEditor = lazy(() => import("./pages/NoteEditor").then((m) => ({ default: m.NoteEditor })));
-const Opportunities = lazy(() => import("./pages/Opportunities").then((m) => ({ default: m.Opportunities })));
-const Research = lazy(() => import("./pages/Research").then((m) => ({ default: m.Research })));
-const AssessDocument = lazy(() => import("./pages/AssessDocument").then((m) => ({ default: m.AssessDocument })));
-const Profiles = lazy(() => import("./pages/Profiles").then((m) => ({ default: m.Profiles })));
-const ForgotPassword = lazy(() => import("./pages/ForgotPassword").then((m) => ({ default: m.ForgotPassword })));
-const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy").then((m) => ({ default: m.PrivacyPolicy })));
-const TermsOfService = lazy(() => import("./pages/TermsOfService").then((m) => ({ default: m.TermsOfService })));
-const Compare = lazy(() => import("./pages/Compare").then((m) => ({ default: m.Compare })));
-const Plans = lazy(() => import("./pages/Plans").then((m) => ({ default: m.Plans })));
-const Settings = lazy(() => import("./pages/Settings").then((m) => ({ default: m.Settings })));
-const EditProfile = lazy(() => import("./pages/EditProfile").then((m) => ({ default: m.EditProfile })));
-const Notifications = lazy(() => import("./pages/Notifications").then((m) => ({ default: m.Notifications })));
-const Metrics = lazy(() => import("./pages/Metrics").then((m) => ({ default: m.Metrics })));
-const SourceQuality = lazy(() => import("./pages/SourceQuality").then((m) => ({ default: m.SourceQuality })));
-const NotFound = lazy(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
+const Login = lazyPage(() => import("./pages/Login").then((m) => ({ default: m.Login })));
+const Onboarding = lazyPage(() => import("./pages/Onboarding").then((m) => ({ default: m.Onboarding })));
+const OnboardingSelection = lazyPage(() => import("./pages/OnboardingSelection").then((m) => ({ default: m.OnboardingSelection })));
+const Feed = lazyPage(() => import("./pages/Feed").then((m) => ({ default: m.Feed })));
+const FeedDetail = lazyPage(() => import("./pages/FeedDetail").then((m) => ({ default: m.FeedDetail })));
+const Saved = lazyPage(() => import("./pages/Saved").then((m) => ({ default: m.Saved })));
+const Capture = lazyPage(() => import("./pages/Capture").then((m) => ({ default: m.Capture })));
+const WeeklyBrief = lazyPage(() => import("./pages/WeeklyBrief").then((m) => ({ default: m.WeeklyBrief })));
+const SourcePage = lazyPage(() => import("./pages/SourcePage").then((m) => ({ default: m.SourcePage })));
+const TopicHub = lazyPage(() => import("./pages/TopicHub").then((m) => ({ default: m.TopicHub })));
+const LearnBuilder = lazyPage(() => import("./pages/LearnBuilder").then((m) => ({ default: m.LearnBuilder })));
+const Personalise = lazyPage(() => import("./pages/Personalise").then((m) => ({ default: m.Personalise })));
+const LearnPath = lazyPage(() => import("./pages/LearnPath").then((m) => ({ default: m.LearnPath })));
+const GrowthTracker = lazyPage(() => import("./pages/GrowthTracker").then((m) => ({ default: m.GrowthTracker })));
+const ProjectStudio = lazyPage(() => import("./pages/ProjectStudio").then((m) => ({ default: m.ProjectStudio })));
+const LearningMentor = lazyPage(() => import("./pages/LearningMentor").then((m) => ({ default: m.LearningMentor })));
+const AskRadar = lazyPage(() => import("./pages/AskRadar").then((m) => ({ default: m.AskRadar })));
+const Notebook = lazyPage(() => import("./pages/Notebook").then((m) => ({ default: m.Notebook })));
+const NoteEditor = lazyPage(() => import("./pages/NoteEditor").then((m) => ({ default: m.NoteEditor })));
+const Opportunities = lazyPage(() => import("./pages/Opportunities").then((m) => ({ default: m.Opportunities })));
+const Research = lazyPage(() => import("./pages/Research").then((m) => ({ default: m.Research })));
+const AssessDocument = lazyPage(() => import("./pages/AssessDocument").then((m) => ({ default: m.AssessDocument })));
+const Profiles = lazyPage(() => import("./pages/Profiles").then((m) => ({ default: m.Profiles })));
+const ForgotPassword = lazyPage(() => import("./pages/ForgotPassword").then((m) => ({ default: m.ForgotPassword })));
+const PrivacyPolicy = lazyPage(() => import("./pages/PrivacyPolicy").then((m) => ({ default: m.PrivacyPolicy })));
+const TermsOfService = lazyPage(() => import("./pages/TermsOfService").then((m) => ({ default: m.TermsOfService })));
+const Compare = lazyPage(() => import("./pages/Compare").then((m) => ({ default: m.Compare })));
+const Plans = lazyPage(() => import("./pages/Plans").then((m) => ({ default: m.Plans })));
+const Settings = lazyPage(() => import("./pages/Settings").then((m) => ({ default: m.Settings })));
+const EditProfile = lazyPage(() => import("./pages/EditProfile").then((m) => ({ default: m.EditProfile })));
+const Notifications = lazyPage(() => import("./pages/Notifications").then((m) => ({ default: m.Notifications })));
+const Metrics = lazyPage(() => import("./pages/Metrics").then((m) => ({ default: m.Metrics })));
+const SourceQuality = lazyPage(() => import("./pages/SourceQuality").then((m) => ({ default: m.SourceQuality })));
+const NotFound = lazyPage(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
 
 // Admin + entry screens, loaded on demand like everything else.
-const AdminLogin = lazy(() => import("./pages/AdminLogin").then((m) => ({ default: m.AdminLogin })));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard").then((m) => ({ default: m.AdminDashboard })));
-const EntryScreens = lazy(() => import("./pages/EntryScreens").then((m) => ({ default: m.EntryScreens })));
+const AdminLogin = lazyPage(() => import("./pages/AdminLogin").then((m) => ({ default: m.AdminLogin })));
+const AdminDashboard = lazyPage(() => import("./pages/AdminDashboard").then((m) => ({ default: m.AdminDashboard })));
+const EntryScreens = lazyPage(() => import("./pages/EntryScreens").then((m) => ({ default: m.EntryScreens })));
 
 // Marketing pages are their own chunk group: only an unauthenticated visitor to the public site
 // needs them, and never alongside the app screens.
-const Landing = lazy(() => import("./pages/Landing").then((m) => ({ default: m.Landing })));
-const Product = lazy(() => import("./pages/Product").then((m) => ({ default: m.Product })));
-const HowItWorks = lazy(() => import("./pages/HowItWorks").then((m) => ({ default: m.HowItWorks })));
-const Institutions = lazy(() => import("./pages/Institutions").then((m) => ({ default: m.Institutions })));
-const ProjectShowcase = lazy(() => import("./pages/ProjectShowcase").then((m) => ({ default: m.ProjectShowcase })));
+const Landing = lazyPage(() => import("./pages/Landing").then((m) => ({ default: m.Landing })));
+const Product = lazyPage(() => import("./pages/Product").then((m) => ({ default: m.Product })));
+const HowItWorks = lazyPage(() => import("./pages/HowItWorks").then((m) => ({ default: m.HowItWorks })));
+const Institutions = lazyPage(() => import("./pages/Institutions").then((m) => ({ default: m.Institutions })));
+const ProjectShowcase = lazyPage(() => import("./pages/ProjectShowcase").then((m) => ({ default: m.ProjectShowcase })));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, refetchOnWindowFocus: false } },
