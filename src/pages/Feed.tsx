@@ -13,6 +13,7 @@ import type { ContentItem, ContentType, FeedEmptyReason, Page } from "../lib/typ
 import { feedEmptyCopy, type FeedEmptyAction } from "../lib/feed-empty";
 import { Icon } from "../components/Icon";
 import { PersonalisePrompt } from "../components/PersonalisePrompt";
+import { InterestControls } from "../components/InterestControls";
 import type { IconName } from "../components/icon-map";
 import { feedTypeFor } from "../components/feed-types";
 
@@ -196,6 +197,11 @@ export function Feed() {
         <h1 className="r-page-title">
           {notPersonalised ? "Latest" : activeType.type === null ? "Intelligence Feed" : activeLabel}
         </h1>
+
+        {/* Changed from the feed, not from the profile page. Radar Learn puts the same control
+            on the path it changes, and the moment somebody wants different coverage is the
+            moment they are looking at the coverage they have. */}
+        {!notPersonalised && <InterestControls />}
       </div>
 
       {notPersonalised && (
@@ -224,7 +230,7 @@ export function Feed() {
           reason={feedQuery.data?.pages?.[0]?.emptyReason}
           onRefresh={() => feedQuery.refetch()}
           onClearFilter={() => setSearchParams({})}
-          onWidenInterests={() => navigate("/profile/edit")}
+          onWidenInterests={() => navigate("/personalise")}
           onRestoreDismissed={async () => {
             await restoreDismissedFeedItems();
             await feedQuery.refetch();

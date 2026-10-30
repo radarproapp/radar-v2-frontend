@@ -2042,3 +2042,41 @@ button.path-resource {
 .submit__standard:last-child { border-bottom: none; }
 .submit__standard-name { font-size: 13px; font-weight: 700; color: var(--text); }
 .submit__standard-asks { font-size: 12.5px; line-height: 1.55; color: var(--text-muted); }
+
+/* ── Changing what Radar Intelligence follows ─────────────────────────────────────────────
+   On the feed, not on the profile page. The same shape as the control that changes a learning
+   path, because it is the same job: the moment somebody wants different coverage is the moment
+   they are looking at the coverage they have. */
+.interest-controls { margin-top: 10px; }
+
+.interest-controls__panel {
+  margin-top: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+}
+
+.interest-controls__foot {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.interest-controls__note {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.interest-controls__error {
+  padding: 10px 12px;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--r-md);
+  background: rgba(220, 38, 38, 0.07);
+  font-size: 13px;
+}
