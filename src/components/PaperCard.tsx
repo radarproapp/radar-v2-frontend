@@ -287,7 +287,7 @@ export function PaperCard({
           {citation.data && (
             <div className="paper__result">
               <div className="paper__result-head">
-                <span className="paper__result-label">{citation.data.style}</span>
+                <span className="paper__result-label">{STYLE_LABEL[style] ?? style}</span>
                 <button
                   className="btn btn--sm btn--text"
                   onClick={() => copy(citation.data.citation)}
