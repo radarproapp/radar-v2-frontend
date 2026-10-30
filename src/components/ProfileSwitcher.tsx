@@ -47,12 +47,17 @@ export function ProfileSwitcher({ onDone }: { onDone: () => void }) {
 
   const addProfile = useMutation({
     mutationFn: (persona: PersonaType) => createProfile(persona),
-    onSuccess: async (_created, persona) => {
+    onSuccess: async () => {
       await reset();
       onDone();
       // A new profile knows nothing about this person yet, so it asks rather than inheriting the
       // previous one's answers.
-      navigate(`/onboarding/${persona === "YoungProfessional" ? "professional" : persona.toLowerCase()}`);
+      //
+      // The same three questions every other account answers. This used to go to
+      // /onboarding/:persona, which is the old screen: forty-odd subjects as buttons, picked
+      // from a grid. That screen was replaced everywhere a learner normally meets it and left
+      // standing here, so adding a second profile walked back into the thing it replaced.
+      navigate("/personalise");
     },
   });
 

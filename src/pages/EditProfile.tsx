@@ -15,13 +15,6 @@ const PERSONAS: [PersonaType, string][] = [
 const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 
 
-/// Which onboarding flow each persona belongs to.
-const ONBOARDING_ROUTES: Partial<Record<PersonaType, string>> = {
-  Student: "/onboarding/student",
-  Graduate: "/onboarding/graduate",
-  YoungProfessional: "/onboarding/professional",
-};
-
 export function EditProfile() {
   const navigate = useNavigate();
   const { profile, refetchProfile } = useAuth();
@@ -200,16 +193,20 @@ export function EditProfile() {
           <StatedAnswer label="Where you are open to work" value={geography} />
           <StatedAnswer label="Decisions you want help with" value={decisionNeeds} />
 
+          {/* The three questions, which is where these answers come from now. This pointed at
+              the per-persona onboarding screen - the grid of forty-odd subjects picked as
+              buttons - so "update these answers" took somebody back to the screen the typed
+              flow replaced. */}
           <button
             className="btn btn--sm"
             style={{ marginTop: 12 }}
-            onClick={() => navigate(ONBOARDING_ROUTES[persona] ?? "/onboarding")}
+            onClick={() => navigate("/personalise")}
           >
             Update these answers
           </button>
           <p style={{ fontSize: 11.5, color: "var(--text-muted)", margin: "8px 0 0", lineHeight: 1.5 }}>
-            These come from your {PERSONAS.find(([p]) => p === persona)?.[1] ?? "onboarding"} questions, which ask
-            them in the order that makes them easiest to answer.
+            These come from the three questions Radar asks: what you follow, what you want, and
+            what is in the way.
           </p>
         </div>
       </div>
