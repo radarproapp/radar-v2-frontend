@@ -1645,7 +1645,14 @@ a:hover { color: var(--cyan-deep); }
 
 /* ── Mobile safeguards ────────────────────────── */
 @media (max-width: 859px) {
-  html, body, #root { max-width: 100%; overflow-x: hidden; }
+  /* `clip`, not `hidden`. Both stop a stray overflow from scrolling the page sideways, but
+     `overflow-x: hidden` makes the element a scroll container and forces the other axis to `auto`
+     — which turned #root into a scroller the page never actually scrolled, and so broke every
+     `position: sticky` header underneath it: the marketing header, the admin header and the
+     learn-path rail all scrolled away on a phone instead of sticking. `overflow-x: clip` clips
+     without any of that. It is a last-resort guard either way; the overflow it used to hide on the
+     marketing pages is fixed at source further down this file. */
+  html, body, #root { max-width: 100%; overflow-x: clip; }
   .r-page { width: 100%; min-width: 0; }
   .r-tabbar__item { min-width: 0; }
   .r-tabbar__item span { white-space: normal; text-align: center; line-height: 1.15; }
@@ -2007,6 +2014,12 @@ a:hover { color: var(--cyan-deep); }
 .mkt-nav__signin { font-size: 13.5px; font-weight: 700; color: var(--navy); padding: 10px 14px; text-decoration: none; }
 .mkt-nav__start { font-size: 13.5px; }
 
+/* The collapsed header's three parts, off by default: the desktop header has room for the links
+   themselves, so nothing below needs to exist above 860px. Declaring them hidden here rather than
+   only showing them in the mobile block also covers a window dragged from phone width to desktop
+   with the menu still open — the sheet and its backdrop disappear with the toggle that opened them. */
+.mkt-nav__toggle, .mkt-nav__sheet, .mkt-nav__backdrop { display: none; }
+
 /* --- Marketing Footer --- */
 .mkt-footer { background: #0b0e13; padding: 100px clamp(20px,5vw,56px) 40px; }
 .mkt-footer__inner { max-width: 1280px; margin: 0 auto; }
@@ -2071,7 +2084,11 @@ a:hover { color: var(--cyan-deep); }
 .mkt-problem__header { max-width: 640px; margin-bottom: 44px; }
 .mkt-problem__header h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.7rem,3vw,2.4rem); line-height: 1.15; margin-bottom: 14px; }
 .mkt-problem__header p { font-size: 15.5px; color: var(--text-body); line-height: 1.6; }
-.mkt-problem__cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+/* `minmax(260px, 1fr)` is a floor, not a preference: in a container narrower than 260px the single
+   remaining column still claims 260px and pushes the page wider than the screen. `min(260px, 100%)`
+   keeps the same multi-column behaviour wherever 260px fits and lets the track collapse where it
+   does not. Same reasoning for every auto-fit grid on the marketing pages. */
+.mkt-problem__cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 20px; }
 .mkt-card { background: #fff; border: 1px solid rgba(20,24,31,.08); border-radius: 14px; padding: 26px; }
 .mkt-card__icon { font-size: 22px; margin-bottom: 14px; }
 .mkt-card__title { font-family: var(--font-display); font-weight: 700; font-size: 16px; margin-bottom: 8px; }
@@ -2082,7 +2099,7 @@ a:hover { color: var(--cyan-deep); }
 .mkt-products__inner { max-width: 1280px; margin: 0 auto; }
 .mkt-section-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 36px; }
 .mkt-section-row h2, .mkt-page-header h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.7rem,3vw,2.4rem); line-height: 1.15; }
-.mkt-products__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.mkt-products__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 18px; }
 .mkt-product-card {
   background: #fff; border: 1px solid rgba(20,24,31,.08); border-radius: 14px;
   padding: 22px; display: block; text-decoration: none; color: inherit;
@@ -2103,7 +2120,7 @@ a:hover { color: var(--cyan-deep); }
 /* --- Institutions Teaser --- */
 .mkt-institutions-teaser { padding: clamp(56px,8vw,96px) clamp(20px,5vw,56px); background: var(--canvas); }
 .mkt-institutions-teaser__inner { max-width: 1280px; margin: 0 auto; }
-.mkt-inst-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+.mkt-inst-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 18px; }
 .mkt-inst-card { display: block; border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid rgba(20,24,31,.08); text-decoration: none; color: inherit; }
 .mkt-inst-card__img { width: 100%; height: 130px; background-size: cover; background-position: center; }
 .mkt-inst-card__name { padding: 14px 16px; font-family: var(--font-display); font-weight: 700; font-size: 14px; }
@@ -2112,7 +2129,7 @@ a:hover { color: var(--cyan-deep); }
 .mkt-testimonials { padding: clamp(56px,8vw,96px) clamp(20px,5vw,56px); }
 .mkt-testimonials__inner { max-width: 1280px; margin: 0 auto; }
 .mkt-testimonials h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.7rem,3vw,2.4rem); line-height: 1.15; margin-bottom: 20px; }
-.mkt-testimonials__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.mkt-testimonials__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 20px; }
 .mkt-testimonial-card { background: #fff; border: 1px solid rgba(20,24,31,.08); border-radius: 16px; overflow: hidden; }
 .mkt-testimonial-card__img { width: 100%; height: 180px; background-size: cover; background-position: center 25%; }
 .mkt-testimonial-card__body { padding: 20px; }
@@ -2199,7 +2216,7 @@ a:hover { color: var(--cyan-deep); }
 .mkt-timeline__header { max-width: 640px; margin-bottom: 44px; }
 .mkt-timeline__header h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.7rem,3vw,2.4rem); line-height: 1.15; margin-bottom: 14px; }
 .mkt-timeline__header p { font-size: 15.5px; color: var(--text-body); line-height: 1.6; }
-.mkt-timeline__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+.mkt-timeline__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 20px; }
 .mkt-timeline__item { border-left: 3px solid var(--accent); padding-left: 18px; }
 .mkt-timeline__month { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #8993a3; margin-bottom: 6px; }
 .mkt-timeline__title { font-family: var(--font-display); font-weight: 700; font-size: 16px; margin-bottom: 8px; }
@@ -2220,7 +2237,7 @@ a:hover { color: var(--cyan-deep); }
 .mkt-inst-detail__text { flex: 1 1 340px; min-width: 300px; }
 .mkt-inst-detail__text h2 { font-family: var(--font-display); font-weight: 700; font-size: 21px; margin-bottom: 12px; }
 .mkt-inst-detail__text p { font-size: 14.5px; color: var(--text-body); line-height: 1.65; margin-bottom: 22px; }
-.mkt-inst-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.mkt-inst-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr)); gap: 12px; margin-bottom: 20px; }
 .mkt-inst-stat { background: var(--canvas); border: 1px solid rgba(20,24,31,.08); border-radius: 12px; padding: 14px; }
 .mkt-inst-stat__val { font-family: var(--font-display); font-weight: 700; font-size: 19px; color: var(--accent); }
 .mkt-inst-stat__label { font-size: 11.5px; color: #8993a3; }
@@ -2229,6 +2246,75 @@ a:hover { color: var(--cyan-deep); }
 .mkt-inst-integration__inner { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
 .mkt-inst-integration__inner h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.4rem,2.6vw,1.9rem); line-height: 1.2; margin-bottom: 10px; }
 .mkt-inst-integration__inner p { font-size: 14px; color: var(--text-body); line-height: 1.6; }
+
+/* --- Marketing on a phone ---------------------------------------------------
+   860px, because that is already where the signed-in shell swaps its sidebar for the tab bar
+   (.r-side, .r-subnav, .r-tabbar). One idea of "small" across the product, not two. */
+@media (max-width: 859px) {
+  /* The header did not fit. At a 405px viewport the logo took the first row, Product/Institutions/
+     How it works the second and Sign in/Start free the third: a 160px header on a 420px-wide
+     screen, so navigation ate the top third of the first view. The links and "Sign in" move into
+     the disclosure menu and the row keeps the brand plus the one action worth offering on
+     arrival. */
+  .mkt-nav { gap: 10px; padding: 10px clamp(14px, 4vw, 20px); }
+  .mkt-nav__links, .mkt-nav__signin { display: none; }
+
+  /* 28px of logo is something you have to aim at. The mark stays 28px; the hit area grows. */
+  .mkt-nav__brand { min-height: 44px; }
+
+  /* Tighter than the desktop CTA so brand + CTA + toggle still share one row at 320px, the
+     narrowest phone still worth designing for. */
+  .mkt-nav__start { padding: 11px 15px; font-size: 13px; }
+
+  .mkt-nav__toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; min-height: 44px; flex: none; padding: 0;
+    border: 1px solid var(--border); border-radius: var(--r-pill);
+    background: var(--bg-card); color: var(--text); cursor: pointer;
+  }
+  .mkt-nav__toggle:hover { border-color: var(--border-strong); }
+
+  /* Anchored to the header, which is already `position: sticky` and so is the containing block
+     for this. Insets rather than a width, so the sheet tracks the header's own gutter. */
+  .mkt-nav__sheet {
+    display: block; position: absolute;
+    left: clamp(14px, 4vw, 20px); right: clamp(14px, 4vw, 20px); top: calc(100% + 6px);
+    z-index: 60; padding: 6px;
+    border: 1px solid var(--border); border-radius: var(--r-lg);
+    background: var(--bg-card); box-shadow: var(--shadow-lg);
+  }
+  .mkt-nav__sheet-link {
+    display: flex; align-items: center; min-height: 44px;
+    padding: 10px 12px; border-radius: var(--r-md);
+    color: var(--text-dim); font-size: 13.5px; font-weight: 600; text-decoration: none;
+  }
+  .mkt-nav__sheet-link:hover { background: var(--bg-hover); color: var(--text); }
+  .mkt-nav__sheet-divider { height: 1px; background: var(--border); margin: 5px 6px; }
+
+  /* Below the header (z-index 50) and the sheet, so it cannot swallow the tap it exists to
+     catch. Matches how the signed-in shell dismisses its own panels. */
+  .mkt-nav__backdrop { display: block; position: fixed; inset: 0; z-index: 40; }
+
+  /* The real cause of the sideways scroll. These are flex children carrying px floors — 320px on
+     the hero copy, 300px on the photo and on the product/institution halves — and a floor outvotes
+     flex-shrink, so under about 360px of usable width the hero was 340px of content inside a 305px
+     box and the whole document scrolled left to right. Below 860px the halves stack anyway, so the
+     floors have nothing left to protect. */
+  .mkt-hero__content, .mkt-hero__visual,
+  .mkt-product-section__text, .mkt-product-section__visual,
+  .mkt-inst-detail__text, .mkt-inst-detail__visual { min-width: 0; }
+
+  /* The stat card hangs 16px off the photo's left edge, which is a deliberate overlap when the
+     page gutter is 56px and 2px from the screen edge when it is 14px. */
+  .mkt-hero__stat-card { left: 0; }
+
+  /* Tap targets. These read as links but measured 21-22px high, which is half a fingertip. The
+     institution tabs measured 42.9px, which is near enough to look right and still short. */
+  .mkt-link-arrow { display: inline-flex; align-items: center; min-height: 44px; }
+  .mkt-footer__col { gap: 0; }
+  .mkt-footer__col a { display: inline-flex; align-items: center; min-height: 44px; }
+  .mkt-inst-tab { min-height: 44px; }
+}
 
 /* ================================================================
    ADMIN DASHBOARD
