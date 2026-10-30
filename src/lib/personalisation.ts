@@ -1,4 +1,5 @@
 import { ALL_INTERESTS } from "./interests";
+import type { PersonaType } from "./types";
 
 /// Suggestions for the three personalisation boxes.
 ///
@@ -115,3 +116,15 @@ export function canAddCustom(query: string, chosen: string[], suggestions: strin
     !suggestions.some((s) => s.toLowerCase() === lower)
   );
 }
+
+/// The three categories the spec names, and the stored value each one is.
+///
+/// "Professional" is YoungProfessional in storage: the enum is persisted by value and carries
+/// two more cases that predate the three-category guide, so renaming it would relabel every
+/// profile already saved. The label is what the spec calls it; the value is what it has always
+/// been.
+export const CATEGORIES: { value: PersonaType; label: string; description: string }[] = [
+  { value: "Student", label: "Student", description: "Studying now" },
+  { value: "Graduate", label: "Graduate", description: "Finished, looking" },
+  { value: "YoungProfessional", label: "Professional", description: "Working" },
+];

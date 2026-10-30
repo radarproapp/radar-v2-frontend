@@ -56,10 +56,33 @@ describe("Personalise", () => {
   /// Opportunities are asked for and never required — somebody who wants nothing applied for
   /// should still get a feed — so the button unlocks without them.
   it("does not require an opportunity preference", () => {
+    withProfile({
+      interests: ["Nursing"],
+      goals: ["Find a job"],
+      persona: "Student",
+      hasChosenCategory: true,
+    });
+    renderPage(<Personalise />);
+
+    const submit = screen.getByRole("button", { name: /personalise my radar/i });
+    expect((submit as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  /// <summary>The category is asked for, not assumed.</summary>
+  ///
+  /// PersonaType's default is a real value, so a profile that has never been asked still reads
+  /// as "Student" - and the picker arrived with Student already selected and the button already
+  /// enabled. Somebody could personalise their whole Radar without ever answering the question,
+  /// and the feed would then rank on the answer and name it back to them as theirs.
+  it("will not personalise until a category has actually been chosen", () => {
     withProfile({ interests: ["Nursing"], goals: ["Find a job"], persona: "Student" });
     renderPage(<Personalise />);
 
     const submit = screen.getByRole("button", { name: /personalise my radar/i });
+    expect((submit as HTMLButtonElement).disabled).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: /student/i }));
+
     expect((submit as HTMLButtonElement).disabled).toBe(false);
   });
 

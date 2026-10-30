@@ -9,6 +9,7 @@ import {
   GOAL_SUGGESTIONS,
   INTEREST_SUGGESTIONS,
   CHALLENGE_SUGGESTIONS,
+  CATEGORIES,
 } from "../lib/personalisation";
 import type { PersonaType } from "../lib/types";
 
@@ -22,11 +23,6 @@ import type { PersonaType } from "../lib/types";
 /// is nothing to rank by. Opportunities are asked for and never required: someone who wants
 /// nothing applied for should still get a feed.
 
-const CATEGORIES: { value: PersonaType; label: string; description: string }[] = [
-  { value: "Student", label: "Student", description: "Studying now" },
-  { value: "Graduate", label: "Graduate", description: "Finished, looking" },
-  { value: "YoungProfessional", label: "Professional", description: "Working" },
-];
 
 export function Personalise() {
   const navigate = useNavigate();
@@ -36,7 +32,9 @@ export function Personalise() {
   const [interests, setInterests] = useState<string[]>(() => profile?.interests ?? []);
   const [goals, setGoals] = useState<string[]>(() => profile?.goals ?? []);
   const [challenges, setChallenges] = useState<string[]>(() => profile?.problems ?? []);
-  const [persona, setPersona] = useState<PersonaType | null>(() => profile?.persona ?? null);
+  const [persona, setPersona] = useState<PersonaType | null>(
+    () => (profile?.hasChosenCategory ? profile.persona : null),
+  );
   const [error, setError] = useState<string | null>(null);
 
   const save = useMutation({

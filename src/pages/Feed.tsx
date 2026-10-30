@@ -185,6 +185,10 @@ export function Feed() {
   // The third strand of Radar Intelligence, carried on the first page only - they are a standing
   // set rather than a stream, so repeating them under every scroll would be the same handful of
   // things over and over.
+  // Lifted out of InterestControls so the empty state can open it. The panel is on this page
+  // already; sending somebody away to change the same three answers was the long way round.
+  const [editing, setEditing] = useState(false);
+
   const firstPage = feedQuery.data?.pages?.[0];
   const opportunities = firstPage?.opportunities ?? [];
 
@@ -201,7 +205,7 @@ export function Feed() {
         {/* Changed from the feed, not from the profile page. Radar Learn puts the same control
             on the path it changes, and the moment somebody wants different coverage is the
             moment they are looking at the coverage they have. */}
-        {!notPersonalised && <InterestControls />}
+        {!notPersonalised && <InterestControls open={editing} onOpenChange={setEditing} />}
       </div>
 
       {notPersonalised && (
@@ -230,7 +234,7 @@ export function Feed() {
           reason={feedQuery.data?.pages?.[0]?.emptyReason}
           onRefresh={() => feedQuery.refetch()}
           onClearFilter={() => setSearchParams({})}
-          onWidenInterests={() => navigate("/personalise")}
+          onWidenInterests={() => setEditing(true)}
           onRestoreDismissed={async () => {
             await restoreDismissedFeedItems();
             await feedQuery.refetch();

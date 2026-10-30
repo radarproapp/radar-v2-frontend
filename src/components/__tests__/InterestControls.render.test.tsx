@@ -21,6 +21,7 @@ function signedIn(overrides: Partial<UserProfile> = {}) {
     profile: {
       id: "u1",
       persona: "Student",
+      hasChosenCategory: true,
       interests: ["Mathematics"],
       goals: ["Win a scholarship"],
       problems: [],
@@ -118,6 +119,39 @@ describe("InterestControls", () => {
     for (const key of ["feed", "home", "opportunities", "opportunity", "weekly-brief"]) {
       expect(keys).toContain(key);
     }
+  });
+
+  /// <summary>Someone who was never asked their category is asked here.</summary>
+  ///
+  /// PersonaType's default is a real value, so every account began as a Student without anybody
+  /// asking. This is the panel they are most likely to be looking at when it matters, so it is
+  /// where the question belongs - and it is asked once, not on every edit.
+  it("asks for a category only when there is no record of one", () => {
+    signedIn({ hasChosenCategory: false } as never);
+
+    renderPage(<InterestControls />);
+    open();
+
+    expect(screen.getByText(/which describes you/i)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Save" }).hasAttribute("disabled")).toBe(true);
+  });
+
+  it("does not ask again once it has been answered", () => {
+    signedIn();
+
+    renderPage(<InterestControls />);
+    open();
+
+    expect(screen.queryByText(/which describes you/i)).toBeNull();
+  });
+
+  /// Opened from the page around it, for the empty feed's own button.
+  it("can be opened from outside", () => {
+    signedIn();
+
+    renderPage(<InterestControls open onOpenChange={() => {}} />);
+
+    expect(screen.getByText(/what are you interested in/i)).toBeTruthy();
   });
 
   /// The server refuses an empty interest or goal list, and a button that submits anyway

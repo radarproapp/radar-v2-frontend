@@ -5,10 +5,19 @@ import { TagInput } from "./TagInput";
 import { useAuth } from "../auth/AuthContext";
 import { ApiError, personalise } from "../lib/api";
 import {
+  CATEGORIES,
   CHALLENGE_SUGGESTIONS,
   GOAL_SUGGESTIONS,
   INTEREST_SUGGESTIONS,
 } from "../lib/personalisation";
+import type { PersonaType } from "../lib/types";
+
+interface InterestControlsProps {
+  /// Opened from outside, for the empty feed's own "edit what you follow" button. Left alone,
+  /// the panel owns its own state.
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
 
 /// Changing what Radar Intelligence follows, from the screen it follows it on.
 ///
@@ -21,18 +30,38 @@ import {
 /// The same three questions as everywhere else, so there is one answer to "where do I change my
 /// interests" rather than two screens that both half do it.
 
-export function InterestControls() {
+export function InterestControls({ open: openedFromOutside, onOpenChange }: InterestControlsProps = {}) {
   const { profile, refetchProfile } = useAuth();
   const queryClient = useQueryClient();
 
-  const [open, setOpen] = useState(false);
+  const [openedHere, setOpenedHere] = useState(false);
+  const open = openedFromOutside ?? openedHere;
+  const setOpen = (next: boolean) => {
+    setOpenedHere(next);
+    onOpenChange?.(next);
+  };
+
   const [interests, setInterests] = useState<string[]>(() => profile?.interests ?? []);
   const [goals, setGoals] = useState<string[]>(() => profile?.goals ?? []);
   const [challenges, setChallenges] = useState<string[]>(() => profile?.problems ?? []);
+  const [persona, setPersona] = useState<PersonaType | null>(
+    () => (profile?.hasChosenCategory ? profile.persona : null),
+  );
   const [error, setError] = useState<string | null>(null);
 
+  // The category is asked for only while Radar has no record of one being chosen. Somebody who
+  // has already answered is not asked again every time they widen their interests - they change
+  // it from their profile, which is where changing who you are belongs.
+  const askForCategory = profile?.hasChosenCategory !== true;
+
   const save = useMutation({
-    mutationFn: () => personalise({ interests, goals, challenges }),
+    mutationFn: () =>
+      personalise({
+        interests,
+        goals,
+        challenges,
+        persona: askForCategory ? (persona ?? undefined) : undefined,
+      }),
     onMutate: () => setError(null),
     onSuccess: async () => {
       await refetchProfile();
@@ -57,13 +86,14 @@ export function InterestControls() {
       setInterests(profile?.interests ?? []);
       setGoals(profile?.goals ?? []);
       setChallenges(profile?.problems ?? []);
+      setPersona(profile?.hasChosenCategory ? profile.persona : null);
       setError(null);
     }
 
-    setOpen((v) => !v);
+    setOpen(!open);
   };
 
-  const ready = interests.length > 0 && goals.length > 0;
+  const ready = interests.length > 0 && goals.length > 0 && (!askForCategory || persona !== null);
 
   return (
     <div className="interest-controls">
@@ -103,6 +133,33 @@ export function InterestControls() {
             disabled={save.isPending}
           />
 
+          {/* Asked once, and only while Radar has no record of an answer. Persona is an enum
+              whose default is a real value, so every account began as a Student without being
+              asked - and the feed then named that stage back as the reason for its ranking. */}
+          {askForCategory && (
+            <div className="tagbox">
+              <span className="tagbox__label">Which describes you?</span>
+              <p className="tagbox__hint">
+                It changes what Radar prioritises first, not what it will show you.
+              </p>
+
+              <div className="personalise__categories">
+                {CATEGORIES.map((category) => (
+                  <button
+                    key={category.value}
+                    className={`personalise__category ${persona === category.value ? "active" : ""}`}
+                    onClick={() => setPersona(category.value)}
+                    aria-pressed={persona === category.value}
+                    disabled={save.isPending}
+                  >
+                    <span className="personalise__category-label">{category.label}</span>
+                    <span className="personalise__category-desc">{category.description}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="interest-controls__foot">
             <button
               className="btn btn--primary btn--sm"
@@ -119,7 +176,9 @@ export function InterestControls() {
             {/* Said rather than left to be discovered by pressing a disabled button. */}
             {!ready && (
               <span className="interest-controls__note">
-                Radar needs at least one interest and one goal to know what to show you.
+                {askForCategory
+                  ? "Radar needs an interest, a goal, and which of the three describes you."
+                  : "Radar needs at least one interest and one goal to know what to show you."}
               </span>
             )}
           </div>

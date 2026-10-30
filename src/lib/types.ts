@@ -218,6 +218,10 @@ export interface UserProfile {
   goals: string[];
   /// Derived server-side: at least one interest and one goal. The feed stays empty until true.
   isPersonalised: boolean;
+  /// Whether the category was actually chosen, as opposed to being the enum's default. Signing
+  /// up writes a profile without touching persona, so "Student" is what everybody starts as and
+  /// nobody was asked. Radar asks rather than deciding and calling it their answer.
+  hasChosenCategory: boolean;
   region: string;
   city: string;
   problems: string[];
