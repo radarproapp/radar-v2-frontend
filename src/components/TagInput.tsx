@@ -16,9 +16,12 @@ interface TagInputProps {
   pool: string[];
   value: string[];
   onChange: (next: string[]) => void;
+  /// Held still while the answer is being saved, so nothing typed into a box mid-request is
+  /// thrown away when the panel that contains it closes.
+  disabled?: boolean;
 }
 
-export function TagInput({ label, hint, placeholder, pool, value, onChange }: TagInputProps) {
+export function TagInput({ label, hint, placeholder, pool, value, onChange, disabled = false }: TagInputProps) {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const listId = useId();
@@ -47,7 +50,7 @@ export function TagInput({ label, hint, placeholder, pool, value, onChange }: Ta
       {value.length > 0 && (
         <div className="tagbox__chosen">
           {value.map((entry) => (
-            <button key={entry} className="tagbox__chip" onClick={() => remove(entry)}>
+            <button key={entry} className="tagbox__chip" onClick={() => remove(entry)} disabled={disabled}>
               {entry}
               <Icon name="close" size={12} />
             </button>
@@ -67,6 +70,7 @@ export function TagInput({ label, hint, placeholder, pool, value, onChange }: Ta
           // Delayed, or the blur fires before a click on a suggestion registers and the list
           // disappears from under the cursor.
           onBlur={() => window.setTimeout(() => setFocused(false), 120)}
+          disabled={disabled}
           onKeyDown={(e) => {
             if (e.key !== "Enter") return;
             e.preventDefault();

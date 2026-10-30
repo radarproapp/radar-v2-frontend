@@ -92,6 +92,34 @@ describe("InterestControls", () => {
     );
   });
 
+  /// Everything the answers feed, not just the screen it was opened from.
+  ///
+  /// The weekly brief is the same brief over seven days, and an opportunity open in the drawer
+  /// keeps its own "why this fits you" - the stale one hardest to notice.
+  it("refreshes everything built from the answers", async () => {
+    signedIn();
+    vi.spyOn(api, "personalise").mockResolvedValue({
+      isPersonalised: true,
+      interests: ["Mathematics"],
+      goals: ["Win a scholarship"],
+      challenges: [],
+      persona: "Student",
+    });
+
+    const { client } = renderPage(<InterestControls />);
+    const invalidated = vi.spyOn(client, "invalidateQueries");
+
+    open();
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => expect(invalidated).toHaveBeenCalled());
+
+    const keys = invalidated.mock.calls.map((call) => String(call[0]?.queryKey));
+    for (const key of ["feed", "home", "opportunities", "opportunity", "weekly-brief"]) {
+      expect(keys).toContain(key);
+    }
+  });
+
   /// The server refuses an empty interest or goal list, and a button that submits anyway
   /// teaches people to press it and be told no.
   it("will not save an answer the server would refuse", () => {

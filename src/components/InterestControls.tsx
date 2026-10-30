@@ -38,10 +38,12 @@ export function InterestControls() {
       await refetchProfile();
 
       // Everything built from what they follow. The feed is the obvious one; the brief names
-      // today's focus from the same answers, and opportunities are matched against them.
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
-      queryClient.invalidateQueries({ queryKey: ["home"] });
-      queryClient.invalidateQueries({ queryKey: ["opportunities"] });
+      // today's focus from the same answers, the weekly brief is the same brief over seven days,
+      // and opportunities - the list and any one of them open in the drawer - are matched
+      // against them. A stale "why this fits you" is the one that is hardest to spot.
+      for (const key of [["feed"], ["home"], ["opportunities"], ["opportunity"], ["weekly-brief"]]) {
+        queryClient.invalidateQueries({ queryKey: key });
+      }
 
       setOpen(false);
     },
@@ -78,6 +80,7 @@ export function InterestControls() {
             pool={INTEREST_SUGGESTIONS}
             value={interests}
             onChange={setInterests}
+            disabled={save.isPending}
           />
 
           <TagInput
@@ -87,6 +90,7 @@ export function InterestControls() {
             pool={GOAL_SUGGESTIONS}
             value={goals}
             onChange={setGoals}
+            disabled={save.isPending}
           />
 
           <TagInput
@@ -96,6 +100,7 @@ export function InterestControls() {
             pool={CHALLENGE_SUGGESTIONS}
             value={challenges}
             onChange={setChallenges}
+            disabled={save.isPending}
           />
 
           <div className="interest-controls__foot">

@@ -1,7 +1,7 @@
 import type { ReactElement, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
-import { render, type RenderResult } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { vi } from "vitest";
 
 /// Renders a page the way the app does, minus the network.
@@ -14,7 +14,13 @@ import { vi } from "vitest";
 /// three times with backoff, so an error-state test either waits seconds or asserts against a
 /// loading state and passes for the wrong reason.
 
-export function renderPage(ui: ReactElement, { route = "/" }: { route?: string } = {}): RenderResult {
+/// The render, plus the query client it was given - so a test can assert on what a mutation
+/// invalidated. A component that saves correctly and refreshes the wrong cache looks right in
+/// every assertion about the DOM.
+export function renderPage(
+  ui: ReactElement,
+  { route = "/" }: { route?: string } = {},
+) {
   const client = new QueryClient({
     defaultOptions: {
       queries: { retry: false, gcTime: 0, staleTime: 0 },
@@ -30,7 +36,7 @@ export function renderPage(ui: ReactElement, { route = "/" }: { route?: string }
     );
   }
 
-  return render(ui, { wrapper: Wrapper });
+  return { ...render(ui, { wrapper: Wrapper }), client };
 }
 
 /// A profile with nothing answered, which is the state most pages have to survive.

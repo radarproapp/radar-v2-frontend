@@ -4,6 +4,7 @@ import { getHome } from "../lib/api";
 import { humanize } from "../lib/date";
 import { layerBg, layerColor, layerLabel } from "../lib/layers";
 import { LoadingSkeleton } from "./LoadingSkeleton";
+import { InterestControls } from "./InterestControls";
 
 /// The signed-in home screen, shared by every persona.
 ///
@@ -63,6 +64,11 @@ export function HomeBriefView({ firstName }: { firstName: string }) {
         <div className="nav-date">{dateLabel}</div>
         <h1 className="nav-good-morning">Good day, {firstName}</h1>
         {brief.context && <div className="nav-tagline">{brief.context}</div>}
+
+        {/* Radar Intelligence is a workspace of seven screens and this is its home, so this is
+            where somebody looks to change what it follows - the same place Radar Learn puts the
+            control that changes a path. It is on the feed too; this is the screen they land on. */}
+        <InterestControls />
       </div>
 
       {/* 1. The three things that matter today — the central ask: "what are the top three things

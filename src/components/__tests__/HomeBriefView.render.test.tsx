@@ -1,8 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import { HomeBriefView } from "../HomeBriefView";
 import { renderPage } from "../../test/harness";
 import * as api from "../../lib/api";
+import * as auth from "../../auth/AuthContext";
 import type { HomeBrief } from "../../lib/types";
 import productionBrief from "./home-brief.production.json";
 
@@ -35,6 +36,19 @@ function full(): HomeBrief {
 }
 
 describe("HomeBriefView", () => {
+  // The greeting now carries the control that changes what Radar follows, and that reads the
+  // profile. In the app it is always inside AuthProvider; here it has to be given one.
+  beforeEach(() => {
+    vi.spyOn(auth, "useAuth").mockReturnValue({
+      isAuthenticated: true,
+      isLoading: false,
+      profile: { id: "u1", persona: "Student", interests: ["Mathematics"], goals: ["Find a job"], problems: [] } as never,
+      signIn: () => {},
+      signOut: () => {},
+      refetchProfile: async () => {},
+    });
+  });
+
   it("renders a brief that has everything", async () => {
     vi.spyOn(api, "getHome").mockResolvedValue(full());
 
