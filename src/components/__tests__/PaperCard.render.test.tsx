@@ -75,18 +75,39 @@ describe("PaperCard", () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  /// Every section the spec names is on screen, under a heading somebody would say out loud.
-  it("shows the sections the spec names", async () => {
+  /// <summary>The six sections the summary is specified as, in the order they are specified.</summary>
+  ///
+  /// Named as the spec names them. The headings were Radar's own wording - "The problem", "How
+  /// they did it" - which reads well and is not what a reader was told to expect. And "What
+  /// they argue" sat between the methodology and the findings, breaking the run of six a reader
+  /// is following; it is supplementary, so it comes after the conclusion now.
+  it("shows the six sections, in order", async () => {
     vi.spyOn(api, "getPaper").mockResolvedValue(paper({ paperBreakdown: breakdown() }));
 
     renderPage(<PaperCard paper={paper()} />);
     fireEvent.click(screen.getByRole("button", { name: /demand-led irrigation/i }));
 
-    expect(await screen.findByText("Introduction")).toBeTruthy();
-    expect(screen.getByText("The problem")).toBeTruthy();
-    expect(screen.getByText("How they did it")).toBeTruthy();
-    expect(screen.getByText("What they found")).toBeTruthy();
-    expect(screen.getByText("What they conclude")).toBeTruthy();
+    const specified = [
+      "Introduction",
+      "Problem statement",
+      "Objective of the research",
+      "Methodology",
+      "Analysis and findings",
+      "Conclusion",
+    ];
+
+    for (const heading of specified) {
+      expect(await screen.findByText(heading)).toBeTruthy();
+    }
+
+    // In that order, and with nothing of Radar's own wedged between them.
+    const onScreen = screen
+      .getAllByRole("heading", { level: 4 })
+      .map((node) => node.textContent ?? "");
+    const positions = specified.map((heading) => onScreen.indexOf(heading));
+
+    expect(positions).toEqual([...positions].sort((a, b) => a - b));
+    expect(positions[5] - positions[0]).toBe(5);
   });
 
   /// What the authors say their own work cannot do, kept rather than dropped.

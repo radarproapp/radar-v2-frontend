@@ -20,7 +20,22 @@ import type { CitationStyle, ContentItem } from "../lib/types";
 /// opens. It had nowhere else to be fetched from either, so the section existed in the component,
 /// in the model and in the endpoint, and never once reached a reader.
 
-const STYLES: CitationStyle[] = ["APA", "MLA", "Chicago", "Harvard", "IEEE"];
+/// Harvard and APA first, because those are the two Radar sets out to get exactly right.
+///
+/// APA is the seventh edition - every author named in the reference entry rather than "et al."
+/// from the third, the DOI as a link, and no "Retrieved from". Harvard follows Cite Them Right.
+/// The rest are offered as they were and are not held to the same standard.
+const STYLES: CitationStyle[] = ["APA", "Harvard", "MLA", "Chicago", "IEEE"];
+
+/// What to call each one on screen. "APA" alone is ambiguous between editions, and the
+/// difference is visible in the output.
+const STYLE_LABEL: Record<CitationStyle, string> = {
+  APA: "APA (7th)",
+  Harvard: "Harvard",
+  MLA: "MLA",
+  Chicago: "Chicago",
+  IEEE: "IEEE",
+};
 
 /// Where this record came from, which decides what can be asked about it.
 ///
@@ -178,13 +193,18 @@ export function PaperCard({
 
               {(
                 [
+                  // The six sections the summary is specified as, in order and uninterrupted.
+                  // "What they argue" used to sit between the methodology and the findings,
+                  // which broke the run a reader is following; it is supplementary, so it is
+                  // after the conclusion with the other two.
                   ["Introduction", summary.introduction],
-                  ["The problem", summary.problem],
-                  ["What they wanted to find out", summary.aimAndObjectives],
-                  ["How they did it", summary.methodology],
+                  ["Problem statement", summary.problem],
+                  ["Objective of the research", summary.aimAndObjectives],
+                  ["Methodology", summary.methodology],
+                  ["Analysis and findings", summary.findings],
+                  ["Conclusion", summary.conclusion],
+
                   ["What they argue", summary.keyArguments],
-                  ["What they found", summary.findings],
-                  ["What they conclude", summary.conclusion],
                   ["What this adds", summary.contribution],
                   ["Why it matters to you", summary.whyItMatters],
                   // The authors' own account of what their work cannot do — the most useful
@@ -197,7 +217,7 @@ export function PaperCard({
                 .filter(([, value]) => value && value.trim())
                 .map(([label, value]) => (
                   <div key={label} className="paper__section">
-                    <div className="paper__section-label">{label}</div>
+                    <h4 className="paper__section-label">{label}</h4>
                     <p className="paper__section-text">{value}</p>
                   </div>
                 ))}
@@ -232,7 +252,7 @@ export function PaperCard({
               >
                 {STYLES.map((option) => (
                   <option key={option} value={option}>
-                    {option}
+                    {STYLE_LABEL[option]}
                   </option>
                 ))}
               </select>
