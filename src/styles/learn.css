@@ -2028,3 +2028,17 @@ button.path-resource {
 
 .submit__history { margin-top: 12px; font-size: 12.5px; color: var(--text-muted); }
 .submit__attempt { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); }
+
+/* The standards, shown while a mark is not available. The more useful half of an assessment,
+   and the half that does not need a model to produce. */
+.submit__standard {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.submit__standard:last-child { border-bottom: none; }
+.submit__standard-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.submit__standard-asks { font-size: 12.5px; line-height: 1.55; color: var(--text-muted); }

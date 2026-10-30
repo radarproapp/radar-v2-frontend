@@ -106,9 +106,33 @@ export function ProjectSubmissionPanel({ project }: { project: StudioProject }) 
         <div className="submit__mark">
           {assessment.score === null ? (
             // Not a mark of zero. Nothing was assessed, and saying so is the honest answer.
-            <div className="submit__notassessed">
-              {assessment.notAssessedReason ?? "This has not been assessed yet."}
-            </div>
+            //
+            // The standards still come back, so they are still shown: somebody waiting to be
+            // marked can see what the work will be measured against, which is the more useful
+            // half of an assessment and the half that does not need a model to produce.
+            <>
+              <div className="submit__notassessed">
+                {assessment.notAssessedReason ?? "This has not been assessed yet."}
+              </div>
+
+              {assessment.criteria.length > 0 && (
+                <>
+                  <div className="submit__label" style={{ marginTop: 14 }}>
+                    What it will be judged against
+                  </div>
+                  <div className="submit__criteria">
+                    {assessment.criteria.map((criterion) => (
+                      <div key={criterion.name} className="submit__standard">
+                        <span className="submit__standard-name">{criterion.name}</span>
+                        {criterion.asks && (
+                          <span className="submit__standard-asks">{criterion.asks}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
           ) : (
             <>
               <div className="submit__score-row">

@@ -158,4 +158,27 @@ describe("what Radar made of it", () => {
     expect(screen.getByText(/could not assess this just now/i)).toBeTruthy();
     expect(screen.queryByText("0 / 10")).toBeNull();
   });
+
+  /// And still shows what the work will be measured against.
+  ///
+  /// The standards come back whether or not a mark could be given - they are authored per stage,
+  /// not produced by a model - so a learner waiting to be marked can still see what is being
+  /// asked of them. That is the more useful half of an assessment.
+  it("shows the standards even when no mark could be given", () => {
+    renderPage(
+      <ProjectSubmissionPanel
+        project={assessed(null, {
+          notAssessedReason: "Radar could not assess this just now.",
+          criteria: [
+            { name: "It is finished", asks: "Does it do the thing end to end?", verdict: "Unjudged", evidence: "" },
+            { name: "You can show it", asks: "Could somebody else run it?", verdict: "Unjudged", evidence: "" },
+          ],
+        })}
+      />,
+    );
+
+    expect(screen.getByText(/what it will be judged against/i)).toBeTruthy();
+    expect(screen.getByText("It is finished")).toBeTruthy();
+    expect(screen.getByText("Could somebody else run it?")).toBeTruthy();
+  });
 });

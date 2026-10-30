@@ -59,7 +59,18 @@ export function ProjectStudio() {
     setTipsLoadingId(project.id);
     try {
       const response = await sendAskRadarChat(
-        `Give me specific, practical tips on how to best demonstrate and showcase this project to recruiters or a portfolio audience: "${project.title}" — ${project.description}`,
+        // How to do the work, which is what this was asked for.
+        //
+        // It asked how to "demonstrate and showcase this project to recruiters or a portfolio
+        // audience" - advice about presenting a thing that has not been built yet, offered to
+        // somebody sitting in front of an empty project. The standards it will be judged against
+        // are named, so the guidance can point at them rather than at a job interview.
+        `I am working on a project called "${project.title}". The goal: ${project.description}
+
+` +
+          "Tell me how to actually do it. Where to start, what order to work in, what the hard " +
+          "parts usually are, and how I will know each part is done. Be specific to this project " +
+          "rather than general advice, and keep it to things I can act on today.",
         [],
       );
       setTipsByProject((prev) => ({ ...prev, [project.id]: response.content }));
@@ -199,7 +210,7 @@ export function ProjectStudio() {
                       </button>
                     )}
                     <button className="btn btn--sm" onClick={() => askForTips(project)} disabled={tipsLoadingId === project.id}>
-                      {tipsLoadingId === project.id ? "Asking Radar…" : "Ask Radar for tips"}
+                      {tipsLoadingId === project.id ? "Asking Radar…" : "Ask Radar how to do it"}
                     </button>
                     <button className="btn btn--sm" onClick={() => toggleVisibility(project)}>
                       {project.isPublic ? "Public — make private" : "Make public"}
@@ -290,7 +301,7 @@ export function ProjectStudio() {
                   {tipsByProject[project.id] && (
                     <div style={{ marginTop: 12, background: "var(--cyan-light)", borderRadius: 12, padding: "13px 15px" }}>
                       <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--cyan-deep)", marginBottom: 6 }}>
-                        HOW TO SHOWCASE THIS
+                        HOW TO WORK ON THIS
                       </div>
                       <div style={{ fontSize: 13, color: "#0d3d40", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{tipsByProject[project.id]}</div>
                     </div>
