@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Icon } from "../components/Icon";
 import { PathControls } from "../components/PathControls";
+import { PathHistory } from "../components/PathHistory";
 import { LessonMaterial } from "../components/LessonMaterial";
 import { PathResources } from "../components/PathResources";
 import { GuidanceCards } from "../components/GuidanceCards";
@@ -24,6 +25,36 @@ import type { GrowthRoadmap, RoadmapLesson, RoadmapModule } from "../lib/types";
 interface Selection {
   moduleId: string;
   lessonId: string;
+}
+
+type Tab = "path" | "history";
+
+/// The path you are on, and the paths you have built.
+///
+/// Rendered in every state this screen can be in, including the two that used to be dead ends: an
+/// empty path, and an active path that failed to load. Those are the states somebody most needs
+/// the path they were working on last month from, and they were the states with no route to it —
+/// the error branch returned an error and nothing else.
+function PathTabs({ tab, onTab }: { tab: Tab; onTab: (next: Tab) => void }) {
+  return (
+    <div className="path-tabs">
+      <button
+        className={`path-tabs__tab ${tab === "path" ? "active" : ""}`}
+        aria-pressed={tab === "path"}
+        onClick={() => onTab("path")}
+      >
+        <Icon name="course" size={13} /> Your path
+      </button>
+
+      <button
+        className={`path-tabs__tab ${tab === "history" ? "active" : ""}`}
+        aria-pressed={tab === "history"}
+        onClick={() => onTab("history")}
+      >
+        <Icon name="time" size={13} /> Path history
+      </button>
+    </div>
+  );
 }
 
 /// Module titles arrive carrying their own stage ("Beginner: Foundations of X"), which reads as
@@ -58,6 +89,10 @@ export function LearnPath() {
   /// matched it, and the page rendered its "Radar could not write lessons for this section"
   /// branch over a path whose lessons were right there.
   const [chosenFrom, setChosenFrom] = useState<string | null>(null);
+
+  /// Which of the two tabs is showing. Not in the URL: a learner who reloads wants the lesson
+  /// they were reading, and the history is a place you pass through on the way to one.
+  const [tab, setTab] = useState<Tab>("path");
 
   const [opened, setOpened] = useState<Set<string> | null>(null);
   const [saving, setSaving] = useState<Record<string, boolean>>({});
@@ -240,9 +275,25 @@ ${finished} completed ${finished === 1 ? "lesson" : "lessons"} in it will be los
 
   const notFound = roadmapQuery.error instanceof ApiError && roadmapQuery.error.status === 404;
 
+  /// Ahead of the loading and error branches on purpose.
+  ///
+  /// This tab asks for its own list and needs nothing from the active path but its id, which it
+  /// is written to do without. Behind those branches, the history would have been covered by a
+  /// skeleton while the open lesson loaded, and unreachable altogether when the active path
+  /// failed — which is the one time a learner has to be able to get to another path.
+  if (tab === "history") {
+    return (
+      <div className="r-page" style={{ maxWidth: 1180 }}>
+        <PathTabs tab={tab} onTab={setTab} />
+        <PathHistory currentId={roadmap?.id} onResumed={() => setTab("path")} />
+      </div>
+    );
+  }
+
   if (roadmapQuery.isLoading) {
     return (
       <div className="r-page" style={{ maxWidth: 1180 }}>
+        <PathTabs tab={tab} onTab={setTab} />
         <LoadingSkeleton variant="card" count={3} />
       </div>
     );
@@ -251,6 +302,7 @@ ${finished} completed ${finished === 1 ? "lesson" : "lessons"} in it will be los
   if (roadmapQuery.isError && !notFound) {
     return (
       <div className="r-page" style={{ maxWidth: 1180 }}>
+        <PathTabs tab={tab} onTab={setTab} />
         <ErrorState
           title="Could not load your path"
           description={roadmapQuery.error instanceof ApiError ? roadmapQuery.error.message : "Please try again."}
@@ -268,65 +320,71 @@ ${finished} completed ${finished === 1 ? "lesson" : "lessons"} in it will be los
   // is the only honest one, because at this point Radar genuinely does not know.
   if (!roadmap || modules.length === 0) {
     return (
-      <div className="r-page path-blank">
-        <div className="path-blank__icon">
-          <Icon name="explore" size={26} />
-        </div>
-        <h1 className="path-blank__title">Your path is empty</h1>
-        <p className="path-blank__text">
-          Tell Radar what you want to learn and it builds the first section. Three questions, then
-          you are reading.
-        </p>
-        <button className="btn btn--primary" onClick={() => navigate("/learn/build")}>
-          Build your path
-        </button>
-        <input
-          ref={docInputRef}
-          type="file"
-          accept=".pdf,.docx,.doc,.txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.rtf,.xml,.log"
-          style={{ display: "none" }}
-          onChange={(e) => {
-            const picked = e.target.files?.[0];
-            if (picked) fromDocument.mutate(picked);
-            e.target.value = "";
-          }}
-        />
+      <div className="r-page">
+        {/* The tabs sit outside the centred column, where they do on the other three states.
+            An empty path is the state somebody lands on after removing their last section, so
+            the route to the paths they built before has to be on it. */}
+        <PathTabs tab={tab} onTab={setTab} />
 
-        <button
-          className="path-blank__alt"
-          onClick={() => docInputRef.current?.click()}
-          disabled={fromDocument.isPending}
-        >
-          {fromDocument.isPending
-            ? "Reading your document… a long one can take a minute"
-            : "Or start from a document you already have"}
-        </button>
-
-        {docError && (
-          <p role="alert" className="path-blank__error">
-            {docError}
+        <div className="path-blank">
+          <div className="path-blank__icon">
+            <Icon name="explore" size={26} />
+          </div>
+          <h1 className="path-blank__title">Your path is empty</h1>
+          <p className="path-blank__text">
+            Tell Radar what you want to learn and it builds the first section. Three questions, then
+            you are reading.
           </p>
-        )}
+          <button className="btn btn--primary" onClick={() => navigate("/learn/build")}>
+            Build your path
+          </button>
+          <input
+            ref={docInputRef}
+            type="file"
+            accept=".pdf,.docx,.doc,.txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.rtf,.xml,.log"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const picked = e.target.files?.[0];
+              if (picked) fromDocument.mutate(picked);
+              e.target.value = "";
+            }}
+          />
 
-        {/* The way back to a path they already have.
-            Without it, an empty path is a dead end: this is the one screen that does not show
-            the switcher, and it is the screen somebody lands on after removing their last
-            section - so the other paths they built became unreachable exactly when they needed
-            one. Passed the roadmap when there is one so the add-a-subject box still works. */}
-        {/* Rendered whether or not a path loaded. The guard used to be `roadmap &&`, so the one
-            case that most needs a way out - the active path failing to load at all - was the one
-            that did not get one. A path generated before anybody was asked reads as absent, and
-            a learner in that state had no route to the paths they had actually built. */}
-        <PathControls current={roadmap} />
+          <button
+            className="path-blank__alt"
+            onClick={() => docInputRef.current?.click()}
+            disabled={fromDocument.isPending}
+          >
+            {fromDocument.isPending
+              ? "Reading your document… a long one can take a minute"
+              : "Or start from a document you already have"}
+          </button>
 
-        {/* The two actions above are already on screen, so those cards would be a second copy. */}
-        <GuidanceCards exclude={["one-subject", "own-material"]} heading="What else Radar does" />
+          {docError && (
+            <p role="alert" className="path-blank__error">
+              {docError}
+            </p>
+          )}
+
+          {/* The quick way to build the first section: type the subject rather than answer the
+              three questions. It was also the way back to a path they already had, which is what
+              put it on this screen at all - an empty path was otherwise a dead end, and it is the
+              screen somebody lands on after removing their last section. That half of the job is
+              the Path history tab above now, which is why this panel is no longer the only thing
+              between a learner and the paths they built. */}
+          <PathControls current={roadmap} />
+
+          {/* The two actions above are already on screen, so those cards would be a second copy. */}
+          <GuidanceCards exclude={["one-subject", "own-material"]} heading="What else Radar does" />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="r-page" style={{ maxWidth: 1180 }}>
+      <PathTabs tab={tab} onTab={setTab} />
+
       {/* Your position in the path, before anything else. */}
       <div className="path-head">
         <div style={{ minWidth: 0 }}>
@@ -343,8 +401,9 @@ ${finished} completed ${finished === 1 ? "lesson" : "lessons"} in it will be los
             )}
           </div>
 
-          {/* Changing and editing the path, from the screen the path is on. It used to mean
-              going to Settings and editing the interests a path is derived from. */}
+          {/* Adding a subject to this path, from the screen the path is on. It used to mean
+              going to Settings and editing the interests a path is derived from. Moving to a
+              different path is the Path history tab, which is the only place that list lives. */}
           <PathControls current={roadmap} />
         </div>
 

@@ -2169,3 +2169,170 @@ button.path-resource {
   color: var(--text-muted);
   overflow-wrap: anywhere;
 }
+
+/* ── The path you are on, and the paths you have built ───────────────────────────────────
+   Two tabs rather than one screen. The tab bar is on every state this page has, including the
+   two that were dead ends: an empty path, and an active path that failed to load. Those are the
+   states a learner most needs the path they built last month from. */
+.path-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.path-tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color var(--t-fast), color var(--t-fast), background var(--t-fast);
+}
+
+.path-tabs__tab:hover {
+  border-color: var(--cyan);
+  color: var(--text);
+}
+
+.path-tabs__tab.active {
+  border-color: var(--cyan);
+  background: var(--cyan-light);
+  color: var(--cyan-deep);
+}
+
+/* ── Path history ────────────────────────────────────────────────────────────────────────
+   A row per path, carrying the three facts the old switcher could not: how far it got, when it
+   was started, and whether everything in it is done. */
+.path-history__note {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 68ch;
+}
+
+.path-history__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.path-history__item {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+}
+
+.path-history__item.current {
+  border-color: var(--cyan);
+}
+
+.path-history__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.path-history__name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.path-history__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: var(--r-pill);
+  background: var(--cyan-light);
+  color: var(--cyan-deep);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Every lesson ticked. The same green the project mark uses for an accepted submission. */
+.path-history__badge.done {
+  background: rgba(46, 168, 96, 0.12);
+  color: #1d7a45;
+}
+
+.path-history__meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.path-history__progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 11px;
+}
+
+.path-history__track {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--bg-hover);
+  overflow: hidden;
+}
+
+/* `--t` already carries the easing function, so no second one after it: `width var(--t)
+   var(--ease)` expands to two timing functions, which is invalid and drops the declaration. */
+.path-history__fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--cyan);
+  transition: width var(--t);
+}
+
+.path-history__percent {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* A path with no lessons in it. Said in words, because an empty track reads as none of it done
+   when what is true is that there is nothing in it to do. */
+.path-history__thin {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-faint);
+}
+
+.path-history__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.path-history__error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--r-md);
+  background: rgba(220, 38, 38, 0.07);
+  font-size: 13px;
+}
