@@ -51,6 +51,14 @@ export function LearnPath() {
   // resume point lets both be derived during render instead of synchronised by an effect, which
   // is what caused the first render to show the top of the path before jumping.
   const [chosen, setChosen] = useState<Selection | null>(null);
+  /// Which path the open lesson belongs to.
+  ///
+  /// The lesson is held in state and the path can change underneath it: switching path does not
+  /// unmount this screen, so a module id from the old path survived into the new one. Nothing
+  /// matched it, and the page rendered its "Radar could not write lessons for this section"
+  /// branch over a path whose lessons were right there.
+  const [chosenFrom, setChosenFrom] = useState<string | null>(null);
+
   const [opened, setOpened] = useState<Set<string> | null>(null);
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -88,7 +96,11 @@ export function LearnPath() {
 
   // The learner's choice if they have made one, otherwise where the path says they are. The
   // section holding it opens by default.
-  const selection = chosen ?? resumePoint;
+  // The choice is dropped when the path under it changes. Switching path does not unmount this
+  // screen, so a module id from the old path survived into the new one, matched nothing, and the
+  // page rendered "Radar could not write lessons for this section" over a path whose lessons
+  // were right there.
+  const selection = (chosenFrom === null || chosenFrom === roadmap?.id ? chosen : null) ?? resumePoint;
   const expanded = opened ?? new Set(selection ? [selection.moduleId] : []);
 
   const totals = useMemo(() => {
@@ -146,6 +158,7 @@ export function LearnPath() {
       // who has not navigated has no choice recorded, the open lesson would change underneath
       // them — the one moment they need to see that the tick registered.
       setChosen({ moduleId, lessonId: lesson.id });
+      setChosenFrom(roadmap.id);
 
       queryClient.setQueryData<GrowthRoadmap>(["roadmap", "active"], (old) =>
         old
@@ -181,6 +194,7 @@ export function LearnPath() {
 
   const goTo = (target: Selection) => {
     setChosen(target);
+    setChosenFrom(roadmap?.id ?? null);
     setOpened(new Set(expanded).add(target.moduleId));
     setSaveError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -255,6 +269,13 @@ export function LearnPath() {
             {docError}
           </p>
         )}
+
+        {/* The way back to a path they already have.
+            Without it, an empty path is a dead end: this is the one screen that does not show
+            the switcher, and it is the screen somebody lands on after removing their last
+            section - so the other paths they built became unreachable exactly when they needed
+            one. Passed the roadmap when there is one so the add-a-subject box still works. */}
+        {roadmap && <PathControls current={roadmap} />}
 
         {/* The two actions above are already on screen, so those cards would be a second copy. */}
         <GuidanceCards exclude={["one-subject", "own-material"]} heading="What else Radar does" />

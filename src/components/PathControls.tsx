@@ -34,8 +34,18 @@ export function PathControls({ current }: { current: GrowthRoadmap }) {
   });
 
   const refresh = (updated: GrowthRoadmap) => {
+    // Written and then refetched. The document this hands back is the one as stored; reading
+    // /api/roadmaps/active rebuilds stale sections, personalises and attaches resources, and
+    // persists that - so without the invalidate the screen renders a path the server would have
+    // rewritten the moment it was asked for.
     queryClient.setQueryData(["roadmap", "active"], updated);
+    queryClient.invalidateQueries({ queryKey: ["roadmap", "active"] });
     queryClient.invalidateQueries({ queryKey: ["roadmaps", "all"] });
+
+    // The day's navigator card is built from the active path and cached server-side per day, so
+    // it would go on pointing at the old path's next lesson.
+    queryClient.invalidateQueries({ queryKey: ["navigator"] });
+
     setError(null);
     setOpen(false);
   };
