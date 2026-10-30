@@ -18,12 +18,12 @@ import type { GrowthRoadmap } from "../lib/types";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
 
-export function PathControls({ current }: { current: GrowthRoadmap }) {
+export function PathControls({ current }: { current?: GrowthRoadmap | null }) {
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState("");
-  const [level, setLevel] = useState(current.level || "Beginner");
+  const [level, setLevel] = useState(current?.level || "Beginner");
   const [error, setError] = useState<string | null>(null);
 
   /// Only fetched once the panel is opened. Most visits to a path are to read it.
@@ -42,9 +42,10 @@ export function PathControls({ current }: { current: GrowthRoadmap }) {
     queryClient.invalidateQueries({ queryKey: ["roadmap", "active"] });
     queryClient.invalidateQueries({ queryKey: ["roadmaps", "all"] });
 
-    // The day's navigator card is built from the active path and cached server-side per day, so
-    // it would go on pointing at the old path's next lesson.
-    queryClient.invalidateQueries({ queryKey: ["navigator"] });
+    // The home brief names the next lesson on the active path, so it would go on naming the old
+    // one. This invalidated ["navigator"], which matches no query in the app - the key the brief
+    // is actually cached under is ["home"], and nothing was being refreshed at all.
+    queryClient.invalidateQueries({ queryKey: ["home"] });
 
     setError(null);
     setOpen(false);
@@ -67,7 +68,9 @@ export function PathControls({ current }: { current: GrowthRoadmap }) {
       setError(e instanceof ApiError ? e.message : "Could not add that to your path."),
   });
 
-  const others = (paths.data ?? []).filter((p) => p.id !== current.id);
+  // Current may be absent: the active path can fail to load at all, and that is exactly the
+  // screen somebody needs the switcher on. With nothing current, every path is an "other".
+  const others = (paths.data ?? []).filter((p) => p.id !== current?.id);
   const busy = switchTo.isPending || addSubject.isPending;
 
   return (
@@ -131,7 +134,9 @@ export function PathControls({ current }: { current: GrowthRoadmap }) {
               <p className="path-controls__note">Looking…</p>
             ) : others.length === 0 ? (
               <p className="path-controls__note">
-                This is your only path. Adding a subject above builds on it.
+                {current
+                  ? "This is your only path. Adding a subject above builds on it."
+                  : "You have no other paths yet. Adding a subject above builds one."}
               </p>
             ) : (
               <div className="path-controls__paths">

@@ -134,8 +134,12 @@ ${finished} completed ${finished === 1 ? "lesson" : "lessons"} in it will be los
   // screen, so a module id from the old path survived into the new one, matched nothing, and the
   // page rendered "Radar could not write lessons for this section" over a path whose lessons
   // were right there.
-  const selection = (chosenFrom === null || chosenFrom === roadmap?.id ? chosen : null) ?? resumePoint;
-  const expanded = opened ?? new Set(selection ? [selection.moduleId] : []);
+  const fromThisPath = chosenFrom === null || chosenFrom === roadmap?.id;
+  const selection = (fromThisPath ? chosen : null) ?? resumePoint;
+  // Which sections are open follows the same rule as which lesson is open. It did not: after a
+  // switch, `opened` still held module ids from the old path, so every section of the new one
+  // rendered collapsed - including the one holding the lesson being shown.
+  const expanded = (fromThisPath ? opened : null) ?? new Set(selection ? [selection.moduleId] : []);
 
   const totals = useMemo(() => {
     const lessons = modules.flatMap((m) => m.lessons ?? []);
@@ -309,7 +313,11 @@ ${finished} completed ${finished === 1 ? "lesson" : "lessons"} in it will be los
             the switcher, and it is the screen somebody lands on after removing their last
             section - so the other paths they built became unreachable exactly when they needed
             one. Passed the roadmap when there is one so the add-a-subject box still works. */}
-        {roadmap && <PathControls current={roadmap} />}
+        {/* Rendered whether or not a path loaded. The guard used to be `roadmap &&`, so the one
+            case that most needs a way out - the active path failing to load at all - was the one
+            that did not get one. A path generated before anybody was asked reads as absent, and
+            a learner in that state had no route to the paths they had actually built. */}
+        <PathControls current={roadmap} />
 
         {/* The two actions above are already on screen, so those cards would be a second copy. */}
         <GuidanceCards exclude={["one-subject", "own-material"]} heading="What else Radar does" />
