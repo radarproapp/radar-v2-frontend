@@ -10,6 +10,16 @@ interface VideoEmbedProps {
 /// Click-to-play video. The poster keeps the list light — no iframe is loaded until the
 /// user actually starts a clip — and playing happens inline rather than bouncing to the
 /// source site. Renders nothing playable (a plain link) when the URL isn't a video.
+/// What to call the platform a video is hosted on.
+///
+/// Was a two-way check that read "YouTube" or "Vimeo", so a federated video was labelled Vimeo.
+const PLATFORM: Record<string, string> = {
+  youtube: "YouTube",
+  vimeo: "Vimeo",
+  peertube: "PeerTube",
+  file: "Video",
+};
+
 export function VideoEmbed({ url, title }: VideoEmbedProps) {
   const source = parseVideoUrl(url);
   const [playing, setPlaying] = useState(false);
@@ -50,7 +60,7 @@ export function VideoEmbed({ url, title }: VideoEmbedProps) {
             <path fill="currentColor" d="M8 5v14l11-7z" />
           </svg>
         </span>
-        <span className="video-embed__badge">{source.kind === "youtube" ? "YouTube" : "Vimeo"}</span>
+        <span className="video-embed__badge">{PLATFORM[source.kind] ?? "Video"}</span>
       </button>
     );
   }

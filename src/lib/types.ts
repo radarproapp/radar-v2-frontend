@@ -466,6 +466,10 @@ export interface LessonResource {
   thumbnailUrl: string | null;
   source: string;
   duration: string | null;
+  /// The licence the author put on it, where they put one on it. Shown because every Creative
+  /// Commons licence asks for attribution, and Radar reads these videos' captions to write the
+  /// summary — so naming the terms is part of the permission, not a nicety.
+  licence?: string | null;
   publishedAt: string | null;
   /// Empty rather than invented when it could not be written.
   summary: string;

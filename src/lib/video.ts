@@ -1,6 +1,7 @@
 export type ParsedVideo =
   | { kind: "youtube"; id: string; embedUrl: string; posterUrl: string }
   | { kind: "vimeo"; id: string; embedUrl: string }
+  | { kind: "peertube"; id: string; embedUrl: string }
   | { kind: "file"; src: string };
 
 /// Turns a stored content URL into something playable. Returns null when the URL is not a
@@ -37,6 +38,22 @@ export function parseVideoUrl(raw: string | null | undefined): ParsedVideo | nul
     const id = url.pathname.split("/").filter(Boolean)[0];
     return id ? { kind: "vimeo", id, embedUrl: `https://player.vimeo.com/video/${id}?autoplay=1` } : null;
   }
+  // An open federated video: /videos/watch/<uuid> or /w/<short-id>, on whatever instance hosts
+  // it. There is no central domain to match on — that is the point of the network — so the shape
+  // of the path is what identifies it.
+  //
+  // Lessons started showing these and nothing recognised them, so every one of them landed in
+  // the non-playable list: a card headed "Watch 5" with nothing on it a learner could open.
+  const peertube = url.pathname.match(/^\/(?:videos\/(?:watch|embed)|w)\/([\w-]{8,})\/?$/);
+  if (peertube) {
+    const id = peertube[1];
+    return {
+      kind: "peertube",
+      id,
+      embedUrl: `${url.origin}/videos/embed/${id}`,
+    };
+  }
+
   if (/\.(mp4|webm|ogg|ogv|mov|m4v)$/i.test(url.pathname)) {
     return { kind: "file", src: raw };
   }

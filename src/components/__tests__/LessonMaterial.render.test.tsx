@@ -197,4 +197,39 @@ describe("LessonMaterial", () => {
 
     expect(container.querySelector(".material__why")).toBeNull();
   });
+
+  /// A summary written from the video's own words says so.
+  ///
+  /// Only "Description" said anything, so the one case worth distinguishing — Radar read the
+  /// captions — looked exactly like a summary written from a two-line blurb. The licence rides
+  /// with it, because every Creative Commons licence asks for attribution in return for the
+  /// permission that made the reading possible.
+  it("says when a summary came from the video itself", () => {
+    renderPage(
+      <LessonMaterial
+        resources={[
+          video({
+            summary: "The speaker works through three prompt patterns and when each one fails.",
+            summarySource: "Transcript",
+            licence: "CC BY",
+          }),
+        ]}
+      />,
+    );
+
+    expect(screen.getByText(/from what is said in the video/i)).toBeTruthy();
+    expect(screen.getByText(/CC BY/)).toBeTruthy();
+  });
+
+  /// And a transcript Radar could not describe does not blame the description.
+  it("does not blame a description it never read", () => {
+    renderPage(
+      <LessonMaterial
+        resources={[video({ summary: "", summarySource: "Transcript" })]}
+      />,
+    );
+
+    expect(screen.getByText(/read this one and could not describe it/i)).toBeTruthy();
+    expect(screen.queryByText(/too little in the description/i)).toBeNull();
+  });
 });

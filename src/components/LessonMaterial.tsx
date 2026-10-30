@@ -29,9 +29,13 @@ function Summary({ resource }: { resource: LessonResource }) {
     // next visit to write anything.
     return (
       <p className="material__nosummary">
-        {resource.kind === "Video"
-          ? "No summary — there was too little in the description to write one from."
-          : "The publisher did not provide a summary."}
+        {resource.kind !== "Video"
+          ? "The publisher did not provide a summary."
+          : resource.summarySource === "Transcript"
+            // Said accurately. This read "too little in the description" even when Radar had
+            // read the whole transcript — blaming the wrong source for its own silence.
+            ? "No summary — Radar read this one and could not describe it."
+            : "No summary — there was too little in the description to write one from."}
       </p>
     );
   }
@@ -39,8 +43,20 @@ function Summary({ resource }: { resource: LessonResource }) {
   return (
     <>
       <p className="material__summary">{resource.summary}</p>
+
+      {/* Where the summary came from, which is the whole reason this field is stored.
+          Only Description said anything, so the one case worth distinguishing — a summary
+          written from the video's own words — looked exactly like a summary written from a
+          two-line blurb. */}
       {resource.summarySource === "Description" && (
         <p className="material__provenance">From the title and channel — not from watching it.</p>
+      )}
+
+      {resource.summarySource === "Transcript" && (
+        <p className="material__provenance">
+          From what is said in the video
+          {resource.licence ? ` · ${resource.licence}` : ""}
+        </p>
       )}
     </>
   );
@@ -116,38 +132,54 @@ export function LessonMaterial({
 
             return (
               <article key={video.id} className="material__item">
-                <button
-                  className="material__item-head"
-                  onClick={() => canPlay && setSelectedId(video.id)}
-                  disabled={!canPlay}
-                >
-                  {video.thumbnailUrl && (
-                    <img className="material__thumb" src={video.thumbnailUrl} alt="" loading="lazy" />
-                  )}
+                {/* A row that plays is a button; one that only links out is a link.
+                    It used to be a disabled button with an anchor inside it, and a browser does
+                    not dispatch clicks into a disabled button's subtree - so the link was inert
+                    and a video Radar could not play was a video nobody could open either. */}
+                {canPlay ? (
+                  <button
+                    className="material__item-head"
+                    onClick={() => setSelectedId(video.id)}
+                  >
+                    {video.thumbnailUrl && (
+                      <img className="material__thumb" src={video.thumbnailUrl} alt="" loading="lazy" />
+                    )}
 
-                  <span className="material__item-text">
-                    <span className="material__item-title">{video.title}</span>
-                    <span className="material__item-source">
-                      {video.source}
-                      {video.duration ? ` · ${video.duration}` : ""}
+                    <span className="material__item-text">
+                      <span className="material__item-title">{video.title}</span>
+                      <span className="material__item-source">
+                        {video.source}
+                        {video.duration ? ` · ${video.duration}` : ""}
+                      </span>
                     </span>
-                  </span>
 
-                  {canPlay ? (
                     <Icon name="play" size={14} />
-                  ) : (
-                    // Honest about what it is rather than dressed as a player.
-                    <a
-                      href={video.url}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      onClick={(e) => e.stopPropagation()}
-                      className="material__out"
-                    >
+                  </button>
+                ) : (
+                  <a
+                    className="material__item-head"
+                    href={video.url}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    {video.thumbnailUrl && (
+                      <img className="material__thumb" src={video.thumbnailUrl} alt="" loading="lazy" />
+                    )}
+
+                    <span className="material__item-text">
+                      <span className="material__item-title">{video.title}</span>
+                      <span className="material__item-source">
+                        {video.source}
+                        {video.duration ? ` · ${video.duration}` : ""}
+                      </span>
+                    </span>
+
+                    {/* Honest about what it is rather than dressed as a player. */}
+                    <span className="material__out">
                       <Icon name="external" size={13} />
-                    </a>
-                  )}
-                </button>
+                    </span>
+                  </a>
+                )}
 
                 <div className="material__item-body">
                   <WhyKept resource={video} />
