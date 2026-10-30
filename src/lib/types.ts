@@ -702,6 +702,31 @@ export interface ChatMessage {
   suggestedResources: ContentItem[];
 }
 
+/// One stored conversation with the Mentor.
+///
+/// Quizzes and study plans were persisted and the conversation was not: the chat endpoint took
+/// the history from the client, so it lived in a browser tab and nothing else, and closing the
+/// tab lost everything the tutor had said.
+export interface MentorConversation {
+  id: string;
+  /// Taken from the learner's first message, shortened at a word boundary. No model writes it -
+  /// a list of past conversations is navigation, and navigation that waits on the provider goes
+  /// blank exactly when the provider is unreachable.
+  title: string;
+  messages: ChatMessage[];
+  createdAt: string;
+  lastMessageAt: string;
+}
+
+/// A conversation as it appears in the list: enough to choose one, without its transcript.
+export interface MentorConversationSummary {
+  id: string;
+  title: string;
+  messageCount: number;
+  createdAt: string;
+  lastMessageAt: string;
+}
+
 export interface MentorQuizQuestion {
   question: string;
   options: string[];

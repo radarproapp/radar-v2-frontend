@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { MentorHistory } from "../components/MentorHistory";
 import { useAuth } from "../auth/AuthContext";
 import { QuizPerformanceSummary } from "../components/QuizPerformanceSummary";
 import {
@@ -10,6 +12,8 @@ import {
   generateQuiz,
   submitQuizAnswer,
   streamMentorChat,
+  getMentorConversation,
+  getMentorConversations,
   getLearningMemory,
   getTopicMasteries,
   getTodayLearning,
@@ -108,6 +112,7 @@ export function LearningMentor() {
   const { profile } = useAuth();
   const [searchParams] = useSearchParams();
 
+  const queryClient = useQueryClient();
   const [activeMode, setActiveMode] = useState("chat");
 
   // Today's Learning Card
@@ -118,6 +123,13 @@ export function LearningMentor() {
   const [chatThinking, setChatThinking] = useState(false);
   const [chatBusy, setChatBusy] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+
+  /// The conversation these turns belong to, or null for one that has not been started.
+  ///
+  /// The server does not announce a new thread's id in the stream - the SSE frames are what this
+  /// page already parses and that shape did not change - so it is read back from the list, which
+  /// is ordered by the last turn taken and therefore has it first.
+  const [conversationId, setConversationId] = useState<string | null>(null);
 
   // Quiz & Practice
   const [quiz, setQuiz] = useState<MentorQuiz | null>(null);
@@ -219,7 +231,10 @@ export function LearningMentor() {
     let started = false;
 
     try {
-      await streamMentorChat(trimmed, history, (chunk) => {
+      await streamMentorChat(
+        trimmed,
+        history,
+        (chunk) => {
         if (!started) {
           started = true;
           setChatThinking(false);
@@ -231,12 +246,49 @@ export function LearningMentor() {
           setChatMessages((prev) =>
             prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + chunk } : m))
           );
-        }
-      });
+          }
+        },
+        undefined,
+        conversationId ?? undefined,
+      );
     } finally {
       setChatThinking(false);
       setChatBusy(false);
+
+      // The list has moved: a new thread exists, or an existing one has a later turn and has
+      // risen to the top. Refetched rather than patched, because the server decides the order
+      // and the title, and guessing either here is how the two drift apart.
+      const refreshed = await queryClient.fetchQuery({
+        queryKey: ["mentor", "conversations"],
+        queryFn: () => getMentorConversations(),
+      });
+
+      // A thread that was just started is the first entry, because the list is ordered by the
+      // last turn taken. Only claimed when there was none before - joining an existing thread
+      // must not silently re-point at whatever happens to be top.
+      if (conversationId === null && refreshed.length > 0) setConversationId(refreshed[0].id);
     }
+  };
+
+  /// Opens a stored conversation, turns and all.
+  const openConversation = async (id: string) => {
+    setActiveMode("chat");
+    setChatBusy(true);
+
+    try {
+      const conversation = await getMentorConversation(id);
+      setConversationId(conversation.id);
+      setChatMessages(conversation.messages);
+    } finally {
+      setChatBusy(false);
+    }
+  };
+
+  /// Starts a fresh one. The turns on screen are already saved, so nothing is lost by clearing.
+  const startNewConversation = () => {
+    setConversationId(null);
+    setChatMessages([]);
+    setChatInput("");
   };
 
   const handleChatKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -395,6 +447,15 @@ export function LearningMentor() {
       {/* ── 1. ASK / CHAT (TUTOR) ────────────────────────────────────────── */}
       {activeMode === "chat" && (
         <>
+          {/* Every conversation the learner has had, beside the one they are in. Until now the
+              turns lived in this tab and nowhere else: closing it lost the worked example they
+              wanted to come back to on Thursday. */}
+          <MentorHistory
+            openId={conversationId}
+            onOpen={openConversation}
+            onNew={startNewConversation}
+          />
+
           {chatMessages.length === 0 ? (
             <div className="ask-suggestions">
               <div className="ask-suggestions-label">TRY ASKING YOUR MENTOR (CONNECTED TO YOUR ROADMAP)</div>

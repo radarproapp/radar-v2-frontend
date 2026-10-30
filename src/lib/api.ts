@@ -5,6 +5,8 @@ import type {
   CapturedItem,
   ChallengeResult,
   ChatMessage,
+  MentorConversation,
+  MentorConversationSummary,
   CitationStyle,
   ContentItem,
   ContentReport,
@@ -167,7 +169,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 // Shared by Ask Radar and Mentor chat: POSTs { message, history } to an SSE endpoint and calls
 // onChunk with each text delta as it arrives. Uses fetch + a stream reader rather than
 // EventSource, since EventSource can't send a POST body.
-async function streamChat(path: string, message: string, history: ChatMessage[], onChunk: (text: string) => void, signal?: AbortSignal): Promise<void> {
+async function streamChat(path: string, message: string, history: ChatMessage[], onChunk: (text: string) => void, signal?: AbortSignal, conversationId?: string): Promise<void> {
   const token = getToken();
   const headers = new Headers({ "Content-Type": "application/json" });
   if (token) headers.set("Authorization", `Bearer ${token}`);
@@ -175,7 +177,7 @@ async function streamChat(path: string, message: string, history: ChatMessage[],
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
     headers,
-    body: JSON.stringify({ message, history }),
+    body: JSON.stringify({ message, history, conversationId }),
     signal,
   });
 
@@ -927,8 +929,34 @@ export function generateLearningPathway() {
 
 // ── Mentor ───────────────────────────────────────────────────────────────
 
-export function streamMentorChat(message: string, history: ChatMessage[], onChunk: (text: string) => void, signal?: AbortSignal) {
-  return streamChat("/api/mentor/chat/stream", message, history, onChunk, signal);
+/// Asks the mentor, in a conversation.
+///
+/// `conversationId` joins an existing thread; without one the server starts a new thread and
+/// does not announce its id in the stream - the SSE frames are what the client already parses
+/// and that shape did not change. The id arrives from getMentorConversations, which is ordered
+/// by the last turn taken, so a thread just spoken to is the first entry.
+export function streamMentorChat(
+  message: string,
+  history: ChatMessage[],
+  onChunk: (text: string) => void,
+  signal?: AbortSignal,
+  conversationId?: string,
+) {
+  return streamChat("/api/mentor/chat/stream", message, history, onChunk, signal, conversationId);
+}
+
+/// Past conversations, newest first. Titles and counts only - the turns are not carried, so a
+/// learner with two hundred conversations is not sent two hundred transcripts to choose from.
+export function getMentorConversations(limit = 50) {
+  return request<MentorConversationSummary[]>(`/api/mentor/conversations?limit=${limit}`);
+}
+
+export function getMentorConversation(id: string) {
+  return request<MentorConversation>(`/api/mentor/conversations/${id}`);
+}
+
+export function deleteMentorConversation(id: string) {
+  return request<void>(`/api/mentor/conversations/${id}`, { method: "DELETE" });
 }
 
 /// A quiz and its performance summary, in one envelope.
