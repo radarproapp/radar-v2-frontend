@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Icon } from "../components/Icon";
+import { PathControls } from "../components/PathControls";
 import { LessonMaterial } from "../components/LessonMaterial";
 import { PathResources } from "../components/PathResources";
 import { GuidanceCards } from "../components/GuidanceCards";
@@ -278,6 +279,10 @@ export function LearnPath() {
               </>
             )}
           </div>
+
+          {/* Changing and editing the path, from the screen the path is on. It used to mean
+              going to Settings and editing the interests a path is derived from. */}
+          <PathControls current={roadmap} />
         </div>
 
         <div className="path-progress">

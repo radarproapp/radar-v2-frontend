@@ -1832,3 +1832,79 @@ button.path-resource {
   font-style: italic;
   color: var(--text-faint);
 }
+
+/* ── Changing and editing a path ─────────────────────────────────────────────────────────
+   Opened from the path header rather than from Settings, which is where it used to live. */
+.path-controls { margin-top: 10px; }
+
+.path-controls__panel {
+  margin-top: 10px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+}
+
+.path-controls__section + .path-controls__section {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.path-controls__label {
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.path-controls__row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.path-controls__row .r-input { flex: 1 1 220px; }
+.path-controls__level { flex: 0 0 auto; width: auto; }
+
+.path-controls__note {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.path-controls__paths {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.path-controls__path {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.path-controls__path:hover { border-color: var(--cyan); }
+.path-controls__path-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
+.path-controls__path-meta { font-size: 11.5px; color: var(--text-muted); }
+
+.path-controls__error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--r-md);
+  background: rgba(220, 38, 38, 0.07);
+  font-size: 13px;
+}

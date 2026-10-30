@@ -898,6 +898,28 @@ export function addPathSection(subject: string, level: string, outcome?: string 
   });
 }
 
+/// Switches to one of the learner's other paths.
+///
+/// Changing path meant going to Settings, editing the interests a path is derived from, and
+/// generating a new one - so paths somebody had already built were unreachable from the screen
+/// that lists them, and moving between two subjects meant starting over each time.
+export function activateRoadmap(roadmapId: string) {
+  return request<GrowthRoadmap>(`/api/roadmaps/${encodeURIComponent(roadmapId)}/activate`, {
+    method: "POST",
+  });
+}
+
+/// Takes a section out of a path.
+///
+/// Sections could be added and never removed, so a path built by trying things accumulated every
+/// wrong turn and the only way back was to start again.
+export function removePathSection(roadmapId: string, moduleId: string) {
+  return request<GrowthRoadmap>(
+    `/api/roadmaps/${encodeURIComponent(roadmapId)}/modules/${encodeURIComponent(moduleId)}`,
+    { method: "DELETE" },
+  );
+}
+
 export function generateLearningPathway() {
   return request<GrowthRoadmap>("/api/roadmaps/generate", { method: "POST" });
 }
