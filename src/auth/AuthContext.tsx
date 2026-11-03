@@ -7,7 +7,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   profile: UserProfile | null;
   isLoading: boolean;
-  signIn: (token: string) => void;
+  signIn: (token: string)  => void;
   signOut: () => void;
   refetchProfile: () => Promise<void>;
 }

@@ -1371,6 +1371,86 @@ export function getAdminUsers() {
   return request<AdminUser[]>("/api/admin/users");
 }
 
+/// What is actually happening, read from the events Radar already records.
+///
+/// Seventeen kinds of event were being written and nothing in the admin area read any of them,
+/// so "what are people engaging with" was a question the database could answer and the product
+/// could not.
+export interface AdminActivity {
+  days: number;
+  byDay: { day: string; events: number; people: number }[];
+  mix: Record<string, number>;
+  /// Counted from its own events at every stage rather than derived from the one above, so a
+  /// stage larger than its predecessor is reported rather than smoothed - which means
+  /// impressions are not being logged where opens are.
+  funnel: {
+    impressions: number;
+    opens: number;
+    saves: number;
+    dismissals: number;
+    reports: number;
+  };
+  /// Every kind of event the model defines, so a chart can say what it is not showing.
+  recorded: string[];
+}
+
+export interface AdminEngagement {
+  days: number;
+  items: {
+    contentItemId: string;
+    title: string;
+    source: string;
+    type: string;
+    opens: number;
+    saves: number;
+  }[];
+  /// Published beside opened on purpose: a source filing forty items a day for three opens is
+  /// costing ingestion budget and feed space, and that is invisible on any chart ranking by
+  /// opens alone.
+  sources: { source: string; published: number; opens: number; dismissals: number }[];
+}
+
+/// One person, for support and abuse questions that totals cannot answer.
+export interface AdminUserDetail {
+  profile: {
+    id: string;
+    name: string;
+    email: string;
+    persona: string;
+    chosenCategory: boolean;
+    interests: string[];
+    goals: string[];
+    problems: string[];
+    primaryGoal: string;
+    isPersonalised: boolean;
+    onboardingComplete: boolean;
+    createdAt: string;
+  };
+  /// Null when they have never acted. An account that has done nothing has no last-seen, and
+  /// showing their sign-up date there would read as activity.
+  lastSeen: string | null;
+  recent: {
+    type: string;
+    at: string;
+    contentItemId: string | null;
+    title: string | null;
+    source: string | null;
+  }[];
+}
+
+export function getAdminActivity(days = 30) {
+  return request<AdminActivity>(`/api/admin/activity?days=${days}`);
+}
+
+export function getAdminEngagement(days = 30) {
+  return request<AdminEngagement>(`/api/admin/engagement?days=${days}`);
+}
+
+/// SuperAdmin only, and the server writes a log line naming who asked.
+export function getAdminUser(id: string) {
+  return request<AdminUserDetail>(`/api/admin/users/${id}`);
+}
+
 export function getAdminReports() {
   return request<AdminReport[]>("/api/admin/reports");
 }
