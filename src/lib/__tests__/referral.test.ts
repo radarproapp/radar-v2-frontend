@@ -81,3 +81,24 @@ describe("keeping it for the visit", () => {
     expect(rememberedCode()).toBe("XYZ9876");
   });
 });
+
+describe("typing a code instead of following a link", () => {
+  /// <summary>The bare code has to work on its own.</summary>
+  ///
+  /// For a while it did not. Attribution only happened if somebody opened the /join link in the
+  /// same browser session, and there was no field to type a code into anywhere in the app - so
+  /// the commonest way a code actually gets shared, "my code is ABC2345" in a group chat,
+  /// credited nobody, beside a panel offering a prominent "Copy the code" button.
+  it.each([
+    ["ABC2345", "as sent"],
+    ["abc2345 ", "lower case with a stray space"],
+    ["ABC-2345", "with the readability hyphen"],
+  ])("reads %s typed into the sign-up field (%s)", (typed) => {
+    expect(readCode(typed)).toBe("ABC2345");
+  });
+
+  /// A half-typed code is nothing, not a code the server will fail to match.
+  it.each(["AB", "ABC234", "ABC23456"])("treats %s as nothing yet", (partial) => {
+    expect(readCode(partial)).toBeNull();
+  });
+});

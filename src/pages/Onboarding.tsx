@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import { PasswordField } from "../components/PasswordField";
 import { useAuth } from "../auth/AuthContext";
-import { forgetCode, rememberedCode } from "../lib/referral";
+import { forgetCode, readCode, rememberedCode } from "../lib/referral";
 import { completeOnboarding, register } from "../lib/api";
 import { INTEREST_GROUPS } from "../lib/interests";
 import type { PersonaType } from "../lib/types";
@@ -68,6 +68,9 @@ export function Onboarding() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Prefilled from the link they followed, if they followed one, and editable either way.
+  const [referral, setReferral] = useState(() => rememberedCode() ?? "");
   const [search, setSearch] = useState("");
   const [picked, setPicked] = useState<string[]>(() => (profile?.interests ?? []).slice(0, MAX_SUBJECTS));
   const [busy, setBusy] = useState(false);
@@ -103,7 +106,10 @@ export function Onboarding() {
 
     setBusy(true);
     try {
-      const auth = await register(name.trim(), email.trim(), password, rememberedCode());
+      // What is in the field, which is the remembered code unless they changed it. Sent through
+      // readCode so a half-typed one is sent as nothing rather than as a code the server will
+      // fail to match.
+      const auth = await register(name.trim(), email.trim(), password, readCode(referral) ?? undefined);
       forgetCode();
       // signIn, not setToken: the latter only writes storage, so the auth context still reported
       // isAuthenticated false and HomeGate sent a freshly onboarded user to the marketing page.
@@ -207,6 +213,32 @@ export function Onboarding() {
             placeholder="Password (at least 8 characters)"
             autoComplete="new-password"
           />
+
+          {/* The code had nowhere to be typed. Attribution only worked if somebody opened the
+              /join link in this same browser session, so anyone who received the bare code -
+              "my code is ABC2345", which is how it gets shared in a group chat - could not use
+              it, while a panel in Settings offered a prominent "Copy the code" button. Prefilled
+              when a link was followed, and readable when it was not. */}
+          <div>
+            <input
+              className="r-input"
+              placeholder="Referral code (optional)"
+              value={referral}
+              onChange={(e) => setReferral(e.target.value)}
+              aria-label="Referral code"
+              autoComplete="off"
+              spellCheck={false}
+            />
+            {referral.trim().length > 0 && !readCode(referral) && (
+              // Said while they are still looking at the field. A bad code used to be dropped
+              // in silence, so the person who shared it was credited with nothing and nobody
+              // found out.
+              <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6 }}>
+                That is not a code Radar issued. You can leave it blank and still sign up.
+              </p>
+            )}
+          </div>
+
           <button className="btn btn--primary" onClick={createAccount} disabled={busy}>
             {busy ? "Creating…" : "Continue"}
           </button>

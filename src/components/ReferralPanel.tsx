@@ -40,15 +40,24 @@ export function ReferralPanel() {
     );
   }
 
-  const mine = referral.data!;
+  // Checked rather than asserted. isLoading is isPending && isFetching, so an offline browser -
+  // where the default network mode pauses the fetch while leaving it pending - is neither
+  // loading nor errored, and the assertion handed the render undefined.
+  if (!referral.data) return <section className="referral"><p className="referral__note">Loading your link…</p></section>;
+
+  const mine = referral.data;
   const share = `I have been using Radar — it finds the news, research and opportunities that actually match what you are studying or working on. ${mine.link}`;
 
   return (
     <section className="referral">
       <h2 className="referral__title">Bring somebody to Radar</h2>
 
+      {/* Both halves said, because for a while only the link worked: there was no field to type
+          a code into anywhere in the app, so somebody who received the bare code in a group
+          chat could not use it, beside a prominent button offering to copy it. */}
       <p className="referral__note">
-        Anyone who signs up through your link is counted to you.
+        Anyone who signs up through your link is counted to you. If they already have Radar open,
+        the code works too — there is a field for it on the sign-up screen.
       </p>
 
       <div className="referral__code" aria-label="Your referral code">{mine.code}</div>
