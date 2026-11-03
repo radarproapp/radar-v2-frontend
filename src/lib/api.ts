@@ -1351,10 +1351,10 @@ export interface AdminSource {
   name: string;
   domain: string;
   type: string;
+  /// Counted from the corpus. The field of the same name on the source record is seed data that
+  /// nothing has ever updated, so reading it back put a hand-written constant on the screen.
   itemsInRadar: number;
-  itemsRead: number;
   publishFrequency: string;
-  active: boolean;
 }
 
 export interface AdminUser {

@@ -59,11 +59,16 @@ export function AdminActivitySection() {
   const [days, setDays] = useState<number>(30);
   const activity = useQuery({ queryKey: ["admin", "activity", days], queryFn: () => getAdminActivity(days) });
 
-  if (activity.isLoading) return <div className="r-admin-page"><div className="admin-card">Counting…</div></div>;
   if (activity.isError) return <div className="r-admin-page"><div className="admin-card">Could not read activity. Try again shortly.</div></div>;
 
-  const data = activity.data!;
-  const people = new Set(data.byDay.flatMap((row) => (row.people > 0 ? [row.day] : [])));
+  // Checked for being there, rather than asserted with `!`. isLoading is isPending && isFetching,
+  // so an offline browser - where the default network mode pauses the fetch while leaving it
+  // pending - is neither loading nor errored, and the assertion handed the render undefined.
+  // A non-JSON 2xx, which is what a proxy serving index.html for /api/* produces, lands here too.
+  if (!activity.data) return <div className="r-admin-page"><div className="admin-card">Counting…</div></div>;
+
+  const data = activity.data;
+  const daysWithActivity = data.byDay.filter((row) => row.events > 0).length;
   const busiest = data.byDay.reduce((best, row) => (row.events > (best?.events ?? -1) ? row : best), data.byDay[0]);
 
   // Which of the model's event kinds have actually been seen. A dashboard that does not say
@@ -76,7 +81,7 @@ export function AdminActivitySection() {
 
       {data.byDay.length === 0 ? (
         <div className="admin-card">
-          Nothing recorded in the last {days} days. That is the honest answer rather than an
+          Nothing recorded in the last {data.days} days. That is the honest answer rather than an
           empty chart: either nobody has used Radar in that window, or events are not reaching
           the database.
         </div>
@@ -99,7 +104,7 @@ export function AdminActivitySection() {
           <div className="admin-split">
             <div className="admin-split__left">
               <div className="admin-card">
-                <div className="admin-card__title">The funnel</div>
+                <div className="admin-card__title">The funnel, for feed content</div>
                 {([
                   ["Impressions", data.funnel.impressions],
                   ["Opens", data.funnel.opens],
@@ -113,9 +118,16 @@ export function AdminActivitySection() {
                   </div>
                 ))}
 
-                {/* Said rather than hidden. Each stage is counted from its own events, so one
-                    larger than the stage above it is not an arithmetic error - it means
-                    impressions are not being logged where opens are. */}
+                <p className="admin-note">
+                  Feed content only — every stage counts events carrying a content id. Opens are
+                  also recorded for opportunities, and counting those here made this read as a
+                  logging gap that was not there. They are still in the mix beside it.
+                </p>
+
+                {/* Said rather than hidden. Each stage is counted from its own events, and now
+                    that all five share one population, one larger than the stage above it is
+                    not an arithmetic error - it means impressions are not being logged where
+                    opens are. */}
                 {data.funnel.opens > data.funnel.impressions && data.funnel.impressions > 0 && (
                   <p className="admin-note">
                     More opens than impressions. Each stage is counted from its own events, so
@@ -151,7 +163,7 @@ export function AdminActivitySection() {
       )}
 
       <p className="admin-note">
-        {people.size} of the last {days} days had any activity at all.
+        {daysWithActivity} of the last {data.days} days had any activity at all.
       </p>
     </div>
   );
@@ -161,10 +173,10 @@ export function AdminEngagementSection() {
   const [days, setDays] = useState<number>(30);
   const engagement = useQuery({ queryKey: ["admin", "engagement", days], queryFn: () => getAdminEngagement(days) });
 
-  if (engagement.isLoading) return <div className="r-admin-page"><div className="admin-card">Counting…</div></div>;
   if (engagement.isError) return <div className="r-admin-page"><div className="admin-card">Could not read engagement. Try again shortly.</div></div>;
+  if (!engagement.data) return <div className="r-admin-page"><div className="admin-card">Counting…</div></div>;
 
-  const data = engagement.data!;
+  const data = engagement.data;
 
   return (
     <div className="r-admin-page">
@@ -176,7 +188,7 @@ export function AdminEngagementSection() {
             <div className="admin-card__title">What people opened</div>
 
             {data.items.length === 0 ? (
-              <p className="admin-note">Nothing has been opened in the last {days} days.</p>
+              <p className="admin-note">Nothing has been opened in the last {data.days} days.</p>
             ) : (
               data.items.map((item) => (
                 <div className="admin-engaged" key={item.contentItemId}>
@@ -199,7 +211,7 @@ export function AdminEngagementSection() {
             <div className="admin-card__title">Sources: what they filed, what was read</div>
 
             {data.sources.length === 0 ? (
-              <p className="admin-note">No source has been opened or dismissed in this window.</p>
+              <p className="admin-note">No source has filed, been opened or been dismissed in this window.</p>
             ) : (
               data.sources.map((source) => (
                 <div className="admin-user-detail__row" key={source.source}>
@@ -215,8 +227,10 @@ export function AdminEngagementSection() {
             <p className="admin-note">
               Filed and opened side by side. A source filing forty items a day for three opens is
               costing ingestion budget and feed space to nobody's benefit, which is invisible on
-              any chart ranking by opens alone. "Filed" counts by the date on the item, because
-              content carries no ingestion time of its own.
+              any chart ranking by opens alone — so a source that filed plenty and earned nothing
+              is listed here too, and the order is the larger of what a source filed and what it
+              earned. "Filed" counts by the date on the item, because content carries no
+              ingestion time of its own.
             </p>
           </div>
         </div>
