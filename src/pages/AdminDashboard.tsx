@@ -524,7 +524,7 @@ function Team() {
       // Says what will actually happen next. An invited person who is already signed in keeps
       // the token they have until they sign in again, and without this they would try the admin
       // area, be turned away, and report it as broken.
-      setDone(`${email.trim()} can reach the admin area the next time they sign in.`);
+      setDone(`Emailed ${email.trim()}. They can reach the admin area the next time they sign in.`);
       setEmail("");
       await refresh();
     } catch (err) {
@@ -551,7 +551,35 @@ function Team() {
     <div className="r-admin-page">
       <Banner label="Two roles, one difference">Platform Admins run the product. Super Admins can also open one named person&apos;s activity, which is logged — and only they can change this list.</Banner>
 
-      {query.data?.canInvite && (
+      {/* Said before the attempt rather than after it. Inviting sends an email and will not
+          grant access without one, so on a deployment with no email the form cannot work and
+          the way in is the variables that still do. */}
+      {query.data?.canInvite && !query.data.canEmail && (
+        <div className="admin-card" style={{ borderColor: "#b7791a" }}>
+          <div className="admin-card__title">Nobody can be invited from here</div>
+          <p className="admin-note">
+            No email is configured for this deployment, and an invite is the email — without it an
+            address would be granted access and never told. Add people with{" "}
+            <code>{query.data.configuredBy}</code> until email is set up.
+          </p>
+        </div>
+      )}
+
+      {/* A test key answers 201 and delivers nothing, so the invite would report success and
+          arrive nowhere. The one state worse than a failure is a clean success that did not
+          happen. */}
+      {query.data?.canInvite && query.data.canEmail && query.data.emailIsSandboxed && (
+        <div className="admin-card" style={{ borderColor: "#b7791a" }}>
+          <div className="admin-card__title">Invites will not actually arrive</div>
+          <p className="admin-note">
+            The email sender is on a test key: it accepts every message and delivers none. Access
+            will be granted and the invite will report success, but nobody will receive it — so
+            tell them yourself until a live key is set.
+          </p>
+        </div>
+      )}
+
+      {query.data?.canInvite && query.data.canEmail && (
         <div className="admin-card">
           <div className="admin-card__header"><div className="admin-card__title">Add somebody</div></div>
 
@@ -581,8 +609,10 @@ function Team() {
           </form>
 
           <p className="admin-note" style={{ marginTop: 10 }}>
-            They do not need a Radar account yet — the access waits for the address. Somebody who
-            is already signed in gets it the next time they sign in.
+            They get an email telling them, and access is only given once that message is sent —
+            so a typo fails here rather than becoming a row nobody ever uses. They do not need a
+            Radar account yet; they will create one with this address and choose their own
+            password.
           </p>
         </div>
       )}

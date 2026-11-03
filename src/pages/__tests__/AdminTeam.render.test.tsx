@@ -31,6 +31,8 @@ function team(overrides: Partial<AdminTeam> = {}): AdminTeam {
   return {
     team: [member()],
     canInvite: true,
+    canEmail: true,
+    emailIsSandboxed: false,
     you: "SuperAdmin",
     configuredBy: "Auth__SuperAdminEmails__n and Auth__AdminEmails__n in the deployment environment",
     ...overrides,
@@ -140,7 +142,7 @@ describe("Admin Team", () => {
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
     await waitFor(() => expect(invite).toHaveBeenCalledWith("new@radar.com", "PlatformAdmin"));
-    expect(await screen.findByText(/new@radar\.com can reach the admin area/i)).toBeTruthy();
+    expect(await screen.findByText(/emailed new@radar\.com/i)).toBeTruthy();
   });
 
   /// A refusal is shown rather than swallowed, because the row simply not appearing reads as a
@@ -176,6 +178,32 @@ describe("Admin Team", () => {
     show();
 
     expect(await screen.findByText(/nobody has admin access in this deployment/i)).toBeTruthy();
+  });
+
+  /// <summary>An invite is the email, so no email means no invite.</summary>
+  ///
+  /// Said before the attempt rather than after it: a form offered for something that cannot work
+  /// wastes the admin's time and then fails in a way that reads as a bug.
+  it("says nobody can be invited when no email is configured", async () => {
+    vi.spyOn(api, "getAdminTeam").mockResolvedValue(team({ canEmail: false }));
+
+    show();
+
+    expect(await screen.findByText(/nobody can be invited from here/i)).toBeTruthy();
+    expect(screen.queryByLabelText(/email address/i)).toBeNull();
+  });
+
+  /// <summary>A sender that accepts everything and delivers nothing is worse than one that fails.</summary>
+  ///
+  /// A test key answers 201 with an id, so the invite reports success and arrives nowhere.
+  it("warns when invites will be accepted but not delivered", async () => {
+    vi.spyOn(api, "getAdminTeam").mockResolvedValue(team({ emailIsSandboxed: true }));
+
+    show();
+
+    expect(await screen.findByText(/invites will not actually arrive/i)).toBeTruthy();
+    // The form still works - access is real, only the message is not.
+    expect(screen.getByLabelText(/email address/i)).toBeTruthy();
   });
 
   it("does not render a failure as an empty team", async () => {

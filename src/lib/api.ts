@@ -1501,6 +1501,12 @@ export interface AdminTeam {
   team: AdminTeamMember[];
   /// Whether this admin may change the list. Only a Super Admin can.
   canInvite: boolean;
+  /// Inviting sends an email and will not grant access without one, so a deployment with no
+  /// email configured cannot invite at all.
+  canEmail: boolean;
+  /// A test key answers 201 and delivers nothing, so the send succeeds and the invited person is
+  /// never told.
+  emailIsSandboxed: boolean;
   you: string;
   configuredBy: string;
 }
