@@ -21,6 +21,7 @@ import { HomeGate } from "./pages/HomeGate";
 // or deleted export fails `tsc -b` instead of throwing when the route is first opened.
 const Login = lazyPage(() => import("./pages/Login").then((m) => ({ default: m.Login })));
 const Onboarding = lazyPage(() => import("./pages/Onboarding").then((m) => ({ default: m.Onboarding })));
+const Join = lazyPage(() => import("./pages/Join").then((m) => ({ default: m.Join })));
 const OnboardingSelection = lazyPage(() => import("./pages/OnboardingSelection").then((m) => ({ default: m.OnboardingSelection })));
 const Feed = lazyPage(() => import("./pages/Feed").then((m) => ({ default: m.Feed })));
 const FeedDetail = lazyPage(() => import("./pages/FeedDetail").then((m) => ({ default: m.FeedDetail })));
@@ -101,6 +102,10 @@ export default function App() {
               <Route path="/reset-password" element={<ForgotPassword />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
+              {/* Where a referral link lands. It keeps the code for this visit and sends
+                  them to the same first screen everybody else sees - a separate landing page
+                  for referrals is a second first impression to maintain, and it drifts. */}
+              <Route path="/join/:code" element={<Join />} />
               <Route path="/onboarding" element={<OnboardingSelection />} />
               <Route path="/onboarding/:persona" element={<Onboarding />} />
               <Route path="/entry" element={<EntryScreens />} />

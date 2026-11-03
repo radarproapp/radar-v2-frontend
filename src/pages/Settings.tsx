@@ -4,6 +4,7 @@ import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { useAuth } from "../auth/AuthContext";
 import { updateMe } from "../lib/api";
 import { WhatRadarKnows } from "../components/WhatRadarKnows";
+import { ReferralPanel } from "../components/ReferralPanel";
 import { FONT_SCALES, getFontScale, setFontScale } from "../lib/fontSize";
 import type { NotificationPrefs } from "../lib/types";
 
@@ -49,6 +50,10 @@ export function Settings() {
 
   return (
     <div className="r-page" style={{ maxWidth: 600 }}>
+      {/* Their link and what it has brought in. On Settings because it is about their account
+          rather than about their feed, and because somebody looking for "my link" looks here. */}
+      <ReferralPanel />
+
       <div className="r-page-head">
         <h1 className="r-page-title">Settings</h1>
       </div>

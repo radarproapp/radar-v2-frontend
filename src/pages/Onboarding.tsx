@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import { PasswordField } from "../components/PasswordField";
 import { useAuth } from "../auth/AuthContext";
+import { forgetCode, rememberedCode } from "../lib/referral";
 import { completeOnboarding, register } from "../lib/api";
 import { INTEREST_GROUPS } from "../lib/interests";
 import type { PersonaType } from "../lib/types";
@@ -102,7 +103,8 @@ export function Onboarding() {
 
     setBusy(true);
     try {
-      const auth = await register(name.trim(), email.trim(), password);
+      const auth = await register(name.trim(), email.trim(), password, rememberedCode());
+      forgetCode();
       // signIn, not setToken: the latter only writes storage, so the auth context still reported
       // isAuthenticated false and HomeGate sent a freshly onboarded user to the marketing page.
       signIn(auth.token);

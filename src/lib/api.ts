@@ -230,10 +230,33 @@ export interface AuthResponse {
   role: string;
 }
 
-export function register(name: string, email: string, password: string) {
+/// A participant's own code, link, and what it has brought in.
+///
+/// Three counts, never one. A sign-up is not a user: somebody who gets thirty people to create
+/// an account and walk away has produced thirty rows, and a single score cannot tell that from
+/// thirty people who come back every week.
+export interface MyReferral {
+  code: string;
+  link: string;
+  signedUp: number;
+  personalised: number;
+  cameBack: number;
+}
+
+export function getMyReferral() {
+  return request<MyReferral>("/api/referrals/mine");
+}
+
+/// Creates an account, carrying the referral code it arrived with.
+///
+/// `referralCode` is whatever was in the link, in whatever shape it was pasted. A code matching
+/// nobody is ignored by the server rather than refused: a wrong code is somebody mistyping a
+/// friend's link, and turning that into a failed sign-up costs the thing the scheme exists to
+/// produce.
+export function register(name: string, email: string, password: string, referralCode?: string) {
   return request<AuthResponse>("/api/auth/register", {
     method: "POST",
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ name, email, password, referralCode }),
   });
 }
 
