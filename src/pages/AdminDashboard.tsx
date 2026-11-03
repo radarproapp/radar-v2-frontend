@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
-import { getAdminActivity, getAdminQueue, getAdminReports, getAdminSources, getAdminSummary, getAdminUser, getAdminUsers, resolveAdminReport, type AdminReport, type AdminSummary } from "../lib/api";
+import { getAdminActivity, getAdminQueue, getAdminReports, getAdminSources, getAdminSummary, getAdminTeam, getAdminUser, getAdminUsers, resolveAdminReport, type AdminReport, type AdminSummary } from "../lib/api";
 import { Icon } from "../components/Icon";
 import { AdminActivitySection, AdminEngagementSection } from "../components/AdminInsights";
 
@@ -491,15 +491,65 @@ function Authoring() {
     </div>
   );
 }
+/// <summary>Who can get into the admin area.</summary>
+///
+/// This listed four named admins with email addresses and last-active times, written into the
+/// page — Chidi, Blessing and Yusuf did not have accounts. There was no endpoint behind it, and
+/// so no way to answer "who can get in here", which is a question the owner of a product has to
+/// be able to ask.
+///
+/// Rows come from the deployment's configuration, because that is what grants the role. An
+/// address in a list is an admin whether or not anybody has signed in with it, and an address
+/// nobody has used is worth seeing — it is access that exists and is not being watched.
 function Team() {
+  const query = useQuery({ queryKey: ["admin", "team"], queryFn: getAdminTeam });
+
   return (
     <div className="r-admin-page">
-      <Banner label="Two roles, one difference">Platform Admins run the product. Super Admins also manage the commercial and institutional layer.</Banner>
-      <NotMeasured
-        what="The admin team"
-        instead="This listed four named admins with email addresses and last-active times. They were written into the page - Chidi, Blessing and Yusuf do not have accounts."
-        needed={["Roles are real: a profile carries User, PlatformAdmin or SuperAdmin. Listing the accounts that actually hold them needs one endpoint, and is the next thing worth building here."]}
-      />
+      <Banner label="Two roles, one difference">Platform Admins run the product. Super Admins can also open one named person&apos;s activity, which is logged.</Banner>
+
+      <div className="admin-card">
+        <div className="admin-card__header"><div className="admin-card__title">Who can sign in</div><span className="admin-card__meta">From the deployment configuration</span></div>
+
+        {query.isError && <p className="admin-note">Could not read the admin list.</p>}
+        {!query.isError && !query.data && <p className="admin-note">Reading the configuration…</p>}
+
+        {query.data?.configuredCount === 0 && (
+          // Said in words. An empty list and a failed read look identical otherwise, and this is
+          // the state a fresh deployment genuinely starts in.
+          <p className="admin-note">
+            No admin is configured in this deployment. Nobody can reach this area — including, in a
+            moment, you.
+          </p>
+        )}
+
+        {query.data?.team.map((member) => (
+          <div className="admin-table-row" key={member.email}>
+            <div style={{ flex: 2.4, minWidth: 0 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 700 }}>{member.email}</div>
+              <div style={{ fontSize: 11, color: "#8a91a0" }}>
+                {member.hasAccount
+                  ? `Account created ${member.joinedAt ? new Date(member.joinedAt).toLocaleDateString() : "—"}`
+                  : "Granted access, never signed in"}
+              </div>
+            </div>
+            <div style={{ flex: 1, textAlign: "right" }}>
+              <span className={`admin-side__role-badge ${member.role === "SuperAdmin" ? "admin-side__role-badge--super" : ""}`}>
+                {member.role === "SuperAdmin" ? "Super Admin" : "Platform Admin"}
+              </span>
+            </div>
+          </div>
+        ))}
+
+        {query.data && (
+          <p className="admin-note" style={{ marginTop: 14 }}>
+            There is no button here on purpose. Access is granted by setting{" "}
+            <code>{query.data.grantedBy}</code>, so the list of people who can read every account
+            cannot be changed by whoever is already signed in. Removing an address takes effect on
+            the next request — it does not wait for that person to sign in again.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

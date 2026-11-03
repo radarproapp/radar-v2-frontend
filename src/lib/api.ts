@@ -1474,6 +1474,31 @@ export function getAdminUser(id: string) {
   return request<AdminUserDetail>(`/api/admin/users/${id}`);
 }
 
+/// Who can get into the admin area, and what each of them is allowed to do.
+///
+/// Read from the deployment's configuration rather than from the accounts collection, because
+/// configuration is what grants the role — an address added to a list is an admin whether or not
+/// anybody has signed in with it yet, and that pending access is exactly what a review of this
+/// screen needs to see.
+export interface AdminTeam {
+  team: {
+    email: string;
+    role: "SuperAdmin" | "PlatformAdmin";
+    /// Whether anybody has signed up with this address yet. Granted access that has never been
+    /// used is not a person on the team, and showing it as one overstates who is watching.
+    hasAccount: boolean;
+    joinedAt: string | null;
+  }[];
+  configuredCount: number;
+  /// How the list is changed, said on the screen that shows it.
+  grantedBy: string;
+  you: string;
+}
+
+export function getAdminTeam() {
+  return request<AdminTeam>("/api/admin/team");
+}
+
 export function getAdminReports() {
   return request<AdminReport[]>("/api/admin/reports");
 }
