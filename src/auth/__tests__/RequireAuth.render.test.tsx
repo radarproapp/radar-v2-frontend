@@ -18,6 +18,7 @@ import * as auth from "../AuthContext";
 function signedIn(onboardingComplete: boolean) {
   vi.spyOn(auth, "useAuth").mockReturnValue({
     isAuthenticated: true,
+    role: "User" as const,
     isLoading: false,
     profile: { id: "u1", persona: "Student", onboardingComplete } as never,
     signIn: () => {},

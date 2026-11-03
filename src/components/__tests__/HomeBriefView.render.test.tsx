@@ -41,6 +41,7 @@ describe("HomeBriefView", () => {
   beforeEach(() => {
     vi.spyOn(auth, "useAuth").mockReturnValue({
       isAuthenticated: true,
+    role: "User" as const,
       isLoading: false,
       profile: { id: "u1", persona: "Student", interests: ["Mathematics"], goals: ["Find a job"], problems: [] } as never,
       signIn: () => {},

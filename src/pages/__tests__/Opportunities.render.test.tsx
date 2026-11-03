@@ -15,6 +15,7 @@ import type { Opportunity } from "../../lib/types";
 function signedIn(profile: Partial<{ interests: string[]; goals: string[]; primaryGoal: string }>) {
   vi.spyOn(auth, "useAuth").mockReturnValue({
     isAuthenticated: true,
+    role: "User" as const,
     isLoading: false,
     profile: { id: "u1", persona: "Student", interests: [], goals: [], primaryGoal: "", ...profile } as never,
     signIn: () => {},

@@ -31,6 +31,7 @@ function paper(overrides: Partial<ContentItem> = {}) {
 function withProfile(interests: string[]) {
   vi.spyOn(auth, "useAuth").mockReturnValue({
     isAuthenticated: true,
+    role: "User" as const,
     isLoading: false,
     profile: { interests } as never,
     signIn: () => {},

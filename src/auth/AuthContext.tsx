@@ -1,11 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { clearToken, getMe, getToken, onSessionEnded, setToken as persistToken } from "../lib/api";
+import { roleFromToken, type Role } from "../lib/token";
 import type { UserProfile } from "../lib/types";
 
 interface AuthContextValue {
   isAuthenticated: boolean;
   profile: UserProfile | null;
+  /// Read off the token, not the profile. An admin account has no profile - it exists to run
+  /// Radar, not to read it - so anything gated on a role has to ask the token, which carries it.
+  /// For routing only; the server decides what the role is actually allowed to do.
+  role: Role | null;
   isLoading: boolean;
   signIn: (token: string)  => void;
   signOut: () => void;
@@ -15,7 +20,8 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [hasToken, setHasToken] = useState(() => getToken() !== null);
+  const [token, setTokenState] = useState(() => getToken());
+  const hasToken = token !== null;
   const queryClient = useQueryClient();
 
   const profileQuery = useQuery({
@@ -32,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // long as it took to refetch.
   const forget = useCallback(() => {
     clearToken();
-    setHasToken(false);
+    setTokenState(null);
     queryClient.clear();
   }, [queryClient]);
 
@@ -45,16 +51,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // error message on its own page while the app still shows them as signed in.
   useEffect(() => onSessionEnded(forget), [forget]);
 
-  const signIn = (token: string) => {
-    persistToken(token);
+  const signIn = (next: string) => {
+    persistToken(next);
     queryClient.clear();
-    setHasToken(true);
+    setTokenState(next);
   };
 
   const value = useMemo<AuthContextValue>(
     () => ({
       isAuthenticated: hasToken,
       profile: profileQuery.data ?? null,
+      role: roleFromToken(token),
       isLoading: hasToken && profileQuery.isLoading,
       signIn,
       signOut: forget,
@@ -65,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refetchProfile: () => queryClient.refetchQueries({ queryKey: ["me"] }),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [hasToken, profileQuery.data, profileQuery.isLoading],
+    [hasToken, token, profileQuery.data, profileQuery.isLoading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

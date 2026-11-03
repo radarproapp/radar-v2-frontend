@@ -17,6 +17,7 @@ const refetched = vi.fn();
 function signedIn(overrides: Partial<UserProfile> = {}) {
   vi.spyOn(auth, "useAuth").mockReturnValue({
     isAuthenticated: true,
+    role: "User" as const,
     isLoading: false,
     profile: {
       id: "u1",
