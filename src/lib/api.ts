@@ -1492,6 +1492,8 @@ export interface AdminTeamMember {
   /// used is not a person on the team, and showing it as one overstates who is watching.
   hasAccount: boolean;
   joinedAt: string | null;
+  /// An invitation that has been sent and not yet used. Access handed out and not taken up.
+  invitePending: boolean;
   /// Decided on the server, so the screen does not work the rules out again and get them subtly
   /// different. False for a configured row, and false for your own.
   canRevoke: boolean;
@@ -1513,6 +1515,17 @@ export interface AdminTeam {
 
 export function getAdminTeam() {
   return request<AdminTeam>("/api/admin/team");
+}
+
+/// Creates an admin account from an invitation link.
+///
+/// Returns nothing. Creating the account and being signed into it are separate steps, so a leaked
+/// link cannot also hand over a live session.
+export function acceptAdminInvite(token: string, password: string) {
+  return request<void>("/api/auth/admin/accept", {
+    method: "POST",
+    body: JSON.stringify({ token, password }),
+  });
 }
 
 export function inviteAdmin(email: string, role: "SuperAdmin" | "PlatformAdmin") {

@@ -524,7 +524,7 @@ function Team() {
       // Says what will actually happen next. An invited person who is already signed in keeps
       // the token they have until they sign in again, and without this they would try the admin
       // area, be turned away, and report it as broken.
-      setDone(`Emailed ${email.trim()}. They can reach the admin area the next time they sign in.`);
+      setDone(`Invitation sent to ${email.trim()}. They set a password on the link, which creates their admin account.`);
       setEmail("");
       await refresh();
     } catch (err) {
@@ -558,8 +558,8 @@ function Team() {
         <div className="admin-card" style={{ borderColor: "#b7791a" }}>
           <div className="admin-card__title">Nobody can be invited from here</div>
           <p className="admin-note">
-            No email is configured for this deployment, and an invite is the email — without it an
-            address would be granted access and never told. Add people with{" "}
+            No email is configured for this deployment, and the invitation is the email — it
+            carries the link somebody sets their password on. Add people with{" "}
             <code>{query.data.configuredBy}</code> until email is set up.
           </p>
         </div>
@@ -609,10 +609,9 @@ function Team() {
           </form>
 
           <p className="admin-note" style={{ marginTop: 10 }}>
-            They get an email telling them, and access is only given once that message is sent —
-            so a typo fails here rather than becoming a row nobody ever uses. They do not need a
-            Radar account yet; they will create one with this address and choose their own
-            password.
+            They get a link and choose their own password on it, which creates an admin account
+            separate from any ordinary Radar account on the same address. Nothing is granted until
+            that email is sent, so a typo fails here rather than becoming a row nobody ever uses.
           </p>
         </div>
       )}
@@ -644,7 +643,10 @@ function Team() {
                   : member.grantedByEmail
                     ? `Added by ${member.grantedByEmail}${member.grantedAt ? ` on ${new Date(member.grantedAt).toLocaleDateString()}` : ""}`
                     : "Added from this screen"}
-                {!member.hasAccount && " · has not signed up yet"}
+                {/* Three different states, not two. An invitation waiting to be opened is
+                    access handed out and not taken up; an address with neither an account nor a
+                    live invitation is one whose link expired or was never sent. */}
+                {!member.hasAccount && (member.invitePending ? " · invited, not set up yet" : " · no admin account yet")}
               </div>
             </div>
             <div style={{ flex: 1, textAlign: "right" }}>

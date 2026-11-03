@@ -21,6 +21,7 @@ function member(overrides: Partial<AdminTeamMember> = {}): AdminTeamMember {
     grantedByEmail: "owner@radar.com",
     grantedAt: "2026-11-01T10:00:00Z",
     hasAccount: true,
+    invitePending: false,
     joinedAt: "2026-10-01T10:00:00Z",
     canRevoke: true,
     ...overrides,
@@ -74,18 +75,6 @@ describe("Admin Team", () => {
 
     expect(within(row).getByText("Platform Admin")).toBeTruthy();
     expect(within(row).getByText(/added by owner@radar.com/i)).toBeTruthy();
-  });
-
-  /// <summary>Granted access nobody has used is said out loud.</summary>
-  ///
-  /// It is access that exists and is not being watched, and it was invisible — there was no
-  /// endpoint behind this screen at all.
-  it("says when an address has access but has never signed up", async () => {
-    vi.spyOn(api, "getAdminTeam").mockResolvedValue(team({ team: [member({ hasAccount: false })] }));
-
-    show();
-
-    expect(await screen.findByText(/has not signed up yet/i)).toBeTruthy();
   });
 
   /// <summary>A row from the deployment cannot be removed here, and says so.</summary>
@@ -142,7 +131,7 @@ describe("Admin Team", () => {
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
     await waitFor(() => expect(invite).toHaveBeenCalledWith("new@radar.com", "PlatformAdmin"));
-    expect(await screen.findByText(/emailed new@radar\.com/i)).toBeTruthy();
+    expect(await screen.findByText(/invitation sent to new@radar\.com/i)).toBeTruthy();
   });
 
   /// A refusal is shown rather than swallowed, because the row simply not appearing reads as a
@@ -204,6 +193,28 @@ describe("Admin Team", () => {
     expect(await screen.findByText(/invites will not actually arrive/i)).toBeTruthy();
     // The form still works - access is real, only the message is not.
     expect(screen.getByLabelText(/email address/i)).toBeTruthy();
+  });
+
+  /// <summary>Three states, not two.</summary>
+  ///
+  /// An invitation waiting to be opened is access handed out and not taken up. An address with
+  /// neither an account nor a live invitation is one whose link expired or never arrived — and
+  /// the two look identical if the screen only knows "has an account" and "does not".
+  it("tells a pending invitation apart from no account at all", async () => {
+    vi.spyOn(api, "getAdminTeam").mockResolvedValue(team({
+      team: [member({ hasAccount: false, invitePending: true })],
+    }));
+
+    const { unmount } = show();
+    expect(await screen.findByText(/invited, not set up yet/i)).toBeTruthy();
+    unmount();
+
+    vi.spyOn(api, "getAdminTeam").mockResolvedValue(team({
+      team: [member({ hasAccount: false, invitePending: false })],
+    }));
+
+    show();
+    expect(await screen.findByText(/no admin account yet/i)).toBeTruthy();
   });
 
   it("does not render a failure as an empty team", async () => {
