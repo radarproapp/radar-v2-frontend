@@ -1,7 +1,7 @@
-import { useState, type ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
-import { getAdminActivity, getAdminQueue, getAdminReports, getAdminSources, getAdminSummary, getAdminTeam, getAdminUser, getAdminUsers, resolveAdminReport, type AdminReport, type AdminSummary } from "../lib/api";
+import { getAdminActivity, getAdminQueue, getAdminReports, getAdminSources, getAdminSummary, getAdminTeam, getAdminUser, getAdminUsers, inviteAdmin, resolveAdminReport, revokeAdmin, type AdminReport, type AdminSummary, type AdminTeamMember } from "../lib/api";
 import { Icon } from "../components/Icon";
 import { AdminActivitySection, AdminEngagementSection } from "../components/AdminInsights";
 
@@ -491,35 +491,116 @@ function Authoring() {
     </div>
   );
 }
-/// <summary>Who can get into the admin area.</summary>
+/// <summary>Who can get into the admin area, and the only screen that can change it.</summary>
 ///
 /// This listed four named admins with email addresses and last-active times, written into the
-/// page — Chidi, Blessing and Yusuf did not have accounts. There was no endpoint behind it, and
-/// so no way to answer "who can get in here", which is a question the owner of a product has to
-/// be able to ask.
+/// page — Chidi, Blessing and Yusuf did not have accounts. There was no endpoint behind it, so
+/// there was no way to answer "who can get in here", which is a question the owner of a product
+/// has to be able to ask.
 ///
-/// Rows come from the deployment's configuration, because that is what grants the role. An
-/// address in a list is an admin whether or not anybody has signed in with it, and an address
-/// nobody has used is worth seeing — it is access that exists and is not being watched.
+/// Access comes from two places and the screen keeps them apart, because they are not equally
+/// removable. A row from the deployment configuration is the way back in if the grants are ever
+/// wrong, so nothing here will touch it.
 function Team() {
+  const queryClient = useQueryClient();
   const query = useQuery({ queryKey: ["admin", "team"], queryFn: getAdminTeam });
+
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"SuperAdmin" | "PlatformAdmin">("PlatformAdmin");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState<string | null>(null);
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["admin", "team"] });
+
+  const invite = async (event: FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    setDone(null);
+
+    try {
+      await inviteAdmin(email.trim(), role);
+      // Says what will actually happen next. An invited person who is already signed in keeps
+      // the token they have until they sign in again, and without this they would try the admin
+      // area, be turned away, and report it as broken.
+      setDone(`${email.trim()} can reach the admin area the next time they sign in.`);
+      setEmail("");
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not add that address.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const revoke = async (member: AdminTeamMember) => {
+    setError(null);
+    setDone(null);
+
+    try {
+      await revokeAdmin(member.email);
+      setDone(`${member.email} no longer has admin access.`);
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not remove that address.");
+    }
+  };
 
   return (
     <div className="r-admin-page">
-      <Banner label="Two roles, one difference">Platform Admins run the product. Super Admins can also open one named person&apos;s activity, which is logged.</Banner>
+      <Banner label="Two roles, one difference">Platform Admins run the product. Super Admins can also open one named person&apos;s activity, which is logged — and only they can change this list.</Banner>
+
+      {query.data?.canInvite && (
+        <div className="admin-card">
+          <div className="admin-card__header"><div className="admin-card__title">Add somebody</div></div>
+
+          <form onSubmit={invite} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+            <input
+              className="admin-search"
+              style={{ flex: "2 1 240px" }}
+              placeholder="Their email address"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              aria-label="Email address"
+              autoComplete="off"
+            />
+            <select
+              className="admin-search"
+              style={{ flex: "1 1 160px" }}
+              value={role}
+              onChange={(event) => setRole(event.target.value as "SuperAdmin" | "PlatformAdmin")}
+              aria-label="Role"
+            >
+              <option value="PlatformAdmin">Platform Admin</option>
+              <option value="SuperAdmin">Super Admin</option>
+            </select>
+            <button className="btn btn--accent" type="submit" disabled={busy || email.trim().length === 0}>
+              {busy ? "Adding…" : "Add"}
+            </button>
+          </form>
+
+          <p className="admin-note" style={{ marginTop: 10 }}>
+            They do not need a Radar account yet — the access waits for the address. Somebody who
+            is already signed in gets it the next time they sign in.
+          </p>
+        </div>
+      )}
+
+      {error && <div className="admin-card" style={{ borderColor: "#c0392b" }}><p className="admin-note" style={{ color: "#c0392b" }}>{error}</p></div>}
+      {done && <div className="admin-card"><p className="admin-note">{done}</p></div>}
 
       <div className="admin-card">
-        <div className="admin-card__header"><div className="admin-card__title">Who can sign in</div><span className="admin-card__meta">From the deployment configuration</span></div>
+        <div className="admin-card__header"><div className="admin-card__title">Who can sign in</div><span className="admin-card__meta">{query.data ? `${query.data.team.length} with access` : ""}</span></div>
 
         {query.isError && <p className="admin-note">Could not read the admin list.</p>}
-        {!query.isError && !query.data && <p className="admin-note">Reading the configuration…</p>}
+        {!query.isError && !query.data && <p className="admin-note">Reading the list…</p>}
 
-        {query.data?.configuredCount === 0 && (
+        {query.data?.team.length === 0 && (
           // Said in words. An empty list and a failed read look identical otherwise, and this is
           // the state a fresh deployment genuinely starts in.
           <p className="admin-note">
-            No admin is configured in this deployment. Nobody can reach this area — including, in a
-            moment, you.
+            Nobody has admin access in this deployment — including, in a moment, you.
           </p>
         )}
 
@@ -528,9 +609,12 @@ function Team() {
             <div style={{ flex: 2.4, minWidth: 0 }}>
               <div style={{ fontSize: 12.5, fontWeight: 700 }}>{member.email}</div>
               <div style={{ fontSize: 11, color: "#8a91a0" }}>
-                {member.hasAccount
-                  ? `Account created ${member.joinedAt ? new Date(member.joinedAt).toLocaleDateString() : "—"}`
-                  : "Granted access, never signed in"}
+                {member.fromConfiguration
+                  ? "From the deployment configuration"
+                  : member.grantedByEmail
+                    ? `Added by ${member.grantedByEmail}${member.grantedAt ? ` on ${new Date(member.grantedAt).toLocaleDateString()}` : ""}`
+                    : "Added from this screen"}
+                {!member.hasAccount && " · has not signed up yet"}
               </div>
             </div>
             <div style={{ flex: 1, textAlign: "right" }}>
@@ -538,15 +622,26 @@ function Team() {
                 {member.role === "SuperAdmin" ? "Super Admin" : "Platform Admin"}
               </span>
             </div>
+            <div style={{ flex: "0 0 110px", textAlign: "right" }}>
+              {query.data?.canInvite && member.canRevoke && (
+                <button className="btn btn--danger-outline btn--sm" onClick={() => revoke(member)}>Remove</button>
+              )}
+              {/* Why a row has no button, rather than just an absence somebody has to interpret. */}
+              {query.data?.canInvite && !member.canRevoke && (
+                <span style={{ fontSize: 11, color: "#8a91a0" }}>
+                  {member.fromConfiguration ? "Set by deploy" : "You"}
+                </span>
+              )}
+            </div>
           </div>
         ))}
 
         {query.data && (
           <p className="admin-note" style={{ marginTop: 14 }}>
-            There is no button here on purpose. Access is granted by setting{" "}
-            <code>{query.data.grantedBy}</code>, so the list of people who can read every account
-            cannot be changed by whoever is already signed in. Removing an address takes effect on
-            the next request — it does not wait for that person to sign in again.
+            Removing somebody takes effect within about thirty seconds, not at their next sign-in —
+            an admin token already in use stops working. Rows marked <em>set by deploy</em> come
+            from <code>{query.data.configuredBy}</code> and cannot be removed here on purpose:
+            they are the way back in if this list is ever wrong.
           </p>
         )}
       </div>

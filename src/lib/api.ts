@@ -1480,23 +1480,44 @@ export function getAdminUser(id: string) {
 /// configuration is what grants the role — an address added to a list is an admin whether or not
 /// anybody has signed in with it yet, and that pending access is exactly what a review of this
 /// screen needs to see.
+export interface AdminTeamMember {
+  email: string;
+  role: "SuperAdmin" | "PlatformAdmin";
+  /// Granted by a deploy rather than from in here, which is why it cannot be removed from in
+  /// here: the configured lists are the way back in when the grants are wrong.
+  fromConfiguration: boolean;
+  grantedByEmail: string | null;
+  grantedAt: string | null;
+  /// Whether anybody has signed up with this address yet. Granted access that has never been
+  /// used is not a person on the team, and showing it as one overstates who is watching.
+  hasAccount: boolean;
+  joinedAt: string | null;
+  /// Decided on the server, so the screen does not work the rules out again and get them subtly
+  /// different. False for a configured row, and false for your own.
+  canRevoke: boolean;
+}
+
 export interface AdminTeam {
-  team: {
-    email: string;
-    role: "SuperAdmin" | "PlatformAdmin";
-    /// Whether anybody has signed up with this address yet. Granted access that has never been
-    /// used is not a person on the team, and showing it as one overstates who is watching.
-    hasAccount: boolean;
-    joinedAt: string | null;
-  }[];
-  configuredCount: number;
-  /// How the list is changed, said on the screen that shows it.
-  grantedBy: string;
+  team: AdminTeamMember[];
+  /// Whether this admin may change the list. Only a Super Admin can.
+  canInvite: boolean;
   you: string;
+  configuredBy: string;
 }
 
 export function getAdminTeam() {
   return request<AdminTeam>("/api/admin/team");
+}
+
+export function inviteAdmin(email: string, role: "SuperAdmin" | "PlatformAdmin") {
+  return request<void>("/api/admin/team", {
+    method: "POST",
+    body: JSON.stringify({ email, role }),
+  });
+}
+
+export function revokeAdmin(email: string) {
+  return request<void>(`/api/admin/team/${encodeURIComponent(email)}`, { method: "DELETE" });
 }
 
 export function getAdminReports() {
