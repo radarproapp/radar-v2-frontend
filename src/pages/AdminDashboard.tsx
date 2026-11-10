@@ -4,8 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getAdminActivity, getAdminQueue, getAdminReports, getAdminSources, getAdminSummary, getAdminTeam, getAdminUser, getAdminUsers, inviteAdmin, resolveAdminReport, revokeAdmin, type AdminReport, type AdminSummary, type AdminTeamMember } from "../lib/api";
 import { Icon } from "../components/Icon";
 import { AdminActivitySection, AdminEngagementSection } from "../components/AdminInsights";
+import { AdminCampaignSection } from "../components/AdminCampaign";
 
-type AdminSection = "overview" | "activity" | "engagement" | "queue" | "sources" | "quality" | "users" | "institutions" | "growth" | "moderation" | "authoring" | "team";
+type AdminSection = "overview" | "activity" | "engagement" | "queue" | "sources" | "quality" | "users" | "institutions" | "growth" | "campaign" | "moderation" | "authoring" | "team";
 
 const pageMeta: Record<AdminSection, { title: string; sub: string }> = {
   overview: { title: "Dashboard", sub: "Overview · last 7 days" },
@@ -17,6 +18,7 @@ const pageMeta: Record<AdminSection, { title: string; sub: string }> = {
   users: { title: "Users", sub: "Account management" },
   institutions: { title: "Institutions", sub: "Organisation accounts" },
   growth: { title: "Growth", sub: "Activation and retention" },
+  campaign: { title: "Campaign", sub: "Who brought people in, and who made something" },
   moderation: { title: "Moderation", sub: "Reports and flags" },
   authoring: { title: "Learn Authoring", sub: "Modules and lessons" },
   team: { title: "Admin Team", sub: "Roles and permissions" },
@@ -31,7 +33,7 @@ const navGroups = [
   { label: "Overview", items: [["overview", "Dashboard", "#008c93"], ["activity", "Activity", "#008c93"], ["engagement", "Engagement", "#008c93"]] },
   { label: "Content", items: [["queue", "Review Queue", "#008c93"], ["sources", "Sources", "#008c93"], ["quality", "AI Quality", "#c0392b"]] },
   { label: "People", items: [["users", "Users", "#5b6bd9"], ["institutions", "Institutions", "#5b6bd9"]] },
-  { label: "Growth", items: [["growth", "Growth", "#1f9d63"], ["moderation", "Moderation", "#b7791a"], ["authoring", "Learn Authoring", "#b7791a"]] },
+  { label: "Growth", items: [["growth", "Growth", "#1f9d63"], ["campaign", "Campaign", "#1f9d63"], ["moderation", "Moderation", "#b7791a"], ["authoring", "Learn Authoring", "#b7791a"]] },
   { label: "System", items: [["team", "Admin Team", "#535c6b"]] },
 ] as const;
 
@@ -115,6 +117,7 @@ function renderSection(section: AdminSection, summary?: AdminSummary) {
   if (section === "users") return <LiveUsers />;
   if (section === "institutions") return <Institutions />;
   if (section === "growth") return <Growth />;
+  if (section === "campaign") return <AdminCampaignSection />;
   if (section === "moderation") return <LiveModeration />;
   if (section === "authoring") return <Authoring />;
   return <Team />;

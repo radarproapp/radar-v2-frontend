@@ -1539,6 +1539,94 @@ export function revokeAdmin(email: string) {
   return request<void>(`/api/admin/team/${encodeURIComponent(email)}`, { method: "DELETE" });
 }
 
+// ── The growth campaign ───────────────────────────────────────────────────
+//
+// Two things are rewarded and they are counted separately: bringing people in, which Radar can
+// see, and making something that explains Radar, which lives on somebody else's platform and
+// which Radar cannot see at all. The two boards are never combined — there is no honest exchange
+// rate between a video and a user, and inventing one buries the campaign's central judgement in
+// a weighting nobody can inspect.
+
+/// One row of the acquisition board.
+///
+/// Three numbers rather than a score. A sign-up is not a user: somebody who gets thirty people to
+/// create an account and walk away has produced thirty rows, and one number cannot tell that from
+/// thirty people who come back every week.
+export interface Introducer {
+  profileId: string;
+  name: string;
+  code: string | null;
+  signedUp: number;
+  personalised: number;
+  cameBack: number;
+}
+
+export function getReferralBoard(limit = 50) {
+  return request<Introducer[]>(`/api/referrals/board?limit=${limit}`);
+}
+
+/// One row of the content board.
+export interface Maker {
+  profileId: string;
+  name: string;
+  /// Their best single piece, and the only thing the board ranks on.
+  best: number;
+  /// How many of their submissions a reviewer has marked — not how many they sent.
+  judged: number;
+  submitted: number;
+}
+
+export interface ContentBoard {
+  makers: Maker[];
+  /// Reported rather than left out: a board of three names with thirty waiting reads as a
+  /// campaign nobody entered.
+  awaitingReview: number;
+  rankedOn: string;
+}
+
+export function getContentBoard(limit = 50) {
+  return request<ContentBoard>(`/api/campaign/board?limit=${limit}`);
+}
+
+export interface ContentSubmission {
+  id: string;
+  profileId: string;
+  profileName: string;
+  link: string;
+  platform: string;
+  note: string;
+  submittedAt: string;
+  /// Null means nobody has looked yet, which is not the same as a low mark.
+  score: number | null;
+  verdict: string | null;
+  judgedAt: string | null;
+  isJudged: boolean;
+  judgedBy: string | null;
+  /// Every mark it has carried, so one that replaced another is visible rather than gone.
+  marks: { score: number; verdict: string; byProfileId: string | null; at: string }[];
+}
+
+/// Waiting work and the judged tail, as two lists.
+///
+/// Not one sorted list: the queue used to be the newest N submissions reordered, so once N judged
+/// ones existed, older unjudged work was unreachable at every limit while the board went on
+/// reporting it as awaiting review.
+export interface ReviewQueue {
+  waiting: ContentSubmission[];
+  recentlyJudged: ContentSubmission[];
+}
+
+export function getReviewQueue(limit = 200) {
+  return request<ReviewQueue>(`/api/campaign/submissions?limit=${limit}`);
+}
+
+export function judgeSubmission(id: string, score: number, verdict: string) {
+  return request<void>(`/api/campaign/submissions/${id}/judge`, {
+    method: "POST",
+    body: JSON.stringify({ score, verdict }),
+  });
+}
+
 export function getAdminReports() {
   return request<AdminReport[]>("/api/admin/reports");
 }
