@@ -1616,6 +1616,29 @@ export interface ReviewQueue {
   recentlyJudged: ContentSubmission[];
 }
 
+/// What this participant has submitted, and what came of it.
+///
+/// The same shape the reviewer sees, minus who marked it — a participant gets the mark and the
+/// reason, and the reviewer's identity is for the admin view, where accountability is the point.
+export function getMySubmissions() {
+  return request<ContentSubmission[]>("/api/campaign/submissions/mine");
+}
+
+export function submitContent(link: string, platform: string, note: string) {
+  return request<ContentSubmission>("/api/campaign/submissions", {
+    method: "POST",
+    body: JSON.stringify({ link, platform, note }),
+  });
+}
+
+/// Takes back a submission nobody has marked yet.
+///
+/// Only while unjudged: deleting a marked one would delete a reviewer's record of having marked
+/// it.
+export function withdrawSubmission(id: string) {
+  return request<void>(`/api/campaign/submissions/${id}`, { method: "DELETE" });
+}
+
 export function getReviewQueue(limit = 200) {
   return request<ReviewQueue>(`/api/campaign/submissions?limit=${limit}`);
 }

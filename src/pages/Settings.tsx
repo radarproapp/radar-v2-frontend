@@ -5,6 +5,7 @@ import { useAuth } from "../auth/AuthContext";
 import { updateMe } from "../lib/api";
 import { WhatRadarKnows } from "../components/WhatRadarKnows";
 import { ReferralPanel } from "../components/ReferralPanel";
+import { ContentSubmissionPanel } from "../components/ContentSubmissionPanel";
 import { FONT_SCALES, getFontScale, setFontScale } from "../lib/fontSize";
 import type { NotificationPrefs } from "../lib/types";
 
@@ -53,6 +54,11 @@ export function Settings() {
       {/* Their link and what it has brought in. On Settings because it is about their account
           rather than about their feed, and because somebody looking for "my link" looks here. */}
       <ReferralPanel />
+
+      {/* The campaign's other half, beside the first. The two are rewarded separately: an
+          excellent video that brings nobody is not the same contribution as introducing Radar to
+          thirty people who stay, and neither substitutes for the other. */}
+      <ContentSubmissionPanel />
 
       <div className="r-page-head">
         <h1 className="r-page-title">Settings</h1>
