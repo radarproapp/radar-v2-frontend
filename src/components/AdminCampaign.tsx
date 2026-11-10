@@ -65,10 +65,22 @@ function AcquisitionBoard() {
         </div>
       ))}
 
+      {/* Said per board rather than per row, because it is the same fact about every row and a
+          column of mostly-zeroes would crowd out the three that matter. */}
+      {query.data && query.data.some((row) => row.awaitingConfirmation > 0) && (
+        <p className="admin-note" style={{ marginTop: 12 }}>
+          Waiting on a confirmed email: {query.data
+            .filter((row) => row.awaitingConfirmation > 0)
+            .map((row) => `${row.name || "Unnamed"} ${row.awaitingConfirmation}`)
+            .join(", ")}. Those sign-ups are in none of the counts above.
+        </p>
+      )}
+
       <p className="admin-note" style={{ marginTop: 12 }}>
         Three numbers, not one. Thirty accounts that never came back is not thirty users, and a
-        single score cannot tell those apart. Nothing verifies an email address, so a prize awarded
-        on these should be gated on verified addresses.
+        single score cannot tell those apart. Only sign-ups whose email address has been confirmed
+        are counted at all — an address nobody has to own is how thirty of them get made in an
+        afternoon.
       </p>
     </div>
   );

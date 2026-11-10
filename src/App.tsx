@@ -58,6 +58,7 @@ const NotFound = lazyPage(() => import("./pages/NotFound").then((m) => ({ defaul
 // Admin + entry screens, loaded on demand like everything else.
 const AdminLogin = lazyPage(() => import("./pages/AdminLogin").then((m) => ({ default: m.AdminLogin })));
 const AdminAccept = lazyPage(() => import("./pages/AdminAccept").then((m) => ({ default: m.AdminAccept })));
+const VerifyEmail = lazyPage(() => import("./pages/VerifyEmail").then((m) => ({ default: m.VerifyEmail })));
 const AdminDashboard = lazyPage(() => import("./pages/AdminDashboard").then((m) => ({ default: m.AdminDashboard })));
 const EntryScreens = lazyPage(() => import("./pages/EntryScreens").then((m) => ({ default: m.EntryScreens })));
 
@@ -100,6 +101,7 @@ export default function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/accept" element={<AdminAccept />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ForgotPassword />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />

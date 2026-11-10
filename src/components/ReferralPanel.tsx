@@ -56,8 +56,9 @@ export function ReferralPanel() {
           a code into anywhere in the app, so somebody who received the bare code in a group
           chat could not use it, beside a prominent button offering to copy it. */}
       <p className="referral__note">
-        Anyone who signs up through your link is counted to you. If they already have Radar open,
-        the code works too — there is a field for it on the sign-up screen.
+        Anyone who signs up through your link is counted to you once they confirm their email
+        address. If they already have Radar open, the code works too — there is a field for it on
+        the sign-up screen.
       </p>
 
       <div className="referral__code" aria-label="Your referral code">{mine.code}</div>
@@ -100,10 +101,22 @@ export function ReferralPanel() {
         ))}
       </div>
 
-      {mine.signedUp === 0 && (
+      {mine.signedUp === 0 && mine.awaitingConfirmation === 0 && (
         <p className="referral__note">
           Nobody has joined through your link yet. Said plainly rather than shown as a zero that
           could mean anything.
+        </p>
+      )}
+
+      {/* The one state a row of zeroes would otherwise hide, and the one the person can do
+          something about. Somebody who brought five people who have not opened their email
+          reads as having brought nobody, which is both discouraging and untrue. */}
+      {mine.awaitingConfirmation > 0 && (
+        <p className="referral__note">
+          {mine.awaitingConfirmation} {mine.awaitingConfirmation === 1 ? "person has" : "people have"} joined
+          with your link but {mine.awaitingConfirmation === 1 ? "has" : "have"} not confirmed their email
+          yet, so {mine.awaitingConfirmation === 1 ? "it does" : "they do"} not count. A nudge from you is
+          usually all it takes.
         </p>
       )}
 

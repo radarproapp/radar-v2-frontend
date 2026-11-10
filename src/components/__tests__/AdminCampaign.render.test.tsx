@@ -12,7 +12,7 @@ import type { ContentBoard, ContentSubmission, Introducer, ReviewQueue } from ".
 /// boards stay apart, and that an empty one says which kind of empty it is.
 
 function introducer(overrides: Partial<Introducer> = {}): Introducer {
-  return { profileId: "p1", name: "Ada", code: "ABC2345", signedUp: 12, personalised: 7, cameBack: 3, ...overrides };
+  return { profileId: "p1", name: "Ada", code: "ABC2345", signedUp: 12, personalised: 7, cameBack: 3, awaitingConfirmation: 0, ...overrides };
 }
 
 function submission(overrides: Partial<ContentSubmission> = {}): ContentSubmission {

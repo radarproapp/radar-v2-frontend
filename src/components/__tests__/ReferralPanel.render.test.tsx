@@ -17,7 +17,7 @@ function mine(overrides: Partial<MyReferral> = {}): MyReferral {
     link: "https://www.radarproapp.com/join/ABC2345",
     signedUp: 12,
     personalised: 7,
-    cameBack: 3,
+    cameBack: 3, awaitingConfirmation: 0,
     ...overrides,
   };
 }

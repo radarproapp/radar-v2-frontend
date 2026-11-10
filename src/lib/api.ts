@@ -241,6 +241,28 @@ export interface MyReferral {
   signedUp: number;
   personalised: number;
   cameBack: number;
+  /// People who arrived with the code and whose address has not answered yet. They are in none
+  /// of the three counts above, and this says why rather than dropping them.
+  awaitingConfirmation: number;
+}
+
+/// Confirming an address, from the link in the email.
+///
+/// `alreadyDone` tells a second tap on the same link apart from a failure — which is the ordinary
+/// thing a person does when they are not sure the first one worked.
+export function verifyEmail(token: string) {
+  return request<{ verified: boolean; alreadyDone: boolean }>("/api/auth/verify-email", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
+/// Sends the confirmation link again, to the signed-in account's own address and no other.
+///
+/// `sent` is false for two states that are not worth telling apart on a screen: already
+/// confirmed, and the send failed. Either way there is nothing to wait for.
+export function resendVerification() {
+  return request<{ sent: boolean }>("/api/auth/verify-email/resend", { method: "POST" });
 }
 
 export function getMyReferral() {
@@ -1559,6 +1581,9 @@ export interface Introducer {
   signedUp: number;
   personalised: number;
   cameBack: number;
+  /// Sign-ups whose address has not answered, counted nowhere else. Carried so somebody with
+  /// five unconfirmed sign-ups is not shown as having brought nobody.
+  awaitingConfirmation: number;
 }
 
 export function getReferralBoard(limit = 50) {
