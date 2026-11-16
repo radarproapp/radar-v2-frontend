@@ -3,6 +3,7 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Deferred } from "../components/Deferred";
 import { FeedOpportunities } from "../components/FeedOpportunities";
+import { FeedTabs, type FeedTab } from "../components/FeedTabs";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
@@ -192,6 +193,20 @@ export function Feed() {
   const firstPage = feedQuery.data?.pages?.[0];
   const opportunities = firstPage?.opportunities ?? [];
 
+  /// Which surface is showing, kept in the URL.
+  ///
+  /// So the back button moves between them, a link can point at either, and a refresh does not
+  /// silently drop somebody back on Information. State held only in React would lose all three,
+  /// and the tab somebody is on is exactly the kind of thing they expect a link to carry.
+  const tab: FeedTab = searchParams.get("tab") === "opportunities" ? "opportunities" : "information";
+
+  const showTab = (next: FeedTab) => {
+    const params = new URLSearchParams(searchParams);
+    if (next === "information") params.delete("tab");
+    else params.set("tab", next);
+    setSearchParams(params, { replace: true });
+  };
+
   return (
     <div className="r-page">
       <div className="r-page-head">
@@ -215,17 +230,32 @@ export function Feed() {
         </>
       )}
 
-      {/* Above the feed, because a deadline is the only thing here that expires. Nothing is
-          rendered when there is nothing open: a strip padded to look populated sends somebody to
-          spend an afternoon on an application Radar did not actually match them to. */}
+      {/* The brief's two columns, as tabs. Hidden until there is something to personalise, since
+          a tab bar over an unpersonalised sample is offering a choice between two things Radar
+          has not matched to anybody yet. */}
       {!notPersonalised && (
-        <FeedOpportunities
-          opportunities={opportunities}
-          focus={firstPage?.opportunityFocus}
+        <FeedTabs
+          active={tab}
+          onChange={showTab}
+          counts={{ opportunities: opportunities.length }}
         />
       )}
 
-      {feedQuery.isLoading ? (
+      {/* Opportunities as their own surface rather than a strip above the feed.
+          A deadline is the only thing here that expires, which is why they used to sit on top —
+          but a strip is a glance, and the brief asks for something somebody scrolls. Nothing is
+          rendered when there is nothing open: a list padded to look populated sends somebody to
+          spend an afternoon on an application Radar did not actually match them to. */}
+      {!notPersonalised && tab === "opportunities" && (
+        <div role="tabpanel" id="feed-panel-opportunities" aria-labelledby="feed-tab-opportunities">
+          <FeedOpportunities
+            opportunities={opportunities}
+            focus={firstPage?.opportunityFocus}
+          />
+        </div>
+      )}
+
+      {tab === "opportunities" ? null : feedQuery.isLoading ? (
         <LoadingSkeleton variant="feed" count={4} />
       ) : feedQuery.isError ? (
         <ErrorState title="Failed to load feed" description={errorMessage} onRetry={() => feedQuery.refetch()} />
@@ -241,7 +271,7 @@ export function Feed() {
           }}
         />
       ) : (
-        <>
+        <div role="tabpanel" id="feed-panel-information" aria-labelledby="feed-tab-information">
           {items.map((item, position) => (
             // Rows are mounted on approach, not all at once: the first screen paints immediately and
             // the rest of the loaded pages cost nothing until they are scrolled towards.
@@ -402,7 +432,7 @@ export function Feed() {
               <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>You're all caught up.</span>
             )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

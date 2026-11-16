@@ -4971,3 +4971,64 @@ a:hover { color: var(--cyan-deep); }
 .eligibility-facts__field { display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
 .eligibility-facts__field > span { font-weight: 600; }
 .eligibility-facts__field small { font-size: 11.5px; color: var(--text-muted); line-height: 1.45; }
+
+/* ═══════════════════════════════════════════════
+   FEED TABS
+   ═══════════════════════════════════════════════
+   The brief's two columns, as tabs. Side by side is a desktop idea; at phone width it means two
+   half-width columns and neither reads. X solves the same problem with For you / Following, and
+   the scrolling the brief actually asks for survives intact.
+
+   Sticky, because the point of a tab is being able to get back to the other one without
+   scrolling to the top first. */
+.feed-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+.feed-tab {
+  flex: 1;
+  padding: 13px 8px 11px;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  transition: color var(--t-fast);
+}
+
+.feed-tab:hover { color: var(--text); }
+.feed-tab.is-active { color: var(--text); font-weight: 700; }
+
+/* The indicator sits under the label rather than spanning the whole tab, which is what makes it
+   read as underlining a word instead of filling a box. */
+.feed-tab__label { position: relative; display: inline-block; padding-bottom: 10px; }
+
+.feed-tab.is-active .feed-tab__label::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--cyan);
+}
+
+.feed-tab__count {
+  margin-left: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--cyan);
+}
+
+/* A visible focus ring, because the tab order is one stop and arrows move within it — a keyboard
+   user needs to see where they are. */
+.feed-tab:focus-visible { outline: 2px solid var(--cyan); outline-offset: -3px; border-radius: 6px; }
