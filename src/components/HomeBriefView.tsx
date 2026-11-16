@@ -103,8 +103,33 @@ export function HomeBriefView({ firstName }: { firstName: string }) {
                   {humanize(item.publishedAt)}
                 </span>
               </div>
-              <div className="nav-signal-headline" style={{ fontSize: 15 }}>{item.signal}</div>
-              <div className="nav-signal-why">{item.whyYoureSeeingThis}</div>
+              <div className="brief-card__body">
+                <div className="brief-card__text">
+                  <div className="nav-signal-headline" style={{ fontSize: 15 }}>{item.signal}</div>
+                  <div className="nav-signal-why">{item.whyYoureSeeingThis}</div>
+                </div>
+
+                {/* The picture the server has been sending all along.
+                    HomeBrief carries ThumbnailUrl and HomeBriefService fills it, and this screen
+                    rendered no images at all - so every brief was a wall of text while the data
+                    for a picture sat in the response unused. This is the first screen anybody
+                    sees.
+
+                    A thumbnail beside the text rather than a banner above it: the brief is a
+                    scannable list of three or four things, and full-width images would turn it
+                    into a feed, which is the surface next door. */}
+                {item.thumbnailUrl && (
+                  <img
+                    className="brief-card__thumb"
+                    src={item.thumbnailUrl}
+                    alt=""
+                    loading="lazy"
+                    /// Hidden on failure rather than left as a broken-image glyph. Two thirds of
+                    /// these are hotlinked from publishers who move things, so this will happen.
+                    onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
+                  />
+                )}
+              </div>
             </button>
           ))}
         </>

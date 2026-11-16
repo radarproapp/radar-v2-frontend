@@ -5032,3 +5032,83 @@ a:hover { color: var(--cyan-deep); }
 /* A visible focus ring, because the tab order is one stop and arrows move within it — a keyboard
    user needs to see where they are. */
 .feed-tab:focus-visible { outline: 2px solid var(--cyan); outline-offset: -3px; border-radius: 6px; }
+
+/* ═══════════════════════════════════════════════
+   BRIEF CARD IMAGES
+   ═══════════════════════════════════════════════
+   The home brief rendered no images at all, while HomeBrief.ThumbnailUrl was populated on the
+   server and sent on every response. A wall of text on the first screen anybody sees, with the
+   picture already in the payload.
+
+   A thumbnail beside the text, not a banner above it: the brief is a scannable list of three or
+   four things, and full-width images would turn it into a feed — which is the surface next
+   door. */
+.brief-card__body { display: flex; gap: 12px; align-items: flex-start; }
+.brief-card__text { flex: 1; min-width: 0; }
+
+.brief-card__thumb {
+  width: 78px;
+  height: 78px;
+  flex: 0 0 78px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--bg-subtle);
+}
+
+/* Smaller on a phone, where 78px of a 340px row is most of the line length the headline needs. */
+@media (max-width: 420px) {
+  .brief-card__thumb { width: 60px; height: 60px; flex-basis: 60px; }
+}
+
+/* ═══════════════════════════════════════════════
+   FEED CARD ACTIONS ON A PHONE
+   ═══════════════════════════════════════════════
+   Six actions were laid out in one non-wrapping row — read brief, save, more like this, less
+   like this, not relevant, learn this — plus the read time. At phone width there is room for
+   about two, so every label wrapped inside its own button: "More like this" became three
+   stacked words in a box, "Read brief" became two lines, and the last action ran off the edge.
+
+   Two fixes, and the first is the one that matters. A label must never break mid-phrase — a
+   button is one thing to tap and reads as one thing only if its words stay together. The row
+   wraps between buttons instead. */
+.feed-card__footer button,
+.feed-card__sub-actions button { white-space: nowrap; }
+
+.feed-card__footer { flex-wrap: wrap; row-gap: 10px; }
+.feed-card__sub-actions { flex-wrap: wrap; row-gap: 6px; }
+
+@media (max-width: 560px) {
+  /* The primary action takes the full width and sits first. It is the only one of the six that
+     is the point of the card; the rest are adjustments to the feed, and burying the main action
+     in a row of equals is what made the card feel like a form rather than something to read. */
+  .feed-card__footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .feed-card__read-btn {
+    width: 100%;
+    padding: 13px 20px;
+    font-size: 14px;
+  }
+
+  /* Comfortable to hit. 9px of padding on a 12.5px label is a target around 30px tall, which is
+     under every published minimum and is the other half of "not inviting" — a row of small words
+     you have to aim at. Spread across the row so the gaps are part of the target too. */
+  .feed-card__sub-actions {
+    justify-content: space-between;
+    gap: 4px;
+    margin: 0 -6px;
+  }
+
+  .feed-card__sub-actions .btn--text {
+    padding: 11px 6px;
+    font-size: 12.5px;
+    min-height: 44px;
+  }
+
+  /* Hidden on a phone rather than wrapped to its own line. It is a detail somebody reads on the
+     detail page, and it was the element overflowing the edge. */
+  .feed-card__read-time { display: none; }
+}
