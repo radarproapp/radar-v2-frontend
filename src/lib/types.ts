@@ -153,7 +153,25 @@ export interface Opportunity {
   /// The deadline state as a value rather than a sentence, so the UI can colour it without
   /// string-matching the label. The server used to bake a coloured circle into urgencyLabel.
   urgencyLevel?: "Open" | "Soon" | "Urgent" | "Closed" | "NoDeadline";
+  /// Whether this reader could actually apply, as distinct from whether it suits them.
+  ///
+  /// Absent when nobody has run the check for this surface — saved and tracked lists
+  /// deliberately do not gate, since hiding something somebody kept on purpose would be wrong.
+  /// That is a different statement from "Unchecked", which means the posting itself records no
+  /// criteria, so the two must not be collapsed.
+  eligibilityVerdict?: EligibilityVerdict;
+  /// Why, in sentences meant to be read. Includes what could not be checked, not only what
+  /// passed — "Open to Nigerian nationals, Radar has not asked yours" is the line that keeps a
+  /// partial check honest.
+  eligibilityNotes?: string[];
 }
+
+/// What the eligibility check concluded.
+///
+/// Four values rather than a boolean because two of them are different kinds of not knowing.
+/// Only `NotEligible` means the server withheld anything; the rest are shown, and the UI should
+/// say which it is rather than implying a check that did not happen.
+export type EligibilityVerdict = "Unchecked" | "Eligible" | "CannotTell" | "NotEligible";
 
 export interface DailyOpportunityFeed {
   totalCount: number;
@@ -205,6 +223,55 @@ export interface InterestPath {
   priority: string;
 }
 
+/// How far somebody got in formal education. Ordered, so "a degree or higher" is a comparison.
+export type QualificationLevel =
+  | "InProgress"
+  | "SecondarySchool"
+  | "Nce"
+  | "Ond"
+  | "Hnd"
+  | "Bachelors"
+  | "Masters"
+  | "Doctorate";
+
+/// Professional level. Ordered, and deliberately without a "not stated" member — a zero meaning
+/// "nobody said" sits below Entry and silently excludes everyone who has not answered.
+export type Seniority = "Entry" | "Mid" | "Senior" | "Manager" | "Director";
+
+/// One of the three onboarding questions.
+export interface OnboardingQuestion {
+  id: string;
+  /// Which of the three things this establishes: what they care about, what they can do, where
+  /// they are heading. The feed needs all three — interests alone is how somebody interested in
+  /// AI gets shown every AI job including the ones wanting fifteen years.
+  dimension: "Interests" | "Capabilities" | "Aspirations";
+  prompt: string;
+  help: string;
+  /// Usually one. Two where the question has two parts — graduates answer a qualification and
+  /// skills in one breath, and so do professionals with a level and skills.
+  fields: OnboardingField[];
+}
+
+/// One set of choices inside a question.
+export interface OnboardingField {
+  /// Stable key the answer is stored under: interests, skills, goals, qualification, level.
+  id: string;
+  /// Heading above this set, where a question has more than one. Null when it has one.
+  label: string | null;
+  /// One means a single choice. The server rejects more than this.
+  mostSelections: number;
+  options: string[];
+}
+
+export interface OnboardingQuestions {
+  persona: PersonaType;
+  /// Whether the category was actually chosen. Persona defaults to Student, so the value alone
+  /// cannot tell you whether anybody was asked — ask this instead.
+  hasChosenCategory: boolean;
+  onboardingComplete: boolean;
+  questions: OnboardingQuestion[];
+}
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -229,6 +296,32 @@ export interface UserProfile {
   targetRole: string;
   targetIndustry: string;
   capabilities: string[];
+  /// How far they got in formal education. Null means not stated, never "below the floor".
+  qualification?: QualificationLevel | null;
+  /// Certifications they hold. Separate from `qualification` because a certificate is not a rung
+  /// on the academic ladder — it sat above a doctorate once and made every comparison wrong.
+  certifications: string[];
+  /// Their own answer to the qualification question being "a professional certification",
+  /// without naming which. A flag rather than a fake entry in `certifications`.
+  hasProfessionalCertification?: boolean;
+  /// Null means not stated. Never compare this with `>=` — an unstated level is not junior.
+  seniorityLevel?: Seniority | null;
+  /// Nullable so "never asked" is distinguishable from "said no".
+  isFounder?: boolean | null;
+  /// They have skills but have not named any yet — an answer, not a blank. Owed beginner
+  /// material rather than the empty state shown to somebody who answered nothing.
+  isExploring?: boolean;
+  /// They asked for information rather than opportunities. A setting, not an absence of one.
+  prefersInformation?: boolean;
+
+  /// Facts an eligibility check needs and onboarding deliberately does not ask for. The three
+  /// questions stay three; these belong on a profile screen, asked once something needs them.
+  nationalities: string[];
+  countryOfResidence: string;
+  yearsOfExperience?: number | null;
+  /// Stored as the date, never as an age: an age is wrong the moment it is written, and the
+  /// programmes with upper limits are exactly the ones people age out of.
+  dateOfBirth?: string | null;
   opportunityPreferences: string[];
   geography: string[];
   decisionNeeds: string[];

@@ -24,6 +24,7 @@ import type {
   NavigatorFocus,
   Note,
   NotificationPrefs,
+  OnboardingQuestions,
   Opportunity,
   OpportunityTrackingStatus,
   OpportunityType,
@@ -374,6 +375,62 @@ export function completeOnboarding(body: UpdateProfileRequest) {
     method: "POST",
     body: JSON.stringify(body),
   });
+}
+
+/// The three questions this reader is asked, fetched rather than held here.
+///
+/// There used to be a 235-entry list of interests in `lib/interests.ts` that this app sent to the
+/// server. Not one of those strings matched what the server offers — "Artificial Intelligence"
+/// against "Technology & AI" — and the answer text *is* the term the feed is matched on, so the
+/// two ends had quietly stopped meaning the same thing by any word.
+///
+/// `persona` is accepted because the category question comes first: somebody choosing "Graduate"
+/// needs the graduate questions before anything is saved.
+export function getOnboardingQuestions(persona?: PersonaType) {
+  const query = persona ? `?persona=${encodeURIComponent(persona)}` : "";
+  return request<OnboardingQuestions>(`/api/me/onboarding-questions${query}`);
+}
+
+/// Stores the answers, keyed by the field id each question was served under.
+///
+/// Send only the fields that were answered. An absent key leaves that answer alone, which is
+/// what makes a half-finished onboarding resumable; an empty array is a deliberate "none of
+/// these" and clears it.
+///
+/// The server rejects anything it did not offer, so pass option strings through exactly as they
+/// arrived rather than reformatting or title-casing them.
+export function saveOnboardingAnswers(input: {
+  persona?: PersonaType;
+  answers: Record<string, string[]>;
+}) {
+  return request<{
+    persona: PersonaType;
+    isPersonalised: boolean;
+    interests: string[];
+    capabilities: string[];
+    goals: string[];
+    qualification: string | null;
+    seniority: string | null;
+    certifications: string[];
+    isFounder: boolean | null;
+  }>("/api/me/onboarding-answers", { method: "POST", body: JSON.stringify(input) });
+}
+
+/// The facts an eligibility check needs and onboarding deliberately does not ask for.
+///
+/// Kept off the three questions on purpose — the brief is firm that onboarding stays three and
+/// that Radar learns the rest. These are asked from a profile screen, ideally at the moment an
+/// opportunity turns out to need one.
+///
+/// `dateOfBirth` rather than an age: an age is wrong the moment it is written, and the
+/// programmes with upper limits are precisely the ones people age out of.
+export function updateEligibilityFacts(input: {
+  nationalities?: string[];
+  countryOfResidence?: string;
+  yearsOfExperience?: number;
+  dateOfBirth?: string;
+}) {
+  return request<UserProfile>("/api/me", { method: "PUT", body: JSON.stringify(input) });
 }
 
 // ── Personalization signals ──────────────────────────────────────────────

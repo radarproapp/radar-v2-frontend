@@ -13,7 +13,7 @@ interface AuthContextValue {
   role: Role | null;
   isLoading: boolean;
   signIn: (token: string)  => void;
-  signOut: () => void;
+  signOut: () => void; 
   refetchProfile: () => Promise<void>;
 }
 
