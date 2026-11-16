@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Icon } from "./Icon";
 import type { Opportunity } from "../lib/types";
+import { EligibilityBadge } from "./EligibilityNote";
 
 /// The third strand of Radar Intelligence: things you can actually apply for.
 ///
@@ -77,6 +78,11 @@ export function FeedOpportunities({
               {opportunity.whyItFits ? (
                 <span className="feed-opps__why">{opportunity.whyItFits}</span>
               ) : null}
+
+              {/* Whether they could actually apply, which is a different question from whether
+                  it suits them. The badge renders nothing for Unchecked or for a surface that
+                  ran no check — a chip on every card is a chip nobody reads. */}
+              <EligibilityBadge verdict={opportunity.eligibilityVerdict} />
             </button>
           );
         })}

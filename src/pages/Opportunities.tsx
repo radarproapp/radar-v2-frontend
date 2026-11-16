@@ -19,6 +19,7 @@ import {
 import { OPPORTUNITY_TYPES } from "../lib/types";
 import type { Opportunity, OpportunityType, OpportunityTrackingStatus } from "../lib/types";
 import { Icon } from "../components/Icon";
+import { EligibilityNote } from "../components/EligibilityNote";
 
 /// What each kind of opportunity is called on screen.
 ///
@@ -817,6 +818,15 @@ export function Opportunities() {
 
             {/* Drawer Body */}
             <div className="opp-drawer-body">
+              {/* Whether they could actually apply, which is a different question from whether
+                  it suits them - and the one that costs an afternoon to get wrong. Above the
+                  match reason on purpose: being told why something fits, then discovering you
+                  cannot apply for it, is the wrong order to learn those two things in. */}
+              <EligibilityNote
+                verdict={selectedOpp.eligibilityVerdict}
+                notes={selectedOpp.eligibilityNotes}
+              />
+
               {/* Why It Matches You */}
               {selectedOpp.whyItFits && (
                 <div className="opp-why-matched" style={{ margin: 0 }}>
