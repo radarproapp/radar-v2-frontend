@@ -65,6 +65,12 @@ function headline(verdict: EligibilityVerdict): string {
       return "You do not meet one of this opportunity's requirements";
     case "Unchecked":
       return "This listing does not say who can apply";
+    default:
+      // Exhaustive over the union today, so TypeScript is satisfied without this. At runtime a
+      // verdict the client has not been taught yet would return undefined and render an empty
+      // heading above a list of real reasons - a blank line where the summary should be. The
+      // badge already degrades to "check requirements"; this matches it.
+      return "Radar could not check everything this asks for";
   }
 }
 

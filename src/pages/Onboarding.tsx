@@ -6,7 +6,7 @@ import { OnboardingQuestions } from "../components/OnboardingQuestions";
 import { useAuth } from "../auth/AuthContext";
 import { forgetCode, readCode, rememberedCode } from "../lib/referral";
 import { getOnboardingQuestions, register, saveOnboardingAnswers } from "../lib/api";
-import { answeredOnly, hasEnoughToSubmit } from "../lib/onboarding";
+import { hasEnoughToSubmit, touchedOnly, whatChanged } from "../lib/onboarding";
 import type { PersonaType } from "../lib/types";
 
 /// An account, then the three questions, then the app.
@@ -49,10 +49,16 @@ export function Onboarding() {
   const chosen = PERSONA_FROM_ROUTE[(personaParam ?? "").toLowerCase()] ?? null;
   const persona = chosen ?? "Student";
 
-  // An existing user reaching this from "Update these answers" in Settings already has an
-  // account; sending them back through account creation would be absurd and would fail on the
-  // duplicate email.
-  const [step, setStep] = useState<"account" | "questions">(profile ? "questions" : "account");
+  // Derived every render, not seeded once.
+  //
+  // useState runs its initialiser a single time, and the profile is still in flight on a cold
+  // load - so a signed-in user who refreshed or deep-linked this URL was shown "Create your
+  // account", while the eyebrow above it already said YOUR ANSWERS because that line read the
+  // profile which had since arrived. Re-entering their own email 400s on the duplicate;
+  // entering a different one registers a second account and signIn replaces their live session
+  // with it.
+  const [registered, setRegistered] = useState(false);
+  const step: "account" | "questions" = profile || registered ? "questions" : "account";
 
   // Back to the picker rather than on through a flow for a category that was never named.
   useEffect(() => {
@@ -66,6 +72,10 @@ export function Onboarding() {
   // Prefilled from the link they followed, if they followed one, and editable either way.
   const [referral, setReferral] = useState(() => rememberedCode() ?? "");
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
+
+  // Which questions this person actually interacted with, so an emptied answer is
+  // distinguishable from one never given. Without it the two look identical on the way out.
+  const [touched, setTouched] = useState<ReadonlySet<string>>(() => new Set());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -96,7 +106,7 @@ export function Onboarding() {
       // signIn, not setToken: the latter only writes storage, so the auth context still reported
       // isAuthenticated false and HomeGate sent a freshly onboarded user to the marketing page.
       signIn(auth.token);
-      setStep("questions");
+      setRegistered(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create the account.");
     } finally {
@@ -109,10 +119,15 @@ export function Onboarding() {
     setBusy(true);
 
     try {
-      // Only the questions that were answered. An absent key leaves that answer alone on the
-      // server, so somebody re-opening this from Settings to change one thing does not wipe the
-      // other two.
-      await saveOnboardingAnswers({ persona, answers: answeredOnly(answers) });
+      // Only the questions this person touched. An absent key leaves that answer alone on the
+      // server; an empty array is a deliberate "none of these" and clears it.
+      //
+      // Filtering on non-empty instead - which is what this did - meant a cleared answer could
+      // never be sent at all. The server was deliberately fixed so that tapping a wrong
+      // qualification off would unset it, and this component implements the tap, and the result
+      // stopped at the wire: the old rung stayed on the profile and kept being used as an
+      // eligibility floor.
+      await saveOnboardingAnswers({ persona, answers: touchedOnly(answers, touched) });
 
       await refetchProfile();
       navigate("/");
@@ -240,9 +255,28 @@ export function Onboarding() {
             </div>
           )}
 
+          {/* Succeeded and returned nothing. Without this the page is a heading and a subtitle
+              with no button, no message and no nav bar - this route sits outside the main
+              layout - and somebody who has just created an account is stranded on it. */}
+          {!questionsQuery.isLoading && !questionsQuery.isError && questions.length === 0 && (
+            <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
+              <p>There are no questions to answer right now.</p>
+              <button className="btn" onClick={() => navigate("/")}>
+                Continue to Radar
+              </button>
+            </div>
+          )}
+
           {questions.length > 0 && (
             <>
-              <OnboardingQuestions questions={questions} answers={answers} onChange={setAnswers} />
+              <OnboardingQuestions
+                questions={questions}
+                answers={answers}
+                onChange={(next) => {
+                  setTouched((before) => whatChanged(before, answers, next));
+                  setAnswers(next);
+                }}
+              />
 
               <div
                 style={{

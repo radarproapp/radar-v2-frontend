@@ -1,5 +1,3 @@
-import { useState } from "react";
-import type { OnboardingQuestion } from "./types";
 
 /// The rules about answers that both the page and its tests need.
 ///
@@ -15,22 +13,39 @@ export function hasEnoughToSubmit(answers: Record<string, string[]>): boolean {
   return Object.values(answers).some((picked) => picked.length > 0);
 }
 
-/// Only the questions that were actually answered.
+/// Only the questions this person touched.
 ///
-/// An absent key leaves that answer alone on the server, which is what makes a half-finished
-/// onboarding resumable. Sending every key with an empty array would instead clear the lot — the
-/// same payload meaning the opposite thing.
-export function answeredOnly(answers: Record<string, string[]>): Record<string, string[]> {
-  return Object.fromEntries(Object.entries(answers).filter(([, picked]) => picked.length > 0));
+/// Three states, not two. An absent key leaves that answer alone on the server, which is what
+/// makes a half-finished onboarding resumable. An empty array is a deliberate "none of these"
+/// and clears it. A filled array sets it.
+///
+/// Filtering on non-empty collapses the first two, and the collapse is not harmless: the server
+/// was deliberately changed so tapping a wrong qualification off would unset it — otherwise a
+/// mis-tap is permanent, because the ordinary profile edit has no field for it — and a client
+/// that can never send an empty array means that fix never reaches the wire.
+export function touchedOnly(
+  answers: Record<string, string[]>,
+  touched: ReadonlySet<string>,
+): Record<string, string[]> {
+  return Object.fromEntries(Object.entries(answers).filter(([field]) => touched.has(field)));
 }
 
-/// A blank answer sheet for a set of questions, so controlled inputs start defined.
-export function useAnswers(questions: OnboardingQuestion[]) {
-  const [answers, setAnswers] = useState<Record<string, string[]>>(() =>
-    Object.fromEntries(
-      questions.flatMap((question) => question.fields.map((field) => [field.id, [] as string[]])),
-    ),
-  );
+/// The fields whose answer differs between two sheets, added to what was already touched.
+///
+/// Compared rather than assumed, so a change event that happens to produce the same answer does
+/// not mark a question as answered. Touching is about what the person did, not how many events
+/// the component emitted.
+export function whatChanged(
+  before: ReadonlySet<string>,
+  previous: Record<string, string[]>,
+  next: Record<string, string[]>,
+): ReadonlySet<string> {
+  const touched = new Set(before);
 
-  return { answers, setAnswers };
+  for (const [field, picked] of Object.entries(next)) {
+    const was = previous[field] ?? [];
+    if (was.length !== picked.length || was.some((p, i) => p !== picked[i])) touched.add(field);
+  }
+
+  return touched;
 }

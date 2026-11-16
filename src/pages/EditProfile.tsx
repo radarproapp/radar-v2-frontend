@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../auth/AuthContext";
-import { getFocus, getSignals, removeSignalTerm, updateMe } from "../lib/api";
+import { getFocus, getSignals, removeSignalTerm, updateEligibilityFacts, updateMe } from "../lib/api";
 import { ALL_INTERESTS } from "../lib/interests";
 import { TagInput } from "../components/TagInput";
+import { EligibilityFacts } from "../components/EligibilityFacts";
 import type { PersonaType, SignalsSummary, UserInterestContext } from "../lib/types";
 
 const PERSONAS: [PersonaType, string][] = [
@@ -18,6 +19,7 @@ const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 export function EditProfile() {
   const navigate = useNavigate();
   const { profile, refetchProfile } = useAuth();
+  const [savingFacts, setSavingFacts] = useState(false);
   const [name, setName] = useState("");
   // Display only: switching is done from the profiles page, not by editing this one.
   const [persona, setPersona] = useState<PersonaType>("Student");
@@ -210,6 +212,31 @@ export function EditProfile() {
           </p>
         </div>
       </div>
+
+      {/* The facts an eligibility check needs and onboarding deliberately does not ask for.
+          Kept off the three questions because the brief keeps onboarding to three and lets Radar
+          learn the rest - but a form nothing renders asks nobody anything, and without these the
+          check can only ever report that it could not tell. */}
+      {profile && (
+        <div style={{ marginBottom: 22 }}>
+          <label style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-dim)", display: "block", marginBottom: 6 }}>
+            Can you apply?
+          </label>
+          <EligibilityFacts
+            profile={profile}
+            saving={savingFacts}
+            onSave={async (facts) => {
+              setSavingFacts(true);
+              try {
+                await updateEligibilityFacts(facts);
+                await refetchProfile();
+              } finally {
+                setSavingFacts(false);
+              }
+            }}
+          />
+        </div>
+      )}
 
       <div style={{ marginBottom: 18 }}>
         <label style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-dim)", display: "block", marginBottom: 6 }}>Region</label>

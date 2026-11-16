@@ -62,6 +62,7 @@ function Question({
         <Field
           key={field.id}
           field={field}
+          prompt={question.prompt}
           picked={answers[field.id] ?? []}
           onPick={(picked) => onChange({ ...answers, [field.id]: picked })}
         />
@@ -77,10 +78,12 @@ function Question({
 /// clears it, because a mis-tap on a single choice is otherwise permanent from this screen.
 function Field({
   field,
+  prompt,
   picked,
   onPick,
 }: {
   field: OnboardingField;
+  prompt: string;
   picked: string[];
   onPick: (picked: string[]) => void;
 }) {
@@ -103,11 +106,14 @@ function Field({
     onPick([...picked, option]);
   }
 
+  // A fieldset is already a group, so the inner role="group" added a second anonymous one. The
+  // legend only renders when the server sent a label - interests, skills and goals send null -
+  // so the fieldset carries the prompt as its accessible name rather than being nameless.
   return (
-    <fieldset className="onboarding-field">
+    <fieldset className="onboarding-field" aria-label={field.label ?? prompt}>
       {field.label && <legend className="onboarding-field__label">{field.label}</legend>}
 
-      <div className="onboarding-field__options" role="group">
+      <div className="onboarding-field__options">
         {field.options.map((option) => {
           const chosen = picked.includes(option);
 
